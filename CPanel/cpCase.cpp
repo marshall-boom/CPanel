@@ -366,7 +366,9 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
 {
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con(wPanels->size(),3);
+//    Eigen::MatrixXi con(wPanels->size(),3);
+    Eigen::MatrixXi con(wPanels->size(),4);
+
     mu.data.resize(wPanels->size(),1);
     pot.data.resize(wPanels->size(),1);
     for (int i=0; i<wPanels->size(); i++)

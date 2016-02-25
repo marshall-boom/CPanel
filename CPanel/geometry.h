@@ -48,11 +48,14 @@ class geometry
     
     bool writeCoeffFlag;
     std::string infCoeffFile;
+    bool VortPartFlag = true; // VPP
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
-    void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs);
+    void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool VortPartFlag);
+    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID);
+
     void createOctree();
 //    void setTEPanels();
 //    void setTEnodes();

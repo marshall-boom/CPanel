@@ -75,3 +75,94 @@ edge* cpNode::getOtherTrailEdge(edge* current)
 }
 
 
+std::vector<edge*> cpNode::getTrailingEdges()
+{
+    std::vector<edge*> trailingEdges;
+    for (int i=0; i<edges.size(); i++)
+    {
+        if (edges[i]->isTE())
+        {
+            trailingEdges.push_back(edges[i]);
+        }
+    }
+    return trailingEdges;
+}
+
+
+double cpNode::nodeWakeProjAngle(cpNode* tePoint){
+    std::vector<edge*> tedges = tePoint->getTrailingEdges();
+    
+    double bisect = 0;
+    for (int j = 0; j < tedges.size(); j++) {
+        std::vector<bodyPanel*> tempPan = tedges[j]->getBodyPans();
+        
+        Eigen::Vector3d nVec1 = tempPan[0]->getNormal();
+        Eigen::Vector3d nVec2 = tempPan[1]->getNormal();
+        
+        // unit vec to angle
+        double thetaTop = acos(nVec1.x()/pow(nVec1.x()*nVec1.x()+nVec1.y()*nVec1.y()+nVec1.z()*nVec1.z(),.5));
+        double thetaBot = acos(nVec2.x()/pow(nVec2.x()*nVec2.x()+nVec2.y()*nVec2.y()+nVec2.z()*nVec2.z(),.5));
+        bisect += (thetaTop+thetaBot)/2-1.570796;
+        
+    }
+    bisect = bisect/tedges.size();
+    
+    return bisect;
+}
+
+
+Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode){
+    
+    double Cw = 0.3; //** Go get these from the input file.
+    double dt = 0.01;
+    double Uinf = 10;
+    
+    double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
+    Eigen::Vector3d proj1 = TEnode->getPnt(); // Temporarily set it to the node to build off of it
+    proj1.x() += Cw*dt*Uinf*cos(bisectAngle);
+    proj1.z() += Cw*dt*Uinf*sin(bisectAngle);
+    
+    // Project node out perpendicular to panel
+    std::vector<edge*> tedges = TEnode->getTrailingEdges();
+    double edgeAngle=0; //Angle perpedicular to edge to find projected node y coord.
+    for (int j = 0; j < tedges.size(); j++) {
+        Eigen::Vector3d node1 = tedges[j]->getN1()->getPnt();
+        Eigen::Vector3d node2 = tedges[j]->getN2()->getPnt();
+        
+        edgeAngle += atan((node2.x()-node1.x())/(node2.y()-node1.y())); // Aircraft coordinates are different from traditional y/x tangent
+    }
+    edgeAngle = edgeAngle/tedges.size();
+    proj1.y() -= Cw*dt*Uinf*sin(edgeAngle);
+    
+    return proj1;
+}
+
+
+
+Eigen::Vector3d cpNode::secProjNode(cpNode* TEnode){
+    
+    double Cw = 0.3; //** Go get these from the input file.
+    double dt = 0.01;
+    double Uinf = 10;
+    
+    double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
+    Eigen::Vector3d proj2 = TEnode->getPnt();
+    proj2.x() += (Cw+1)*dt*Uinf*cos(bisectAngle);
+    proj2.z() += (Cw+1)*dt*Uinf*sin(bisectAngle);
+    
+    // Project node out perpendicular to panel
+    std::vector<edge*> tedges = TEnode->getTrailingEdges();
+    
+    double edgeAngle=0;
+    for (int j = 0; j < tedges.size(); j++) {
+        Eigen::Vector3d node1 = tedges[j]->getN1()->getPnt();
+        Eigen::Vector3d node2 = tedges[j]->getN2()->getPnt();
+        
+        edgeAngle += atan((node2.x()-node1.x())/(node2.y()-node1.y()));
+    }
+    edgeAngle = edgeAngle/tedges.size();
+    proj2.y() -= (Cw+1)*dt*Uinf*sin(edgeAngle);
+    
+    return proj2;
+}
+

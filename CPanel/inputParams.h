@@ -32,6 +32,8 @@ struct inputParams
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
     
+    // For new input, include time step, c_w, VortPartFlag.
+    
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;

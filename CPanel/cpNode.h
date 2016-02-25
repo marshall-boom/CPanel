@@ -51,6 +51,12 @@ public:
     std::vector<bodyPanel*> getBodyPans() {return bodyPans;}
     
     edge* getOtherTrailEdge(edge* current);
+    std::vector<edge*> getTrailingEdges();
+    
+    double nodeWakeProjAngle(cpNode* tePoint);
+    Eigen::Vector3d firstProjNode(cpNode* teNode);
+    Eigen::Vector3d secProjNode(cpNode* TEnode);
+
     
     bool isTE() {return TEnode;}
     

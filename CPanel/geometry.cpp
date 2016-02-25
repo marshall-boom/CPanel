@@ -220,7 +220,181 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
         std::cout << "Generating Panel Geometry..." << std::endl;
         
-        createSurfaces(connectivity,norms,allID,wakeIDs);
+        createSurfaces(connectivity,norms,allID,wakeIDs,VortPartFlag);
+        
+        
+        // Just to Check
+        std::cout << "\tNodes : " << nodes.size() << std::endl;
+        std::cout << "\tEdges : " << edges.size() << std::endl;
+        std::cout << "\tPanels : " << nTris << std::endl;
+        
+        ///*************************************************///
+        if(VortPartFlag){
+            for(int i=0; i<allID.size(); i++){
+                if(allID(i) >= 1000){
+                    std::cout << "ERROR: Please use input file without wake when using the vortex particle wake option" << std::endl;
+                }
+            }
+            int numTEnodes = 0, numTEedges=0;
+            for(int i=0; i<edges.size();i++){
+                if(edges[i]->isTE()){
+                    numTEedges++;
+                }
+            }
+            for(int i=0; i<nodes.size();i++){
+                if(nodes[i]->isTE()){
+                    numTEnodes++;
+                }
+            }
+            
+            Eigen::MatrixXd VPwakeNodes(2*numTEnodes,3);
+            Eigen::MatrixXi wakeConnectivity(2*numTEedges,4);
+            std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
+            int nodeCounter=0, panelCounter=0;
+            for(int i=0;i<edges.size();i++){
+                if(edges[i]->isTE()){
+                    int n1index = edges[i]->getN1()->getIndex();
+                    int n2index = edges[i]->getN2()->getIndex();
+                    int n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
+                    
+                    bool isUsed = false;
+                    for(int j=0; j<usedTENodesIndex.size(); j++){
+                        if(n1index == usedTENodesIndex[j]){
+                            isUsed = true;
+                            n1firstIndex = newNodesIndex[2*j]+nNodes;
+                            n1secIndex = newNodesIndex[2*j+1]+nNodes;
+                        }
+                    }
+                    
+                    if(isUsed == false){ // If it's used, don't change the n1 index and then get the first and sec. node indices.
+                        usedTENodesIndex.push_back(n1index);
+                        
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(nodes[n1index]);
+                        newNodesIndex.push_back(nodeCounter);
+                        n1firstIndex = nodeCounter+nNodes;
+                        nodeCounter++;
+                        
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(nodes[n1index]);
+                        newNodesIndex.push_back(nodeCounter);
+                        n1secIndex = nodeCounter+nNodes;
+                        nodeCounter++;
+                    }
+                    //N2
+                    isUsed = false;
+                    for(int j=0; j<usedTENodesIndex.size();j++){
+                        if(n2index == usedTENodesIndex[j]){
+                            isUsed = true;
+                            n2firstIndex = newNodesIndex[2*j]+nNodes;
+                            n2secIndex = newNodesIndex[2*j+1]+nNodes;
+                        }
+                    }
+                    
+                    if(isUsed == false){
+                        usedTENodesIndex.push_back(n2index);
+                        
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(nodes[n2index]);
+                        newNodesIndex.push_back(nodeCounter);
+                        n2firstIndex = nodeCounter+nNodes;
+                        nodeCounter++;
+                        
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(nodes[n2index]);
+                        newNodesIndex.push_back(nodeCounter);
+                        n2secIndex = nodeCounter+nNodes;
+                        nodeCounter++;
+                    }
+                    wakeConnectivity.row(panelCounter) << n1index, n2index, n2firstIndex, n1firstIndex;
+                    panelCounter++;
+                    //getTEiD
+                    VPwakeID.push_back(1001); // First row of wake panels
+                    
+                    wakeConnectivity.row(panelCounter) << n1firstIndex, n2firstIndex, n2secIndex, n1secIndex;
+                    panelCounter++;
+                    VPwakeID.push_back(1001); // Second row
+                }
+            }
+            
+            // Append nodes and adjust connectivity
+            for (int i=0; i<VPwakeNodes.rows(); i++)
+            {
+                n = new cpNode(VPwakeNodes.row(i),i+nNodes);
+                nodes.push_back(n);
+            }
+            Eigen::MatrixXd wakeNorms = Eigen::MatrixXd::Zero(wakeConnectivity.rows(),3);
+            createVPWakeSurfaces(wakeConnectivity,wakeNorms,VPwakeID);
+            
+            nNodes = nodes.size();
+            nTris += panelCounter; // Adjusting to include buffer wake
+        }
+        
+        
+        
+        bool print = false;
+        if(print){
+            std::cout << nodes.size() << "    " ;
+            
+            int numpans=0;
+            for(int i=0; i<surfaces.size(); i++){
+                std::vector<bodyPanel*>  printPans = surfaces[i]->getPanels();
+                for(int j=0; j<printPans.size();j++){
+                    numpans++;
+                }
+            }
+            for(int i=0; i<wakes.size(); i++){
+                std::vector<wakePanel*> printPans = wakes[i]->getPanels();
+                for(int j=0; j<printPans.size();j++){
+                    numpans++;
+                }
+            }
+            std::cout << numpans << std::endl;
+            
+            
+            for(int i=0; i< nodes.size();i++){
+                std::cout << nodes[i]->getPnt().x() << "  " << nodes[i]->getPnt().y() << "  " << nodes[i]->getPnt().z() << std::endl;
+            }
+            
+            for(int i=0; i<surfaces.size(); i++){
+                std::vector<bodyPanel*>  printPans = surfaces[i]->getPanels();
+                for(int j=0; j<printPans.size();j++){
+                    std::vector<cpNode*> printNodes = printPans[j]->getNodes();
+                    for(int k=0; k<printNodes.size(); k++){
+                        std::cout << printNodes[k]->getIndex() << "  ";
+                    }
+                    std::cout << std::endl;
+                }
+            }
+            
+            for(int i=0; i<wakes.size(); i++){
+                std::vector<wakePanel*> printPans = wakes[i]->getPanels();
+                for(int j=0; j<printPans.size();j++){
+                    std::vector<cpNode*> printNodes = printPans[j]->getNodes();
+                    for(int k=0; k<printNodes.size(); k++){
+                        std::cout << printNodes[k]->getIndex() << "  ";
+                    }
+                    std::cout << std::endl;
+                }
+            }
+            
+            //            std::vector<cpNode*> panelPts = wakes[0]->getPanels()[1]->pointsInOrder();
+            //            std::vector<Eigen::Vector3d> shedPts = wakes[0]->getPanels()[1]->VPshedPts();
+            //            double PrintArea = wakes[0]->getPanels()[1]->shedPanletArea()[0];
+            //            std::cout << "spt1 = [" << shedPts[0].x() << "," << shedPts[0].y() << "," << shedPts[0].z() << "];" << std::endl;
+            
+        }
+        int numTE=0;
+        for(int i=0;i<edges.size();i++){
+            if(edges[i]->isTE()){
+                numTE++;
+            }
+        }
+        
+        std::cout << "TEedges: " << numTE << std::endl;
+        std::cout << "wakeSize = " << wakes.size() << std::endl;
+        std::cout << "pans in first wake: " << wakes[0]->getPanels().size() << std::endl;
+//        std::cout << "pans in second wake: " << wakes[1]->getPanels().size() << std::endl;
+        ///*************************************************///
+        
+        
+        
         
         std::cout << "\tNodes : " << nodes.size() << std::endl;
         std::cout << "\tEdges : " << edges.size() << std::endl;
@@ -449,7 +623,8 @@ bool geometry::isLiftingSurf(int currentID, std::vector<int> wakeIDs)
     return false;
 }
 
-void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs)
+
+void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool VortPartFlag)
 {
     surface* s = nullptr;
     wake* w = nullptr;
@@ -459,9 +634,9 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
     for (int i=0; i<nTris; i++)
     {
         std::vector<cpNode*> pNodes;
-        pNodes.push_back(nodes[connectivity(i,0)]);
-        pNodes.push_back(nodes[connectivity(i,1)]);
-        pNodes.push_back(nodes[connectivity(i,2)]);
+        for(int j=0; j<connectivity.row(i).size(); j++){
+            pNodes.push_back(nodes[connectivity(i,j)]);
+        }
         pEdges = panEdges(pNodes); //Create edge or find edge that already exists
         if (allID(i) <= 1000)
         {
@@ -475,15 +650,56 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
         }
         else
         {
-            if (i==0 || allID(i)!=allID(i-1))
-            {
-                w = new wake(allID(i),this);
-                wakes.push_back(w);
+            if(VortPartFlag == false){
+                if (i==0 || allID(i)!=allID(i-1))
+                {
+                    w = new wake(allID(i),this);
+                    wakes.push_back(w);
+                }
+                
+                wPan = new wakePanel(pNodes,pEdges,norms.row(i),w,allID(i));
+                w->addPanel(wPan);
             }
-            wPan = new wakePanel(pNodes,pEdges,norms.row(i),w,allID(i));
-            w->addPanel(wPan);
         }
     }
+}
+
+void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID){
+    
+    wake* w1 = nullptr;
+    wake* w2 = nullptr;
+    wakePanel* wPan;
+    std::vector<edge*> pEdges;
+    
+    for (int i=0; i<wakeConnectivity.rows(); i++)
+    {
+        std::vector<cpNode*> pNodes;
+        for(int j=0; j<wakeConnectivity.row(i).size(); j++){
+            pNodes.push_back(nodes[wakeConnectivity(i,j)]);
+        }
+        pEdges = panEdges(pNodes); //Create edge or find edge that already exists
+        
+        
+        if (i==0){
+            w1 = new wake(VPwakeID[i],this);
+            wakes.push_back(w1);
+//        }else if(i==1){
+//            w2 = new wake(VPwakeID[i],this);
+//            wakes.push_back(w2);
+        }
+        
+        if(VPwakeID[i] == 1001){
+            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
+            w1->addPanel(wPan);
+        }else if(VPwakeID[i] == 1002){
+            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w2,VPwakeID[i]);
+            w2->addPanel(wPan);
+        }else{
+            std::cout << "ERROR: createVPWakeSurfaces: more than 2 rows of wake panels?" << std::endl;
+        }
+        
+    }
+    
 }
 
 std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
