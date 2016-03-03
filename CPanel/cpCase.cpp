@@ -22,12 +22,16 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     std::string check = "\u2713";
     setSourceStrengths();
     converged = solveMatrixEq();
+//    setBufferWakeStrengths();
+//    converged = solveVPmatrixEq();
     if (printFlag)
     {
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
     
     compVelocity();
+    
+    
     
     if (printFlag)
     {
@@ -126,16 +130,16 @@ void cpCase::setSourceStrengths()
     }
 }
 
+
 bool cpCase::solveMatrixEq()
 {
     bool converged = true;
     
-    // Solve matrix equations and set potential for all panels;
     Eigen::MatrixXd* A = geom->getA();
     Eigen::MatrixXd* B = geom->getB();
     Eigen::VectorXd RHS = -(*B)*sigmas;
     Eigen::VectorXd doubletStrengths(bPanels->size());
-  
+
     
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
     res.compute((*A));
@@ -155,6 +159,61 @@ bool cpCase::solveMatrixEq()
         (*wPanels)[i]->setMu();
         (*wPanels)[i]->setPotential(Vinf);
     }
+    
+    // Set second bufferwake strength equal to first
+    wake2Doublets.resize(wPanels->size());
+    
+    for (int i=0; i<wPanels->size(); i++){ //VPP NW
+        (*wake2panels)[i]->manuallySetMu((*wPanels)[i]->getMu());
+        (*wake2panels)[i]->setPotential(Vinf);
+        wake2Doublets(i) = (*wPanels)[i]->getMu();
+    }
+    
+    
+    return converged;
+}
+
+bool cpCase::solveVPmatrixEq()
+{
+    bool converged = true;
+    
+    // Solve matrix equations and set potential for all panels;
+    Eigen::MatrixXd* A2 = geom->getA(); // For first timestep, get different A matrix
+    Eigen::MatrixXd* B2 = geom->getB();
+    
+    Eigen::MatrixXd* C = geom->getC();
+    // Make function in Geom so I can use all of the stuff. Shouldn't matter if I make it there bc I call it later. Could grab the wake panel influences from inside the function or pass them... IDK which one would be easier. 
+    
+    
+    std::cout << "\nsize of A: (" << A2->rows() << "," << A2->cols() << ")" << std::endl;
+    std::cout << "size of B: (" << B2->rows() << "," << B2->cols() << ")" << std::endl;
+    std::cout << "size of C: (" << C->rows() << "," << C->cols() << ")" << std::endl;
+    
+    
+    Eigen::VectorXd RHS2 = -(*B2)*sigmas - (*C)*wake2Doublets;
+    Eigen::VectorXd doubletStrengths(bPanels->size());
+    
+    
+    Eigen::BiCGSTAB<Eigen::MatrixXd> res;
+    res.compute((*A2));
+    doubletStrengths = res.solve(RHS2);
+    if (res.error() > pow(10,-10))
+    {
+        converged = false;
+    }
+
+    for (int i=0; i<bPanels->size(); i++)
+    {
+        (*bPanels)[i]->setMu(doubletStrengths(i));
+        (*bPanels)[i]->setPotential(Vinf);
+    }
+    for (int i=0; i<wPanels->size(); i++)
+    {
+        (*wPanels)[i]->setMu();
+        (*wPanels)[i]->setPotential(Vinf);
+    }
+
+    timeStep++;
     return converged;
 }
 
@@ -186,9 +245,11 @@ void cpCase::trefftzPlaneAnalysis()
     CD_trefftz = 0;
     for (int i=0; i<wakes.size(); i++)
     {
-        wakes[i]->trefftzPlane(Vmag,params->Sref);
-        CL_trefftz += wakes[i]->getCL()/PG;
-        CD_trefftz += wakes[i]->getCD()/pow(PG,2);
+        if(i==0){ //NW
+            wakes[i]->trefftzPlane(Vmag,params->Sref);
+            CL_trefftz += wakes[i]->getCL()/PG;
+            CD_trefftz += wakes[i]->getCD()/pow(PG,2);
+        }
     }
 }
 
@@ -387,6 +448,33 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
     wake.cellData = data;
     
     std::string fname = path.string()+"/wakeData.vtu";
+    VTUfile wakeFile(fname,wake);
+}
+
+void cpCase::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat)
+{
+    std::vector<cellDataArray> data;
+    cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
+    Eigen::MatrixXi con(wPanels->size(),4);
+    ee
+    mu.data.resize(wPanels->size(),1);
+    pot.data.resize(wPanels->size(),1);
+    for (int i=0; i<wPanels->size(); i++)
+    {
+        mu.data(i,0) = (*wPanels)[i]->getMu();
+        pot.data(i,0) = (*wPanels)[i]->getPotential();
+        con.row(i) = (*wPanels)[i]->getVerts();
+    }
+    
+    data.push_back(mu);
+    data.push_back(pot);
+    
+    piece wake;
+    wake.pnts = nodeMat;
+    wake.connectivity = con;
+    wake.cellData = data;
+    
+    std::string fname = path.string()+"/buffer2Data.vtu";
     VTUfile wakeFile(fname,wake);
 }
 

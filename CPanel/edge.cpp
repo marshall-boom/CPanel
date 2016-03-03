@@ -31,6 +31,12 @@ void edge::addWakePan(wakePanel* w)
     checkTE();
 }
 
+void edge::addSBWPan(secondBufferWake* w2) //VPP
+{
+    SBW2.push_back(w2);
+}
+
+
 void edge::checkTE()
 {
     if (bodyPans.size() == 2)

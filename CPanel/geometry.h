@@ -25,6 +25,7 @@
 #include "edge.h"
 #include "inputParams.h"
 #include "cpNode.h"
+#include "secondBufferWake.h"
 
 class geometry
 {
@@ -34,6 +35,7 @@ class geometry
 //    std::vector<surface*> nonLiftingSurfs;
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
+    std::vector<wakePanel*> wPanels2; //VPP
     
     panelOctree pOctree;
     std::vector<cpNode*> nodes;
@@ -45,16 +47,19 @@ class geometry
     
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
+    Eigen::MatrixXd C; // Wake Doublet Influence Coefficient Matrix
     
     bool writeCoeffFlag;
     std::string infCoeffFile;
     bool VortPartFlag = true; // VPP
-
+    std::vector<bool> isFirstPanel;
+    
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
     void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool VortPartFlag);
-    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID);
+//    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<int> parentPan, std::vector<bool> isFirstPanel);
+    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<bool> isFirstPanel);
 
     void createOctree();
 //    void setTEPanels();
@@ -69,6 +74,8 @@ class geometry
     liftingSurf* getParentSurf(int wakeID);
     
     void setInfCoeff();
+    void setWakeInfCoeff();
+
     Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
     
     bool infCoeffFileExists();
@@ -93,6 +100,7 @@ public:
     
     geometry& operator=(const geometry &rhs);
     
+    
     double pntPotential(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf);
     double wakePotential(const Eigen::Vector3d &pnt);
     Eigen::Vector3d pntVelocity(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf, double PG);
@@ -111,9 +119,11 @@ public:
     std::vector<panel*> getPanels();
     std::vector<bodyPanel*>* getBodyPanels() {return &bPanels;}
     std::vector<wakePanel*>* getWakePanels() {return &wPanels;}
+    std::vector<wakePanel*>* getWake2Panels() {return &wPanels2;}
     std::vector<wake*> getWakes();
     Eigen::MatrixXd* getA() {return &A;}
     Eigen::MatrixXd* getB() {return &B;}
+    Eigen::MatrixXd* getC() {return &C;}
     
 };
 

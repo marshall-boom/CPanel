@@ -12,6 +12,7 @@
 #include "inputParams.h"
 #include "geometry.h"
 #include "cpFile.h"
+#include "cpNode.h"
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
@@ -111,6 +112,11 @@ int main(int argc, const char * argv[])
 //    geometry geom(params.geomFile,params.normFlag,params.Sref,params.bref,params.cref,params.cg);
     geometry geom(&inData);
     caseMgr cm(&inData,&geom);
+
+//    double dt = .5; //VPP
+//    double simTime = 0;
+//    simTime += dt;
+    
     
     
     time(&tf);

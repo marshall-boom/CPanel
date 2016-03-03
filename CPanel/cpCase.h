@@ -21,6 +21,7 @@
 #include "bodyStreamline.h"
 #include "cpFile.h"
 #include "inputParams.h"
+#include "wake.h" //NW
 
 //#include "streamline.h"
 
@@ -37,6 +38,9 @@ class cpCase
     double PG; // Prandtl-Glauert Correction - (1-M^2)^(1/2)
     double alpha;
     double beta;
+    double timeStep = 0; //VPP
+    
+    wake* wakes;
     
     Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform; 
@@ -44,7 +48,9 @@ class cpCase
     
     std::vector<bodyPanel*>* bPanels;
     std::vector<wakePanel*>* wPanels;
+    std::vector<wakePanel*>* wake2panels;
     Eigen::VectorXd sigmas;
+    Eigen::VectorXd wake2Doublets;
     
     double CL_trefftz;
     double CD_trefftz;
@@ -66,6 +72,7 @@ class cpCase
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
     void setSourceStrengths();
     bool solveMatrixEq();
+    bool solveVPmatrixEq(); // VPP
     void compVelocity();
     void trefftzPlaneAnalysis();
     void createStreamlines();
@@ -74,19 +81,22 @@ class cpCase
     void writeFiles();
     void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+    void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
     
 public:
-    cpCase(geometry *geom,double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
+    cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
     {
         Vinf = windToBody(V,alpha,beta);
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
+        wake2panels = geom->getWake2Panels();
         PG = sqrt(1-pow(mach,2));
     }
     
     virtual ~cpCase();
+    Eigen::MatrixXd wakeStrengthFromTminus1; //VPP
     
     void run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag);
     
@@ -94,6 +104,7 @@ public:
     double getV() {return Vmag;}
     double getAlpha() {return alpha;}
     double getBeta() {return beta;}
+    double getTimeStep() {return timeStep;} //VPP
     double getCL() {return CL_trefftz;}
     double getCD() {return CD_trefftz;}
     Eigen::Vector3d getMoment() {return CM;}

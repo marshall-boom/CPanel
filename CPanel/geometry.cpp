@@ -211,6 +211,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         Eigen::MatrixXd norms = Eigen::MatrixXd::Zero(nTris,3);
         if (normFlag)
         {
+            
             std::cout << "Reading Bezier Normals from Geometry File..." << std::endl;
             for (int i=0; i<nTris; i++)
             {
@@ -230,6 +231,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
         ///*************************************************///
         if(VortPartFlag){
+            std::cout << "Creating buffer wake..." << std::endl;
             for(int i=0; i<allID.size(); i++){
                 if(allID(i) >= 1000){
                     std::cout << "ERROR: Please use input file without wake when using the vortex particle wake option" << std::endl;
@@ -306,12 +308,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     panelCounter++;
                     //getTEiD
                     VPwakeID.push_back(1001); // First row of wake panels
+                    isFirstPanel.push_back(true);
                     
                     wakeConnectivity.row(panelCounter) << n1firstIndex, n2firstIndex, n2secIndex, n1secIndex;
                     panelCounter++;
                     VPwakeID.push_back(1001); // Second row
+                    isFirstPanel.push_back(false);
+
                 }
             }
+            
+            
             
             // Append nodes and adjust connectivity
             for (int i=0; i<VPwakeNodes.rows(); i++)
@@ -320,10 +327,24 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 nodes.push_back(n);
             }
             Eigen::MatrixXd wakeNorms = Eigen::MatrixXd::Zero(wakeConnectivity.rows(),3);
-            createVPWakeSurfaces(wakeConnectivity,wakeNorms,VPwakeID);
+            createVPWakeSurfaces(wakeConnectivity,wakeNorms,VPwakeID,isFirstPanel);
             
             nNodes = nodes.size();
-            nTris += panelCounter; // Adjusting to include buffer wake
+            nTris += wakes[0]->getPanels().size(); // Adjusting to include buffer wake
+            
+            int nBufferPan = 0;
+            for(int i=0; i<wakes.size(); i++){
+                std::vector<wakePanel*> wpans = wakes[i]->getPanels();
+                for(int j=0; j<wpans.size();j++){
+                    nBufferPan++;
+                }
+            }
+            
+            std::cout << "TE nodes: " << numTEnodes << std::endl;
+            
+            std::cout << "\tPanels Added : " << wakes[0]->getPanels().size() << std::endl;
+
+            
         }
         
         
@@ -380,25 +401,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             //            std::cout << "spt1 = [" << shedPts[0].x() << "," << shedPts[0].y() << "," << shedPts[0].z() << "];" << std::endl;
             
         }
-        int numTE=0;
-        for(int i=0;i<edges.size();i++){
-            if(edges[i]->isTE()){
-                numTE++;
-            }
-        }
         
-        std::cout << "TEedges: " << numTE << std::endl;
-        std::cout << "wakeSize = " << wakes.size() << std::endl;
-        std::cout << "pans in first wake: " << wakes[0]->getPanels().size() << std::endl;
+//        std::cout << "TEedges: " << numTE << std::endl;
+//        std::cout << "wakeSize = " << wakes.size() << std::endl;
+//        std::cout << "pans in first wake: " << wakes[0]->getPanels().size() << std::endl;
 //        std::cout << "pans in second wake: " << wakes[1]->getPanels().size() << std::endl;
+        
+
         ///*************************************************///
         
         
-        
-        
-        std::cout << "\tNodes : " << nodes.size() << std::endl;
-        std::cout << "\tEdges : " << edges.size() << std::endl;
-        std::cout << "\tPanels : " << nTris << std::endl;
+    
         
         // Erase duplicate node pointers
         std::sort( nodes.begin(), nodes.end() );
@@ -457,8 +470,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
         for (int i=0; i<wakes.size(); i++)
         {
-            tempW = wakes[i]->getPanels();
-            wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
+            if(VortPartFlag){ //NW
+                if(i == 0){
+                    tempW = wakes[i]->getPanels();
+                    wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
+                }else{
+                    std::cout << "Per vortex particle method, " << i << " wakes are ignored..." << std::endl;
+                }
+            }else{
+                tempW = wakes[i]->getPanels();
+                wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
+            }
         }
         
         
@@ -533,6 +555,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         {
             std::cout << "Building Influence Coefficient Matrix..." << std::endl;
             setInfCoeff();
+            setWakeInfCoeff(); //VPP
         }
     }
     else
@@ -664,11 +687,12 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
     }
 }
 
-void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID){
+void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> isFirstPanel){ //rename to create first buffer wake?
     
     wake* w1 = nullptr;
     wake* w2 = nullptr;
     wakePanel* wPan;
+//    secondBufferWake* bw2;
     std::vector<edge*> pEdges;
     
     for (int i=0; i<wakeConnectivity.rows(); i++)
@@ -679,27 +703,28 @@ void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, con
         }
         pEdges = panEdges(pNodes); //Create edge or find edge that already exists
         
-        
-        if (i==0){
-            w1 = new wake(VPwakeID[i],this);
-            wakes.push_back(w1);
-//        }else if(i==1){
-//            w2 = new wake(VPwakeID[i],this);
-//            wakes.push_back(w2);
-        }
-        
-        if(VPwakeID[i] == 1001){
+        if(isFirstPanel[i]){
+            if (i==0){
+                w1 = new wake(VPwakeID[i],this);
+                wakes.push_back(w1);
+            }
             wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
             w1->addPanel(wPan);
-        }else if(VPwakeID[i] == 1002){
-            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w2,VPwakeID[i]);
-            w2->addPanel(wPan);
+            
         }else{
-            std::cout << "ERROR: createVPWakeSurfaces: more than 2 rows of wake panels?" << std::endl;
+            if (i==1){
+                w2 = new wake(VPwakeID[i],this);
+                wakes.push_back(w2);
+            }
+            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
+            w2->addPanel(wPan);
+            
+            // Since I build the panels from the trailing edge out, there should ALWAYS be a 1st bufer wake panel before bw2
+            //bw2 = new secondBufferWake(pNodes,pEdges,wakeNorms.row(i),w1,wPan,VPwakeID[i]);
         }
-        
     }
     
+    wPanels2 = w2->getPanels(); //VPP
 }
 
 std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
@@ -776,7 +801,7 @@ void geometry::setInfCoeff()
     {
         for (int i=0; i<nBodyPans; i++)
         {
-            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(i,j),A(i,j));
+            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(i,j),A(i,j)); //influence of j on i
         }
         for (int i=0; i<percentage.size(); i++)
         {
@@ -799,6 +824,7 @@ void geometry::setInfCoeff()
     
     for (int j=0; j<nWakePans; j++)
     {
+        
         wPanels[j]->interpPanels(interpPans,interpCoeff);
         indices = interpIndices(interpPans);
         for (int i=0; i<nBodyPans; i++)
@@ -818,8 +844,48 @@ void geometry::setInfCoeff()
         }
         
     }
+
+
     std::cout << "Complete" << std::endl;
 
+    if (writeCoeffFlag)
+    {
+        writeInfCoeff();
+    }
+}
+
+void geometry::setWakeInfCoeff()
+{
+    // Construct doublet and source influence coefficient matrices for body panels
+    int nBodyPans = (int)bPanels.size(); //bPanels.size() returns a T something. It is an unsigned long int and putting the (int) turns it into an int.
+    
+    
+//    std::vector<wakePanel*> secondBuffWake;
+    C.resize(nBodyPans,wPanels2.size());
+    
+    Eigen::VectorXi percentage(9);
+    std::cout << "Building Wake Coefficient Matrix..." << std::endl;
+    percentage << 10,20,30,40,50,60,70,80,90;
+    
+    for (int j=0; j<wPanels2.size(); j++)
+    {
+        for (int i=0; i<nBodyPans; i++)
+        {
+            double dummy; // to ignore A matrix
+            C(i,j) = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
+        }
+        for (int i=0; i<percentage.size(); i++)
+        {
+            if ((100*j/wPanels2.size()) <= percentage(i) && 100*(j+1)/wPanels2.size() > percentage(i))
+            {
+                std::cout << percentage(i) << "%\t" << std::flush;
+            }
+        }
+    }
+    
+
+    std::cout << "Complete" << std::endl;
+    
     if (writeCoeffFlag)
     {
         writeInfCoeff();
