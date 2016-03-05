@@ -38,7 +38,7 @@ void caseMgr::runCases()
         outstream << i+1 << "/" << cases.size();
         out = outstream.str();
         std::cout << std::setw(10) << std::left << out << std::flush;
-        cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag);
+        cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag,p->vortPartFlag);
     }
     std::cout << "Complete" << std::endl;
 }

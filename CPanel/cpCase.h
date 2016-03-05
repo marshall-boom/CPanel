@@ -21,8 +21,6 @@
 #include "bodyStreamline.h"
 #include "cpFile.h"
 #include "inputParams.h"
-#include "wake.h" //NW
-
 //#include "streamline.h"
 
 
@@ -39,8 +37,8 @@ class cpCase
     double alpha;
     double beta;
     double timeStep = 0; //VPP
+    bool vortPartFlag; //VPP
     
-    wake* wakes;
     
     Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform; 
@@ -93,12 +91,13 @@ public:
         wPanels = geom->getWakePanels();
         wake2panels = geom->getWake2Panels();
         PG = sqrt(1-pow(mach,2));
+        vortPartFlag = inParams->vortPartFlag; //VPP
     }
     
     virtual ~cpCase();
     Eigen::MatrixXd wakeStrengthFromTminus1; //VPP
     
-    void run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag);
+    void run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag);
     
     double getMach() {return mach;}
     double getV() {return Vmag;}

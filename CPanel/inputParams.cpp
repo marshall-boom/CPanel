@@ -124,6 +124,20 @@ bool inputParams::set()
                 {
                     fid >> writeCoeffFlag;
                 }
+                else if (s1.compare("Vortex_Particle_Wake") == 0)
+                {
+                    fid >> vortPartFlag;
+                }
+                else if (s1.compare("Time_Step") == 0)
+                {
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+                    fid >> dt;
+                }
+                else if (s1.compare("C_w") == 0)
+                {
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+                    fid >> c_w;
+                }
             }
         }
         makeWorkingDir();
@@ -196,6 +210,7 @@ void inputParams::print(std::ostream &stream)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
+    
 }
 
 void inputParams::printVec(Eigen::VectorXd &vec,std::ostream &stream)
@@ -305,6 +320,13 @@ void inputParams::writeInputFile()
     fid << stabDerivFlag << std::endl;
     fid << "Write_Influence_Coefficients" << std::endl;
     fid << writeCoeffFlag << std::endl;
+    fid << "Vortex_Particle_Wake" << std::endl;
+    fid << vortPartFlag << std::endl;
+    fid << std::endl;
+    fid << "Time_Step (seconds)" << std::endl;
+    fid << dt << std::endl;
+    fid << "C_w (Buffer wake length constant. Recommended 0.3)" << std::endl;
+    fid << c_w << std::endl;
     
     fid.close();
 }

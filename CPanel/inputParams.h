@@ -28,6 +28,8 @@ struct inputParams
     double Sref;
     double bref;
     double cref;
+    double dt;
+    double c_w;
     double streamSpacing;
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
@@ -37,6 +39,7 @@ struct inputParams
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;
+    bool vortPartFlag;
     
     inputParams(cpFile* inFile) : inputFile(inFile) {}
     

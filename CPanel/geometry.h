@@ -36,11 +36,13 @@ class geometry
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
     std::vector<wakePanel*> wPanels2; //VPP
+    double dt;
+    double c_w;
+    double inputV;
     
     panelOctree pOctree;
     std::vector<cpNode*> nodes;
     std::vector<edge*> edges;
-//    std::vector<cpNode*> TEnodes;
     short nNodes;
     short nTris;
     
@@ -51,7 +53,7 @@ class geometry
     
     bool writeCoeffFlag;
     std::string infCoeffFile;
-    bool VortPartFlag = true; // VPP
+    bool vortPartFlag;
     std::vector<bool> isFirstPanel;
     
     void readTri(std::string tri_file, bool normFlag);
@@ -82,7 +84,6 @@ class geometry
     void readInfCoeff();
     void writeInfCoeff();
     
-    
 public:
     geometry(inputParams* p)
     {
@@ -90,8 +91,11 @@ public:
         temp << p->geomFile->name << ".infCoeff";
         infCoeffFile = temp.str();
         writeCoeffFlag = p->writeCoeffFlag;
+        vortPartFlag = p->vortPartFlag;
+        dt = p->dt;
+        c_w = p->c_w;
+        inputV = p->velocities(0);
         readTri(p->geomFile->file, p->normFlag);
-        
     }
     
     virtual ~geometry();

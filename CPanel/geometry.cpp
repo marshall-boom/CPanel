@@ -221,7 +221,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
         std::cout << "Generating Panel Geometry..." << std::endl;
         
-        createSurfaces(connectivity,norms,allID,wakeIDs,VortPartFlag);
+        createSurfaces(connectivity,norms,allID,wakeIDs,vortPartFlag);
         
         
         // Just to Check
@@ -230,7 +230,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "\tPanels : " << nTris << std::endl;
         
         ///*************************************************///
-        if(VortPartFlag){
+        if(vortPartFlag){
             std::cout << "Creating buffer wake..." << std::endl;
             for(int i=0; i<allID.size(); i++){
                 if(allID(i) >= 1000){
@@ -271,12 +271,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     if(isUsed == false){ // If it's used, don't change the n1 index and then get the first and sec. node indices.
                         usedTENodesIndex.push_back(n1index);
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(nodes[n1index]);
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(nodes[n1index], dt, c_w, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n1firstIndex = nodeCounter+nNodes;
                         nodeCounter++;
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(nodes[n1index]);
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(nodes[n1index], dt, c_w, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n1secIndex = nodeCounter+nNodes;
                         nodeCounter++;
@@ -290,16 +290,16 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                             n2secIndex = newNodesIndex[2*j+1]+nNodes;
                         }
                     }
-                    
+                     
                     if(isUsed == false){
                         usedTENodesIndex.push_back(n2index);
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(nodes[n2index]);
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(nodes[n2index], dt, c_w, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n2firstIndex = nodeCounter+nNodes;
                         nodeCounter++;
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(nodes[n2index]);
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(nodes[n2index], dt, c_w, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n2secIndex = nodeCounter+nNodes;
                         nodeCounter++;
@@ -339,9 +339,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     nBufferPan++;
                 }
             }
-            
-            std::cout << "TE nodes: " << numTEnodes << std::endl;
-            
+                        
             std::cout << "\tPanels Added : " << wakes[0]->getPanels().size() << std::endl;
 
             
@@ -470,7 +468,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
         for (int i=0; i<wakes.size(); i++)
         {
-            if(VortPartFlag){ //NW
+            if(vortPartFlag){ //NW
                 if(i == 0){
                     tempW = wakes[i]->getPanels();
                     wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
@@ -647,7 +645,7 @@ bool geometry::isLiftingSurf(int currentID, std::vector<int> wakeIDs)
 }
 
 
-void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool VortPartFlag)
+void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool vortPartFlag)
 {
     surface* s = nullptr;
     wake* w = nullptr;
@@ -673,7 +671,7 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
         }
         else
         {
-            if(VortPartFlag == false){
+            if(vortPartFlag == false){
                 if (i==0 || allID(i)!=allID(i-1))
                 {
                     w = new wake(allID(i),this);

@@ -111,16 +111,12 @@ double cpNode::nodeWakeProjAngle(cpNode* tePoint){
 }
 
 
-Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode){
-    
-    double Cw = 0.3; //** Go get these from the input file.
-    double dt = 0.01;
-    double Uinf = 10;
+Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode, double dt, double c_w, double inputV){
     
     double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
     Eigen::Vector3d proj1 = TEnode->getPnt(); // Temporarily set it to the node to build off of it
-    proj1.x() += Cw*dt*Uinf*cos(bisectAngle);
-    proj1.z() += Cw*dt*Uinf*sin(bisectAngle);
+    proj1.x() += c_w*dt*inputV*cos(bisectAngle);
+    proj1.z() += c_w*dt*inputV*sin(bisectAngle);
     
     // Project node out perpendicular to panel
     std::vector<edge*> tedges = TEnode->getTrailingEdges();
@@ -132,23 +128,21 @@ Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode){
         edgeAngle += atan((node2.x()-node1.x())/(node2.y()-node1.y())); // Aircraft coordinates are different from traditional y/x tangent
     }
     edgeAngle = edgeAngle/tedges.size();
-    proj1.y() -= Cw*dt*Uinf*sin(edgeAngle);
+    proj1.y() -= c_w*dt*inputV*sin(edgeAngle);
     
     return proj1;
 }
 
 
 
-Eigen::Vector3d cpNode::secProjNode(cpNode* TEnode){
+Eigen::Vector3d cpNode::secProjNode(cpNode* TEnode, double dt, double c_w, double inputV){
     
-    double Cw = 0.3; //** Go get these from the input file.
-    double dt = 0.01;
     double Uinf = 10;
     
     double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
     Eigen::Vector3d proj2 = TEnode->getPnt();
-    proj2.x() += (Cw+1)*dt*Uinf*cos(bisectAngle);
-    proj2.z() += (Cw+1)*dt*Uinf*sin(bisectAngle);
+    proj2.x() += (c_w+1)*dt*inputV*cos(bisectAngle);
+    proj2.z() += (c_w+1)*dt*inputV*sin(bisectAngle);
     
     // Project node out perpendicular to panel
     std::vector<edge*> tedges = TEnode->getTrailingEdges();
@@ -161,7 +155,7 @@ Eigen::Vector3d cpNode::secProjNode(cpNode* TEnode){
         edgeAngle += atan((node2.x()-node1.x())/(node2.y()-node1.y()));
     }
     edgeAngle = edgeAngle/tedges.size();
-    proj2.y() -= (Cw+1)*dt*Uinf*sin(edgeAngle);
+    proj2.y() -= (c_w+1)*dt*inputV*sin(edgeAngle);
     
     return proj2;
 }

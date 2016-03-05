@@ -16,14 +16,16 @@ cpCase::~cpCase()
     }
 }
 
-void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
+void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)
 {
     bool converged;
     std::string check = "\u2713";
     setSourceStrengths();
     converged = solveMatrixEq();
+    
 //    setBufferWakeStrengths();
 //    converged = solveVPmatrixEq();
+
     if (printFlag)
     {
         std::cout << std::setw(17) << std::left << check << std::flush;
@@ -87,6 +89,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     {
         writeFiles();
     }
+    
 }
 
 Eigen::Vector3d cpCase::windToBody(double V, double alpha, double beta)
@@ -160,14 +163,14 @@ bool cpCase::solveMatrixEq()
         (*wPanels)[i]->setPotential(Vinf);
     }
     
-    // Set second bufferwake strength equal to first
-    wake2Doublets.resize(wPanels->size());
-    
-    for (int i=0; i<wPanels->size(); i++){ //VPP NW
-        (*wake2panels)[i]->manuallySetMu((*wPanels)[i]->getMu());
-        (*wake2panels)[i]->setPotential(Vinf);
-        wake2Doublets(i) = (*wPanels)[i]->getMu();
-    }
+//    // Set second bufferwake strength equal to first
+//    wake2Doublets.resize(wPanels->size());
+//    
+//    for (int i=0; i<wPanels->size(); i++){ //VPP NW
+//        (*wake2panels)[i]->manuallySetMu((*wPanels)[i]->getMu());
+//        (*wake2panels)[i]->setPotential(Vinf);
+//        wake2Doublets(i) = (*wPanels)[i]->getMu();
+//    } //NOW
     
     
     return converged;
@@ -180,14 +183,11 @@ bool cpCase::solveVPmatrixEq()
     // Solve matrix equations and set potential for all panels;
     Eigen::MatrixXd* A2 = geom->getA(); // For first timestep, get different A matrix
     Eigen::MatrixXd* B2 = geom->getB();
-    
     Eigen::MatrixXd* C = geom->getC();
-    // Make function in Geom so I can use all of the stuff. Shouldn't matter if I make it there bc I call it later. Could grab the wake panel influences from inside the function or pass them... IDK which one would be easier. 
     
-    
-    std::cout << "\nsize of A: (" << A2->rows() << "," << A2->cols() << ")" << std::endl;
-    std::cout << "size of B: (" << B2->rows() << "," << B2->cols() << ")" << std::endl;
-    std::cout << "size of C: (" << C->rows() << "," << C->cols() << ")" << std::endl;
+//    std::cout << "\nsize of A: (" << A2->rows() << "," << A2->cols() << ")" << std::endl;
+//    std::cout << "size of B: (" << B2->rows() << "," << B2->cols() << ")" << std::endl;
+//    std::cout << "size of C: (" << C->rows() << "," << C->cols() << ")" << std::endl;
     
     
     Eigen::VectorXd RHS2 = -(*B2)*sigmas - (*C)*wake2Doublets;
@@ -340,8 +340,8 @@ void cpCase::stabilityDerivatives()
     cpCase dA(geom,Vmag,alpha+delta,beta,mach,params);
     cpCase dB(geom,Vmag,alpha,beta+delta,mach,params);
     
-    dA.run(false,false,false);
-    dB.run(false,false,false);
+    dA.run(false,false,false,false);
+    dB.run(false,false,false,false);
     
     Eigen::Vector3d FA = dA.getWindForces();
     FA(2) = dA.getCL();
@@ -379,6 +379,7 @@ void cpCase::writeFiles()
     if (geom->getWakes().size() > 0)
     {
         writeWakeData(subdir,nodeMat);
+        writeBuffWake2Data(subdir,nodeMat);
         writeSpanwiseData(subdir);
     }
     
@@ -427,9 +428,12 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
 {
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-//    Eigen::MatrixXi con(wPanels->size(),3);
-    Eigen::MatrixXi con(wPanels->size(),4);
-
+    Eigen::MatrixXi con;
+    if(vortPartFlag){ //VPP
+        con.resize(wPanels->size(),4);
+    }else{
+        con.resize(wPanels->size(),3);
+    }
     mu.data.resize(wPanels->size(),1);
     pot.data.resize(wPanels->size(),1);
     for (int i=0; i<wPanels->size(); i++)
@@ -455,15 +459,15 @@ void cpCase::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Matri
 {
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con(wPanels->size(),4);
-    ee
-    mu.data.resize(wPanels->size(),1);
-    pot.data.resize(wPanels->size(),1);
-    for (int i=0; i<wPanels->size(); i++)
+    Eigen::MatrixXi con(wake2panels->size(),4);
+    
+    mu.data.resize(wake2panels->size(),1);
+    pot.data.resize(wake2panels->size(),1);
+    for (int i=0; i<wake2panels->size(); i++)
     {
-        mu.data(i,0) = (*wPanels)[i]->getMu();
-        pot.data(i,0) = (*wPanels)[i]->getPotential();
-        con.row(i) = (*wPanels)[i]->getVerts();
+        mu.data(i,0) = (*wake2panels)[i]->getMu();
+        pot.data(i,0) = (*wake2panels)[i]->getPotential();
+        con.row(i) = (*wake2panels)[i]->getVerts();
     }
     
     data.push_back(mu);
