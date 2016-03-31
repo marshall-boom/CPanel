@@ -224,7 +224,6 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         createSurfaces(connectivity,norms,allID,wakeIDs,vortPartFlag);
         
         
-        // Just to Check
         std::cout << "\tNodes : " << nodes.size() << std::endl;
         std::cout << "\tEdges : " << edges.size() << std::endl;
         std::cout << "\tPanels : " << nTris << std::endl;
@@ -253,6 +252,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             Eigen::MatrixXi wakeConnectivity(2*numTEedges,4);
             std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
             int nodeCounter=0, panelCounter=0;
+            // another way to do it is that I could sweep through all of the wakes and for each wake, find the teNode with the smallest Y value (or smallest avg y value) and then for that wake, find the next edge. If the node 1 on teh next edge has a greater y value, then use that, otherwise use the other.
             for(int i=0;i<edges.size();i++){
                 if(edges[i]->isTE()){
                     int n1index = edges[i]->getN1()->getIndex();
@@ -344,67 +344,6 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
             
         }
-        
-        
-        
-        bool print = false;
-        if(print){
-            std::cout << nodes.size() << "    " ;
-            
-            int numpans=0;
-            for(int i=0; i<surfaces.size(); i++){
-                std::vector<bodyPanel*>  printPans = surfaces[i]->getPanels();
-                for(int j=0; j<printPans.size();j++){
-                    numpans++;
-                }
-            }
-            for(int i=0; i<wakes.size(); i++){
-                std::vector<wakePanel*> printPans = wakes[i]->getPanels();
-                for(int j=0; j<printPans.size();j++){
-                    numpans++;
-                }
-            }
-            std::cout << numpans << std::endl;
-            
-            
-            for(int i=0; i< nodes.size();i++){
-                std::cout << nodes[i]->getPnt().x() << "  " << nodes[i]->getPnt().y() << "  " << nodes[i]->getPnt().z() << std::endl;
-            }
-            
-            for(int i=0; i<surfaces.size(); i++){
-                std::vector<bodyPanel*>  printPans = surfaces[i]->getPanels();
-                for(int j=0; j<printPans.size();j++){
-                    std::vector<cpNode*> printNodes = printPans[j]->getNodes();
-                    for(int k=0; k<printNodes.size(); k++){
-                        std::cout << printNodes[k]->getIndex() << "  ";
-                    }
-                    std::cout << std::endl;
-                }
-            }
-            
-            for(int i=0; i<wakes.size(); i++){
-                std::vector<wakePanel*> printPans = wakes[i]->getPanels();
-                for(int j=0; j<printPans.size();j++){
-                    std::vector<cpNode*> printNodes = printPans[j]->getNodes();
-                    for(int k=0; k<printNodes.size(); k++){
-                        std::cout << printNodes[k]->getIndex() << "  ";
-                    }
-                    std::cout << std::endl;
-                }
-            }
-            
-            //            std::vector<cpNode*> panelPts = wakes[0]->getPanels()[1]->pointsInOrder();
-            //            std::vector<Eigen::Vector3d> shedPts = wakes[0]->getPanels()[1]->VPshedPts();
-            //            double PrintArea = wakes[0]->getPanels()[1]->shedPanletArea()[0];
-            //            std::cout << "spt1 = [" << shedPts[0].x() << "," << shedPts[0].y() << "," << shedPts[0].z() << "];" << std::endl;
-            
-        }
-        
-//        std::cout << "TEedges: " << numTE << std::endl;
-//        std::cout << "wakeSize = " << wakes.size() << std::endl;
-//        std::cout << "pans in first wake: " << wakes[0]->getPanels().size() << std::endl;
-//        std::cout << "pans in second wake: " << wakes[1]->getPanels().size() << std::endl;
-        
 
         ///*************************************************///
         
@@ -468,7 +407,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
         for (int i=0; i<wakes.size(); i++)
         {
-            if(vortPartFlag){ //NW
+            if(vortPartFlag){ //VPP
                 if(i == 0){
                     tempW = wakes[i]->getPanels();
                     wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
@@ -600,6 +539,13 @@ void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen:
         }
     }
 }
+
+//geometry* geometry::buildWakePanels(&geom){
+//    pass in geom and pass out a new 
+//    get the global geom and add the buffer geom (which will only change for every case.)
+//    use and recollect geom
+//    
+//}
 
 double geometry::shortestEdge(const Eigen::MatrixXi &connectivity)
 {
@@ -857,8 +803,6 @@ void geometry::setWakeInfCoeff()
     // Construct doublet and source influence coefficient matrices for body panels
     int nBodyPans = (int)bPanels.size(); //bPanels.size() returns a T something. It is an unsigned long int and putting the (int) turns it into an int.
     
-    
-//    std::vector<wakePanel*> secondBuffWake;
     C.resize(nBodyPans,wPanels2.size());
     
     Eigen::VectorXi percentage(9);
@@ -880,7 +824,6 @@ void geometry::setWakeInfCoeff()
             }
         }
     }
-    
 
     std::cout << "Complete" << std::endl;
     

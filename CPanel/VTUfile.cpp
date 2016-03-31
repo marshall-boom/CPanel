@@ -45,11 +45,19 @@ void VTUfile::write()
             printIntArray(f, "connectivity", piece.connectivity);
             Eigen::MatrixXi offset(piece.connectivity.rows(),1);
             Eigen::MatrixXi type(piece.connectivity.rows(),1);
+            
+            
             int verts = (int)piece.connectivity.cols();
+            
+            
             for (int i=0; i<piece.connectivity.rows(); i++)
             {
                 offset(i) = (i+1)*verts;
-                if (verts == 2)
+                if (verts == 1)
+                {
+                    type(i) = 1;
+                }
+                else if (verts == 2)
                 {
                     type(i) = 3;
                 }

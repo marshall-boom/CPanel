@@ -12,6 +12,7 @@
 #include "cpNode.h"
 #include "geometry.h"
 
+
 edge::edge(cpNode* n1,cpNode* n2,geometry* geom) : n1(n1), n2(n2), TE(false), geom(geom)
 {
     n1->addEdge(this);
@@ -110,11 +111,25 @@ bool edge::sameEdge(cpNode* node1, cpNode* node2)
 
 bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
 {
+    
     for (int i=0; i<2; i++)
     {
         if (bodyPans[i] != currentPan)
         {
             return bodyPans[i];
+        }
+    }
+    return nullptr;
+}
+
+wakePanel* edge::getOtherWakePan(wakePanel* currentPan)
+{
+
+    for (int i=0; i<wakePans.size(); i++)
+    {
+        if (wakePans[i] != currentPan)
+        {
+            return wakePans[i];
         }
     }
     return nullptr;

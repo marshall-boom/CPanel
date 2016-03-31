@@ -48,6 +48,16 @@ public:
     bodyPanel* getLower() {return lowerPan;}
     edge* getTE();
     bool isTEpanel() {return TEpanel;}
+    
+    std::vector<cpNode*> pointsInOrder();
+    std::vector<Eigen::Vector3d> VPshedPts();
+    std::vector<double> shedPanletArea();
+    std::vector<Eigen::Vector3d> vortexRingVectors();
+    std::vector<int> sortedEdgeInd();
+    Eigen::Vector3d findPartStrength();
+
+    
+    std::vector<int> sort_indexes(std::vector<double> &v);
 };
 
 #endif /* defined(__CPanel__wakePanel__) */

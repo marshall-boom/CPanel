@@ -25,7 +25,6 @@
 #include "edge.h"
 #include "inputParams.h"
 #include "cpNode.h"
-#include "secondBufferWake.h"
 
 class geometry
 {

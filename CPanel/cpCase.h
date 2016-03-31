@@ -22,7 +22,8 @@
 #include "cpFile.h"
 #include "inputParams.h"
 //#include "streamline.h"
-
+#include "particle.h"
+#include "edge.h" //VPP
 
 
 
@@ -36,19 +37,24 @@ class cpCase
     double PG; // Prandtl-Glauert Correction - (1-M^2)^(1/2)
     double alpha;
     double beta;
-    double timeStep = 0; //VPP
+    int timeStep = 0; //VPP
     bool vortPartFlag; //VPP
+    double dt;
     
     
     Eigen::Vector3d Vinf;
-    Eigen::Matrix3d transform; 
+    Eigen::Matrix3d transform;
     
     
     std::vector<bodyPanel*>* bPanels;
     std::vector<wakePanel*>* wPanels;
     std::vector<wakePanel*>* wake2panels;
+    std::vector<particle*> particles;
+
     Eigen::VectorXd sigmas;
     Eigen::VectorXd wake2Doublets;
+    Eigen::VectorXd particleStrengths;
+    Eigen::MatrixXd D;
     
     double CL_trefftz;
     double CD_trefftz;
@@ -80,8 +86,14 @@ class cpCase
     void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+    void writeParticleData(boost::filesystem::path path);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
+    void collapsePanels();
+    void convectParticles();
+    void convectBufferWake();
+    void findPartInflOnBody();
+
     
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
@@ -92,6 +104,7 @@ public:
         wake2panels = geom->getWake2Panels();
         PG = sqrt(1-pow(mach,2));
         vortPartFlag = inParams->vortPartFlag; //VPP
+        dt = inParams->dt; //VPP
     }
     
     virtual ~cpCase();

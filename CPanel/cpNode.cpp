@@ -136,9 +136,7 @@ Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode, double dt, double c_w, dou
 
 
 Eigen::Vector3d cpNode::secProjNode(cpNode* TEnode, double dt, double c_w, double inputV){
-    
-    double Uinf = 10;
-    
+        
     double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
     Eigen::Vector3d proj2 = TEnode->getPnt();
     proj2.x() += (c_w+1)*dt*inputV*cos(bisectAngle);

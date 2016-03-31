@@ -54,10 +54,12 @@ public:
     cpNode* getN1() {return n1;}
     cpNode* getN2() {return n2;}
     cpNode* getOtherNode(cpNode* current);
+
     
     std::vector<bodyPanel*> getBodyPans() {return bodyPans;}
     std::vector<wakePanel*> getWakePans() {return wakePans;}
     bodyPanel* getOtherBodyPan(bodyPanel* currentPan);
+    wakePanel* getOtherWakePan(wakePanel* currentPan);
     Eigen::Vector3d getVector();
     Eigen::Vector3d getMidPoint();
     Eigen::Vector3d getNormal();

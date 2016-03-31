@@ -21,18 +21,35 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
     bool converged;
     std::string check = "\u2713";
     setSourceStrengths();
-    converged = solveMatrixEq();
     
-//    setBufferWakeStrengths();
-//    converged = solveVPmatrixEq();
+    converged = solveMatrixEq();
+    if (printFlag){
+        writeFiles();
+    }
 
+    if(vortPartFlag){
+        converged = solveVPmatrixEq();
+        if (printFlag){
+            writeFiles();
+        }
+        
+        collapsePanels();
+        // Take time step
+        convectParticles();
+        convectBufferWake();
+        findPartInflOnBody();
+        
+        
+        timeStep++;
+        writeFiles();
+    }
+    
     if (printFlag)
     {
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
     
     compVelocity();
-    
     
     
     if (printFlag)
@@ -163,14 +180,16 @@ bool cpCase::solveMatrixEq()
         (*wPanels)[i]->setPotential(Vinf);
     }
     
-//    // Set second bufferwake strength equal to first
-//    wake2Doublets.resize(wPanels->size());
-//    
-//    for (int i=0; i<wPanels->size(); i++){ //VPP NW
-//        (*wake2panels)[i]->manuallySetMu((*wPanels)[i]->getMu());
-//        (*wake2panels)[i]->setPotential(Vinf);
-//        wake2Doublets(i) = (*wPanels)[i]->getMu();
-//    } //NOW
+    if(vortPartFlag){
+        // Set second bufferwake strength equal to first
+        wake2Doublets.resize(wPanels->size());
+        
+        for (int i=0; i<wPanels->size(); i++){ //VPP NW
+            (*wake2panels)[i]->manuallySetMu((*wPanels)[i]->getMu());
+            (*wake2panels)[i]->setPotential(Vinf);
+            wake2Doublets(i) = (*wPanels)[i]->getMu();
+        }
+    }
     
     
     return converged;
@@ -181,19 +200,14 @@ bool cpCase::solveVPmatrixEq()
     bool converged = true;
     
     // Solve matrix equations and set potential for all panels;
-    Eigen::MatrixXd* A2 = geom->getA(); // For first timestep, get different A matrix
+    Eigen::MatrixXd* A2 = geom->getA();
     Eigen::MatrixXd* B2 = geom->getB();
     Eigen::MatrixXd* C = geom->getC();
     
-//    std::cout << "\nsize of A: (" << A2->rows() << "," << A2->cols() << ")" << std::endl;
-//    std::cout << "size of B: (" << B2->rows() << "," << B2->cols() << ")" << std::endl;
-//    std::cout << "size of C: (" << C->rows() << "," << C->cols() << ")" << std::endl;
-    
-    
+
     Eigen::VectorXd RHS2 = -(*B2)*sigmas - (*C)*wake2Doublets;
-    Eigen::VectorXd doubletStrengths(bPanels->size());
-    
-    
+
+    Eigen::VectorXd doubletStrengths(bPanels->size());    
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
     res.compute((*A2));
     doubletStrengths = res.solve(RHS2);
@@ -379,8 +393,14 @@ void cpCase::writeFiles()
     if (geom->getWakes().size() > 0)
     {
         writeWakeData(subdir,nodeMat);
-        writeBuffWake2Data(subdir,nodeMat);
+        if(timeStep != 0){
+            writeBuffWake2Data(subdir,nodeMat);
+        }
         writeSpanwiseData(subdir);
+    }
+    
+    if(timeStep > 1){
+        writeParticleData(subdir);
     }
     
     if (params->surfStreamFlag)
@@ -420,7 +440,7 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
     body.connectivity = con;
     body.cellData = data;
     
-    std::string fname = path.string()+"/surfaceData.vtu";
+    std::string fname = path.string()+"/surfaceData-" + std::to_string(timeStep)+".vtu";
     VTUfile bodyFile(fname,body);
 }
 
@@ -442,7 +462,6 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
         pot.data(i,0) = (*wPanels)[i]->getPotential();
         con.row(i) = (*wPanels)[i]->getVerts();
     }
-    
     data.push_back(mu);
     data.push_back(pot);
     
@@ -450,8 +469,7 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
     wake.pnts = nodeMat;
     wake.connectivity = con;
     wake.cellData = data;
-    
-    std::string fname = path.string()+"/wakeData.vtu";
+    std::string fname = path.string()+"/wakeData-"+std::to_string(timeStep)+".vtu";
     VTUfile wakeFile(fname,wake);
 }
 
@@ -478,8 +496,38 @@ void cpCase::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Matri
     wake.connectivity = con;
     wake.cellData = data;
     
-    std::string fname = path.string()+"/buffer2Data.vtu";
+    std::string fname = path.string()+"/buffer2Data-"+std::to_string(timeStep)+".vtu";
     VTUfile wakeFile(fname,wake);
+}
+
+void cpCase::writeParticleData(boost::filesystem::path path)
+{
+
+    Eigen::MatrixXd partMat(particles.size(),3);
+    for (int i=0; i<particles.size(); i++)
+    {
+        partMat.row(i) = particles[i]->getPos();
+    }
+    
+    std::vector<cellDataArray> data;
+    cellDataArray strength("Strength");
+    Eigen::MatrixXi con(particles.size(),1);
+    
+    strength.data.resize(particles.size(),3);
+    for (int i=0; i<particles.size(); i++)
+    {
+        strength.data.row(i) = particles[i]->getStrength();
+        con(i) = i;
+    }
+    data.push_back(strength);
+    
+    piece parts;
+    parts.pnts = partMat;
+    parts.connectivity = con;
+    parts.cellData = data;
+    
+    std::string fname = path.string()+"/particleData-"+std::to_string(timeStep)+".vtu";
+    VTUfile partFile(fname,parts);
 }
 
 void cpCase::writeSpanwiseData(boost::filesystem::path path)
@@ -545,10 +593,99 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
         data.clear();
     }
     
-    
-    
     std::string fname = path.string()+"/streamlines.vtu";
     VTUfile wakeFile(fname,pieces);
 }
 
+void cpCase::collapsePanels(){
+    particle* p = nullptr;
+    
+    for(int i=0;i<(*wake2panels).size();i++){
+        wakePanel* pan = (*wake2panels)[i];
+        Eigen::Vector3d pos = pan->getCenter();
+        Eigen::Vector3d strength = pan->findPartStrength();
+        
+        double radius = std::abs((pan->getNodes()[0]->getPnt()-pan->getNodes()[2]->getPnt()).norm()); // Panel diagonal
+        p = new particle(pos, strength, radius);
+        particles.push_back(p);
+    }
+    
+}
+
+void cpCase::convectParticles(){
+    
+    std::cout << "Tracking "<< particles.size() << " Particles..." << std::endl;
+    std::cout << "Particle:  " << std::flush;
+    
+    for(int i=0;i<particles.size();i++){
+        
+        // Freestream influence
+        Eigen::Vector3d FSinfl = Vinf; // Initialize with freestream
+//        std::cout << "Freestream influence: " << FSinfl.x() << ", " << FSinfl.y() << ", " << FSinfl.z() << std::endl;
+        
+        // Body panel influence
+        Eigen::Vector3d bPanInfl = Eigen::Vector3d::Zero();
+        for(int j=0;j<(*bPanels).size();j++){
+            bPanInfl += (*bPanels)[j]->panelV(particles[i]->getPos());
+        }
+//        std::cout << "Body influence: " << bPanInfl.x() << ", " << bPanInfl.y() << ", " << bPanInfl.z() << std::endl;
+
+        
+        // Buffer wake influence
+        Eigen::Vector3d wPanInfl = Eigen::Vector3d::Zero();
+        for(int j=0;j<(*wPanels).size();j++){
+            wPanInfl += (*wPanels)[j]->panelV(particles[i]->getPos());
+        }
+//        std::cout << "Wake influence: " << wPanInfl.x() << ", " << wPanInfl.y() << ", " << wPanInfl.z() << std::endl;
+
+        
+        // Particle influence
+        Eigen::Vector3d partInfl = Eigen::Vector3d::Zero();
+        for(int j=0;j<particles.size();j++){
+            if(i != j){
+                partInfl += particles[j]->partVelInfl(particles[i]->getPos());
+//                Eigen::Vector3d out = particles[j]->partVelInfl(particles[i]->getPos());
+//                std::cout << "Particle influence: " << out.x() << ", " << out.y() << ", " << out.z() << std::endl;
+            }
+        }
+        
+//        std::cout << "Total particle influence: " << partInfl.x() << ", " << partInfl.y() << ", " << partInfl.z() << std::endl;
+
+//        std::cout << "Old Position: " << particles[i]->getPos().x() << ", " << particles[i]->getPos().y() << ", " << particles[i]->getPos().z() << std::endl;
+        
+        // Track Particles
+        Eigen::Vector3d velOnPart = FSinfl + bPanInfl + wPanInfl + partInfl;
+        Eigen::Vector3d newPos = particles[i]->getPos()+velOnPart*dt;
+        particles[i]->setPos(newPos);
+        
+//        std::cout << "New Position: " << particles[i]->getPos().x() << ", " << particles[i]->getPos().y() << ", " << particles[i]->getPos().z() << std::endl;
+
+
+        std::cout << i << " " << std::flush;
+    }
+    
+
+    
+}
+
+void cpCase::convectBufferWake(){
+    
+    for(int i=0; i<(*wPanels).size(); i++){
+        (*wake2panels)[i]->manuallySetMu((*wPanels)[i]->getMu());
+        (*wPanels)[i]->manuallySetMu(-100000000); // Can take this out later, just want to make sure it doesn't affect anything.
+    }
+    
+}
+
+void cpCase::findPartInflOnBody(){
+    
+    D.resize((*bPanels).size(), particles.size());
+    
+    for(int i=0; i<(*bPanels).size(); i++){
+        for(int j=0; j<particles.size(); j++) {
+            D(i,j) = particles[j]->partPotInfl((*bPanels)[i]->getCenter());
+        }
+    }
+    
+}
 
