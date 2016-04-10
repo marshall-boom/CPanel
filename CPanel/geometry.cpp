@@ -271,12 +271,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     if(isUsed == false){ // If it's used, don't change the n1 index and then get the first and sec. node indices.
                         usedTENodesIndex.push_back(n1index);
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(nodes[n1index], dt, c_w, inputV);
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n1firstIndex = nodeCounter+nNodes;
                         nodeCounter++;
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(nodes[n1index], dt, c_w, inputV);
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(dt, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n1secIndex = nodeCounter+nNodes;
                         nodeCounter++;
@@ -294,12 +294,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     if(isUsed == false){
                         usedTENodesIndex.push_back(n2index);
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(nodes[n2index], dt, c_w, inputV);
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n2firstIndex = nodeCounter+nNodes;
                         nodeCounter++;
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(nodes[n2index], dt, c_w, inputV);
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(dt, inputV);
                         newNodesIndex.push_back(nodeCounter);
                         n2secIndex = nodeCounter+nNodes;
                         nodeCounter++;
@@ -407,17 +407,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
         for (int i=0; i<wakes.size(); i++)
         {
-            if(vortPartFlag){ //VPP
-                if(i == 0){
-                    tempW = wakes[i]->getPanels();
-                    wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
-                }else{
-                    std::cout << "Per vortex particle method, " << i << " wakes are ignored..." << std::endl;
-                }
-            }else{
+//            if(vortPartFlag){ //2BW
+//                if(i == 0){
+//                    tempW = wakes[i]->getPanels();
+//                    wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
+//                }else{
+//                    std::cout << "Per vortex particle method, " << i << " wakes are ignored..." << std::endl;
+//                }
+//            }else{
                 tempW = wakes[i]->getPanels();
                 wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
-            }
+//            }
         }
         
         
@@ -492,7 +492,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         {
             std::cout << "Building Influence Coefficient Matrix..." << std::endl;
             setInfCoeff();
-            setWakeInfCoeff(); //VPP
+//            setWakeInfCoeff(); //2BW
         }
     }
     else
@@ -634,9 +634,8 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
 void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> isFirstPanel){ //rename to create first buffer wake?
     
     wake* w1 = nullptr;
-    wake* w2 = nullptr;
+//    wake* w2 = nullptr; //BW2
     wakePanel* wPan;
-//    secondBufferWake* bw2;
     std::vector<edge*> pEdges;
     
     for (int i=0; i<wakeConnectivity.rows(); i++)
@@ -656,19 +655,19 @@ void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, con
             w1->addPanel(wPan);
             
         }else{
-            if (i==1){
-                w2 = new wake(VPwakeID[i],this);
-                wakes.push_back(w2);
-            }
-            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
-            w2->addPanel(wPan);
+//            if (i==1){ //BW2
+//                w2 = new wake(VPwakeID[i],this);
+//                wakes.push_back(w2);
+//            }
+//            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
+//            w2->addPanel(wPan);
             
             // Since I build the panels from the trailing edge out, there should ALWAYS be a 1st bufer wake panel before bw2
             //bw2 = new secondBufferWake(pNodes,pEdges,wakeNorms.row(i),w1,wPan,VPwakeID[i]);
         }
     }
     
-    wPanels2 = w2->getPanels(); //VPP
+//    wPanels2 = w2->getPanels(); //2BW
 }
 
 std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
@@ -798,40 +797,40 @@ void geometry::setInfCoeff()
     }
 }
 
-void geometry::setWakeInfCoeff()
-{
-    // Construct doublet and source influence coefficient matrices for body panels
-    int nBodyPans = (int)bPanels.size(); //bPanels.size() returns a T something. It is an unsigned long int and putting the (int) turns it into an int.
-    
-    C.resize(nBodyPans,wPanels2.size());
-    
-    Eigen::VectorXi percentage(9);
-    std::cout << "Building Wake Coefficient Matrix..." << std::endl;
-    percentage << 10,20,30,40,50,60,70,80,90;
-    
-    for (int j=0; j<wPanels2.size(); j++)
-    {
-        for (int i=0; i<nBodyPans; i++)
-        {
-            double dummy; // to ignore A matrix
-            C(i,j) = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
-        }
-        for (int i=0; i<percentage.size(); i++)
-        {
-            if ((100*j/wPanels2.size()) <= percentage(i) && 100*(j+1)/wPanels2.size() > percentage(i))
-            {
-                std::cout << percentage(i) << "%\t" << std::flush;
-            }
-        }
-    }
-
-    std::cout << "Complete" << std::endl;
-    
-    if (writeCoeffFlag)
-    {
-        writeInfCoeff();
-    }
-}
+//void geometry::setWakeInfCoeff() //2BW
+//{
+//    // Construct doublet and source influence coefficient matrices for body panels
+//    int nBodyPans = (int)bPanels.size(); //bPanels.size() returns a T something. It is an unsigned long int and putting the (int) turns it into an int.
+//    
+//    C.resize(nBodyPans,wPanels2.size());
+//    
+//    Eigen::VectorXi percentage(9);
+//    std::cout << "Building Wake Coefficient Matrix..." << std::endl;
+//    percentage << 10,20,30,40,50,60,70,80,90;
+//    
+//    for (int j=0; j<wPanels2.size(); j++)
+//    {
+//        for (int i=0; i<nBodyPans; i++)
+//        {
+//            double dummy; // to ignore A matrix
+//            C(i,j) = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
+//        }
+//        for (int i=0; i<percentage.size(); i++)
+//        {
+//            if ((100*j/wPanels2.size()) <= percentage(i) && 100*(j+1)/wPanels2.size() > percentage(i))
+//            {
+//                std::cout << percentage(i) << "%\t" << std::flush;
+//            }
+//        }
+//    }
+//
+//    std::cout << "Complete" << std::endl;
+//    
+//    if (writeCoeffFlag)
+//    {
+//        writeInfCoeff();
+//    }
+//}
 
 Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
 {

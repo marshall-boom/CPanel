@@ -29,17 +29,22 @@ void caseMgr::setCases()
 
 void caseMgr::runCases()
 {
-    std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
-    std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(22) << std::left << "Stability Derivatives" << std::endl;
+    if(p->vortPartFlag == false){ //VPP just this if statement
+        std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
+        std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(22) << std::left << "Stability Derivatives" << std::endl;
+    }
     for (int i=0; i<cases.size(); i++)
     {
         std::string out;
         std::stringstream outstream;
-        outstream << i+1 << "/" << cases.size();
-        out = outstream.str();
-        std::cout << std::setw(10) << std::left << out << std::flush;
+        if(p->vortPartFlag == false){
+            outstream << i+1 << "/" << cases.size();
+            out = outstream.str();
+            std::cout << std::setw(10) << std::left << out << std::flush;
+        }
         cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag,p->vortPartFlag);
     }
+    
     std::cout << "Complete" << std::endl;
 }
 

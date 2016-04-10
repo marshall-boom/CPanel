@@ -42,7 +42,7 @@ public:
     Eigen::Vector3d panelV(const Eigen::Vector3d &POI);
 
     void setMu();
-    void manuallySetMu(double strength); //NW VPP
+    void manuallySetMu(double strength); //2BW
     void setStrength();
     bodyPanel* getUpper() {return upperPan;}
     bodyPanel* getLower() {return lowerPan;}
@@ -50,11 +50,15 @@ public:
     bool isTEpanel() {return TEpanel;}
     
     std::vector<cpNode*> pointsInOrder();
-    std::vector<Eigen::Vector3d> VPshedPts();
-    std::vector<double> shedPanletArea();
+//    std::vector<Eigen::Vector3d> VPshedPts(); //BW2
+    Eigen::Vector3d partSeedPt(Eigen::Vector3d &Vinf, double &dt);
+    Eigen::Vector3d panToPartStrengthT1();
+    Eigen::Vector3d panToPartStrength();
+
+//    std::vector<double> shedPanletArea();
     std::vector<Eigen::Vector3d> vortexRingVectors();
     std::vector<int> sortedEdgeInd();
-    Eigen::Vector3d findPartStrength();
+//    Eigen::Vector3d findPartStrength();
 
     
     std::vector<int> sort_indexes(std::vector<double> &v);

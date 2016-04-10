@@ -48,7 +48,7 @@ class cpCase
     
     std::vector<bodyPanel*>* bPanels;
     std::vector<wakePanel*>* wPanels;
-    std::vector<wakePanel*>* wake2panels;
+//    std::vector<wakePanel*>* wake2panels; //2BW
     std::vector<particle*> particles;
 
     Eigen::VectorXd sigmas;
@@ -75,8 +75,9 @@ class cpCase
     
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
     void setSourceStrengths();
+    void setVPSourceStrengths();
     bool solveMatrixEq();
-    bool solveVPmatrixEq(); // VPP
+    bool solveVPmatrixEq(); //VPP
     void compVelocity();
     void trefftzPlaneAnalysis();
     void createStreamlines();
@@ -85,14 +86,17 @@ class cpCase
     void writeFiles();
     void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
-    void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+//    void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat); //2BW
     void writeParticleData(boost::filesystem::path path);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
-    void collapsePanels();
+//    void collapsePanels(); //BW2
+    void collapseBufferWake();
     void convectParticles();
-    void convectBufferWake();
-    void findPartInflOnBody();
+    void vortexStretching();
+
+
+//    void convectBufferWake(); //VPP
 
     
 public:
@@ -101,14 +105,13 @@ public:
         Vinf = windToBody(V,alpha,beta);
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
-        wake2panels = geom->getWake2Panels();
+//        wake2panels = geom->getWake2Panels(); //2BW
         PG = sqrt(1-pow(mach,2));
         vortPartFlag = inParams->vortPartFlag; //VPP
-        dt = inParams->dt; //VPP
+        dt = inParams->timeK*inParams->cref/Vinf.norm(); //VPP
     }
     
     virtual ~cpCase();
-    Eigen::MatrixXd wakeStrengthFromTminus1; //VPP
     
     void run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag);
     

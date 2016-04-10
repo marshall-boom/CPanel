@@ -12,6 +12,7 @@
 #include <iostream>
 #include <math.h>
 #include "panel.h"
+#include "particle.h"
 //#include "edge.h"
 //#include "cpNode.h"
 //
@@ -77,6 +78,8 @@ public:
     Eigen::Vector3d computeMoments(const Eigen::Vector3d &cg);
     
     void setSigma(Eigen::Vector3d Vinf, double Vnorm);
+    void setVPSigma(Eigen::Vector3d Vinf, double Vnorm, std::vector<particle*> particles);
+
     
     void setMu(double dubStrength);
     

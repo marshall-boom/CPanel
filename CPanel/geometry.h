@@ -34,7 +34,7 @@ class geometry
 //    std::vector<surface*> nonLiftingSurfs;
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
-    std::vector<wakePanel*> wPanels2; //VPP
+//    std::vector<wakePanel*> wPanels2; //1BW
     double dt;
     double c_w;
     double inputV;
@@ -91,9 +91,9 @@ public:
         infCoeffFile = temp.str();
         writeCoeffFlag = p->writeCoeffFlag;
         vortPartFlag = p->vortPartFlag;
-        dt = p->dt;
         c_w = p->c_w;
-        inputV = p->velocities(0);
+        inputV = p->velocities(0); //VPP I didn't change this. Just noting that velocity doesn't change for geometries.
+        dt = p->timeK*p->cref/inputV;
         readTri(p->geomFile->file, p->normFlag);
     }
     
@@ -122,7 +122,7 @@ public:
     std::vector<panel*> getPanels();
     std::vector<bodyPanel*>* getBodyPanels() {return &bPanels;}
     std::vector<wakePanel*>* getWakePanels() {return &wPanels;}
-    std::vector<wakePanel*>* getWake2Panels() {return &wPanels2;}
+//    std::vector<wakePanel*>* getWake2Panels() {return &wPanels2;} //2BW
     std::vector<wake*> getWakes();
     Eigen::MatrixXd* getA() {return &A;}
     Eigen::MatrixXd* getB() {return &B;}

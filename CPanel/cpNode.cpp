@@ -89,8 +89,8 @@ std::vector<edge*> cpNode::getTrailingEdges()
 }
 
 
-double cpNode::nodeWakeProjAngle(cpNode* tePoint){
-    std::vector<edge*> tedges = tePoint->getTrailingEdges();
+double cpNode::nodeWakeProjAngle(){
+    std::vector<edge*> tedges = this->getTrailingEdges();
     
     double bisect = 0;
     for (int j = 0; j < tedges.size(); j++) {
@@ -111,15 +111,15 @@ double cpNode::nodeWakeProjAngle(cpNode* tePoint){
 }
 
 
-Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode, double dt, double c_w, double inputV){
-    
-    double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
-    Eigen::Vector3d proj1 = TEnode->getPnt(); // Temporarily set it to the node to build off of it
+Eigen::Vector3d cpNode::firstProjNode(double dt, double inputV){
+
+    double bisectAngle = this->nodeWakeProjAngle();
+    Eigen::Vector3d proj1 = this->getPnt(); // Temporarily set it to the node to build off of it
     proj1.x() += c_w*dt*inputV*cos(bisectAngle);
     proj1.z() += c_w*dt*inputV*sin(bisectAngle);
     
     // Project node out perpendicular to panel
-    std::vector<edge*> tedges = TEnode->getTrailingEdges();
+    std::vector<edge*> tedges = this->getTrailingEdges();
     double edgeAngle=0; //Angle perpedicular to edge to find projected node y coord.
     for (int j = 0; j < tedges.size(); j++) {
         Eigen::Vector3d node1 = tedges[j]->getN1()->getPnt();
@@ -135,15 +135,15 @@ Eigen::Vector3d cpNode::firstProjNode(cpNode* TEnode, double dt, double c_w, dou
 
 
 
-Eigen::Vector3d cpNode::secProjNode(cpNode* TEnode, double dt, double c_w, double inputV){
-        
-    double bisectAngle = TEnode->nodeWakeProjAngle(TEnode);
-    Eigen::Vector3d proj2 = TEnode->getPnt();
+Eigen::Vector3d cpNode::secProjNode(double dt, double inputV){
+    
+    double bisectAngle = this->nodeWakeProjAngle();
+    Eigen::Vector3d proj2 = this->getPnt();
     proj2.x() += (c_w+1)*dt*inputV*cos(bisectAngle);
     proj2.z() += (c_w+1)*dt*inputV*sin(bisectAngle);
     
     // Project node out perpendicular to panel
-    std::vector<edge*> tedges = TEnode->getTrailingEdges();
+    std::vector<edge*> tedges = this->getTrailingEdges();
     
     double edgeAngle=0;
     for (int j = 0; j < tedges.size(); j++) {

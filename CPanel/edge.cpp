@@ -32,10 +32,10 @@ void edge::addWakePan(wakePanel* w)
     checkTE();
 }
 
-void edge::addSBWPan(secondBufferWake* w2) //VPP
-{
-    SBW2.push_back(w2);
-}
+//void edge::addSBWPan(secondBufferWake* w2) //2BW
+//{
+//    SBW2.push_back(w2);
+//}
 
 
 void edge::checkTE()
@@ -234,3 +234,17 @@ Eigen::Vector3d edge::TEgamma()
     }
     return gamma;
 }
+
+//double edge::neighbPanMu(wakePanel* currentPan){
+//    
+//    for (int i=0; i<wakePans.size(); i++)
+//    {
+//        if (wakePans[i] != currentPan)
+//        {
+//            return wakePans[i]->getMu();
+//        }
+//    }
+//    return 0;
+//}
+
+

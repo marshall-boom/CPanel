@@ -28,7 +28,7 @@ struct inputParams
     double Sref;
     double bref;
     double cref;
-    double dt;
+    double timeK; //VPP
     double c_w;
     double streamSpacing;
     Eigen::Vector3d cg;

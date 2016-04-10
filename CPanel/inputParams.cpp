@@ -128,10 +128,9 @@ bool inputParams::set()
                 {
                     fid >> vortPartFlag;
                 }
-                else if (s1.compare("Time_Step") == 0)
+                else if (s1.compare("Time_Constant_K") == 0)
                 {
-                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-                    fid >> dt;
+                    fid >> timeK;
                 }
                 else if (s1.compare("C_w") == 0)
                 {
@@ -323,8 +322,9 @@ void inputParams::writeInputFile()
     fid << "Vortex_Particle_Wake" << std::endl;
     fid << vortPartFlag << std::endl;
     fid << std::endl;
-    fid << "Time_Step (seconds)" << std::endl;
-    fid << dt << std::endl;
+    fid << "% Unsteady Particle Wake Options %" << std::endl;
+    fid << "Time_Constant_K" << std::endl;
+    fid << timeK << std::endl;
     fid << "C_w (Buffer wake length constant. Recommended 0.3)" << std::endl;
     fid << c_w << std::endl;
     

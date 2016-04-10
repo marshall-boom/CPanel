@@ -18,27 +18,18 @@ class particle {
     Eigen::Vector3d pos;
     Eigen::Vector3d strength;
     double radius;
-    
-    double Uinf = 0.1;
-    double dt = 0.1; //GET FROM INPUT
-    double h = Uinf*dt; // Average distance between particles is taken to be the starting distance between released particles. Should modify this to find the smaller/larger of either particles shed in the stream direction or the dist between particles on the panel.
-    
-    //      dt = K*chord/Uinf
-    
+    double h;
     
 public:
     particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius);
     
     // Model after cpNode
     Eigen::Vector3d getPos() {return pos;};
-    void setPos(Eigen::Vector3d nPos) {pos = nPos;};
+    void setPos(Eigen::Vector3d newPos) {pos = newPos;};
     
     Eigen::Vector3d getStrength() {return strength;};
-    
     Eigen::Vector3d partVelInfl(const Eigen::Vector3d &POI);
-    double partPotInfl(const Eigen::Vector3d &POI);
-    void stepParticle(Eigen::Vector3d &velOnPart);
-    
+    void partStretching(particle* part);
 };
 
 

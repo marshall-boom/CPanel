@@ -23,7 +23,7 @@ class cpNode
     int index;
     std::vector<edge*> edges;
     std::vector<bodyPanel*> bodyPans;
-    
+    double c_w = 0.3; //vpp
     
     bool TEnode;
     
@@ -55,9 +55,9 @@ public:
     edge* getOtherTrailEdge(edge* current);
     std::vector<edge*> getTrailingEdges();
     
-    double nodeWakeProjAngle(cpNode* tePoint);
-    Eigen::Vector3d firstProjNode(cpNode* TEnode, double dt, double c_w, double inputV);
-    Eigen::Vector3d secProjNode(cpNode* TEnode, double dt, double c_w, double inputV);
+    double nodeWakeProjAngle();
+    Eigen::Vector3d firstProjNode(double dt, double inputV);
+    Eigen::Vector3d secProjNode(double dt, double inputV);
 
     
     bool isTE() {return TEnode;}

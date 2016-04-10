@@ -86,6 +86,16 @@ void bodyPanel::setSigma(Eigen::Vector3d Vinf, double Vnorm)
     sourceStrength = (-Vinf.dot(normal)+Vnorm);
 }
 
+void bodyPanel::setVPSigma(Eigen::Vector3d Vinf, double Vnorm, std::vector<particle*> particles)
+{
+    Eigen::Vector3d sumVinfl = {0,0,0};
+    
+    for(int i=0; i<particles.size(); i++){
+        sumVinfl += particles[i]->partVelInfl(this->getCenter());
+    }
+    sourceStrength = (-(Vinf+sumVinfl).dot(normal)+Vnorm);
+}
+
 void bodyPanel::setMu(double dubStrength)
 {
     doubletStrength = dubStrength;

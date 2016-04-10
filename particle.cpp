@@ -13,40 +13,45 @@
 
 particle::particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius) : pos(pos), strength(strength), radius(radius) {};
 
-
-
 Eigen::Vector3d particle::partVelInfl(const Eigen::Vector3d &POI){
     
     
-    Eigen::Vector3d velInfl;
     double coreOverlap = 1.3; // The amount of core overlap between neighboring particles. Wincklemans used 1.3. More info: calebretta pp. 47
     
-    h = radius; // Research more into what's going on here
-    double sigma = coreOverlap*h;
+    // Research more into what's going on here
+    double sigma = coreOverlap*radius;
     
-    Eigen::Vector3d dist = pos-POI;
+    Eigen::Vector3d dist = POI-pos;
     
     // ** Regularized Influence ** //
-    //velInfl= -1/(4*M_PI)*(pow(dist.norm(),2) + 2.5*pow(sigma,2))/(pow(pow(dist.norm(),2) + pow(sigma,2),2.5)) * dist.cross(strength);
+    return -1/(4*M_PI)*(pow(dist.norm(),2) + 2.5*pow(sigma,2))/(pow(pow(dist.norm(),2) + pow(sigma,2),2.5)) * dist.cross(this->strength);
     
     // ** Singular Influence ** //
-    velInfl = -1/(4*M_PI)*(1/pow(dist.norm(),3))*dist.cross(strength);
+//    return -1/(4*M_PI)*(1/pow(dist.norm(),3))*dist.cross(strength);
     
-    return velInfl;
 };
 
-double particle::partPotInfl(const Eigen::Vector3d &POI){
+void particle::partStretching(particle* part){
     
-    double pot = (1/(4*M_PI))*(POI-pos).norm()/1000;
+//    std::cout << "Pre stretching: " << this->strength.x() << ", " << this->strength.y() << ", " << this->strength.z() << std::endl;
+    double sigma = 1.3*radius; // coreOverlap of 1.3;
     
-    return pot;
+    double volP   =  4*M_PI/3*pow(this->radius,3);
+    double volThis = 4*M_PI/3*pow(this->radius,3);
+
+    Eigen::Vector3d dist = part->pos - this->pos;
+    double nu = 1.983e-5;
+
+    Eigen::Vector3d strengthChange = 1/(4*M_PI)*(((dist.norm()*dist.norm() + 2.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,2.5))*part->strength).cross(this->strength) +
+                                                 
+                                                 3*((dist.norm()*dist.norm() + 3.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,3.5)))*((part->strength).dot(dist.cross(this->strength)))*dist)+
+    
+                                                 105*nu*(pow(sigma,4)/(pow(dist.norm()*dist.norm()+sigma*sigma,4.5))*(volP*this->strength - volThis*part->getStrength()));
+    
+//    std::cout << "Stretching influence: " << strengthChange.x() << ", " << strengthChange.y() << ", " << strengthChange.z() << std::endl;
+
+    this->strength += strengthChange;
 }
 
-
-void particle::stepParticle(Eigen::Vector3d &velOnPart){
-    
-    pos += velOnPart*dt;
-    
-}
 
 
