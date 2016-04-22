@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+//#include <math.h>
 
 class particle {
     
@@ -28,8 +29,11 @@ public:
     void setPos(Eigen::Vector3d newPos) {pos = newPos;};
     
     Eigen::Vector3d getStrength() {return strength;};
+    void setStrength(Eigen::Vector3d newStrength) {strength = newStrength;};
     Eigen::Vector3d partVelInfl(const Eigen::Vector3d &POI);
-    void partStretching(particle* part);
+    Eigen::Vector3d partVelInflGaussian(const Eigen::Vector3d &POI);
+    Eigen::Vector3d partStretching(particle* part);
+    Eigen::Matrix3d partStretchingGaussian(particle* part);
 };
 
 

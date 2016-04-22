@@ -59,6 +59,7 @@ public:
     std::vector<Eigen::Vector3d> vortexRingVectors();
     std::vector<int> sortedEdgeInd();
 //    Eigen::Vector3d findPartStrength();
+    double getPartRadius(Eigen::Vector3d &Vinf, double &dt);
 
     
     std::vector<int> sort_indexes(std::vector<double> &v);

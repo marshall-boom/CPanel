@@ -35,7 +35,6 @@ class geometry
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
 //    std::vector<wakePanel*> wPanels2; //1BW
-    double dt;
     double c_w;
     double inputV;
     
@@ -84,6 +83,8 @@ class geometry
     void writeInfCoeff();
     
 public:
+    double dt; //making public so cpCase can access it
+
     geometry(inputParams* p)
     {
         std::stringstream temp;

@@ -108,7 +108,8 @@ public:
 //        wake2panels = geom->getWake2Panels(); //2BW
         PG = sqrt(1-pow(mach,2));
         vortPartFlag = inParams->vortPartFlag; //VPP
-        dt = inParams->timeK*inParams->cref/Vinf.norm(); //VPP
+//        dt = inParams->timeK*inParams->cref/Vinf.norm(); //VPP
+        dt = geom->dt;
     }
     
     virtual ~cpCase();

@@ -30,13 +30,14 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
         writeFiles();
         timeStep++;
         
-        int steps = 40;
+        std::cout << "timestep = " << dt << std::endl;
+        int steps = 150;
         for(int i=0; i<steps; i++){
             std::cout << "Time step " << timeStep << ". Flow time = " << timeStep*dt << std::endl;
             std::cout << "Tracking " << particles.size() << " particles..." << std::endl;
             convectParticles();
             collapseBufferWake();
-            vortexStretching();
+//            vortexStretching();
             setVPSourceStrengths();
             std::cout << "Solving singularity strengths..." << std::endl;
             converged = solveVPmatrixEq();
@@ -668,13 +669,15 @@ void cpCase::collapseBufferWake(){
         Eigen::Vector3d pos = (*wPanels)[i]->partSeedPt(Vinf,dt);
         Eigen::Vector3d strength;
         if(timeStep == 1){
-            strength = (*wPanels)[i]->panToPartStrengthT1();
+            strength = (*wPanels)[i]->panToPartStrengthT1(); //put back to T1
         }else{
             strength = (*wPanels)[i]->panToPartStrength();
 
         }
         
         double radius = std::abs(((*wPanels)[i]->getNodes()[0]->getPnt()-(*wPanels)[i]->getNodes()[2]->getPnt()).norm()); // Panel diagonal
+        
+        
         p = new particle(pos, strength, radius);
         particles.push_back(p);
     }
@@ -691,50 +694,34 @@ void cpCase::convectParticles(){
         
         // Freestream influence
         Eigen::Vector3d FSinfl = Vinf; // Initialize with freestream
-//        std::cout << "Freestream influence: " << FSinfl.x() << ", " << FSinfl.y() << ", " << FSinfl.z() << std::endl;
         
         // Body panel influence
         Eigen::Vector3d bPanInfl = Eigen::Vector3d::Zero();
         for(int j=0;j<(*bPanels).size();j++){
             bPanInfl += (*bPanels)[j]->panelV(particles[i]->getPos());
         }
-//        std::cout << "Body influence: " << bPanInfl.x() << ", " << bPanInfl.y() << ", " << bPanInfl.z() << std::endl;
-
         
         // Buffer wake influence
         Eigen::Vector3d wPanInfl = Eigen::Vector3d::Zero();
         for(int j=0;j<(*wPanels).size();j++){
             wPanInfl += (*wPanels)[j]->panelV(particles[i]->getPos());
         }
-//        std::cout << "Wake influence: " << wPanInfl.x() << ", " << wPanInfl.y() << ", " << wPanInfl.z() << std::endl;
-
         
         // Particle influence
         Eigen::Vector3d partInfl = Eigen::Vector3d::Zero();
         for(int j=0;j<particles.size();j++){
-            if(i != j){ // should be able to take this out with regularization. Should I though? It might run faster with it in.
-                partInfl += particles[j]->partVelInfl(particles[i]->getPos());
-//                Eigen::Vector3d out = particles[j]->partVelInfl(particles[i]->getPos());
-//                std::cout << "Particle influence: " << out.x() << ", " << out.y() << ", " << out.z() << std::endl;
+            if(i != j){ // should be able to take this out with regularization. t
+                partInfl += particles[j]->partVelInflGaussian(particles[i]->getPos());
+//                partInfl += particles[j]->partVelInfl(particles[i]->getPos());
             }
         }
         
-//        std::cout << "Part 2 part influence: " << partInfl.x() << ", " << partInfl.y() << ", " << partInfl.z() << std::endl;
-
-        
         // Track Particles
         Eigen::Vector3d velOnPart = FSinfl + bPanInfl + wPanInfl + partInfl;
-//        std::cout << "Total Influence: " << velOnPart.x() << ", " << velOnPart.y() << ", " << velOnPart.z() << std::endl;
-//        std::cout << "Old Position: " << particles[i]->getPos().x() << ", " << particles[i]->getPos().y() << ", " << particles[i]->getPos().z() << std::endl;
-
         Eigen::Vector3d newPos = particles[i]->getPos()+velOnPart*dt;
         particles[i]->setPos(newPos);
-        
-//        std::cout << "New Position: " << particles[i]->getPos().x() << ", " << particles[i]->getPos().y() << ", " << particles[i]->getPos().z() << "\n" << std::endl;
-
 
     }
-    
 }
 
 //void cpCase::convectBufferWake(){ //VPP
@@ -748,19 +735,32 @@ void cpCase::convectParticles(){
 
 void cpCase::vortexStretching(){
     // due to particles
-
+    std::vector<Eigen::Matrix3d> stretchingVec;
     for(int i=0; i<particles.size(); i++){
-//        std::cout << "Pre stretching:  " << particles[i]->getStrength().x() << ", " << particles[i]->getStrength().y() << ", " << particles[i]->getStrength().z() << std::endl;
+        Eigen::Matrix3d stretching;
+        stretching = Eigen::Matrix3d::Zero();
         for(int j=0; j<particles.size(); j++){
-//            particles[i]->partStretching(particles[j]);
+            if(i ==j){
+                //should not stretch itself. Although I can test to make sure this returns 0
+            }else{
+//                stretching += particles[i]->partStretching(particles[j]);
+                stretching += particles[i]->partStretchingGaussian(particles[j]);
+            }
         }
-//        std::cout << "Post stretching: " << particles[i]->getStrength().x() << ", " << particles[i]->getStrength().y() << ", " << particles[i]->getStrength().z() << std::endl;
+        
+        stretchingVec.push_back(stretching);
+    }
 
+    for(int i=0;i<particles.size();i++){
+        Eigen::Vector3d stren = particles[i]->getStrength(); //WWWWW
+        particles[i]->setStrength(stren+stretchingVec[i]*stren);
     }
     
     
     // due to panels
-        // wake panels
-        // body panels
+    //...
+    std::cout << "fix sigma for vel infl" << std::endl;
     
+    //        std::cout << "      "  " post:" << particles[i]->getStrength().x() << " , " << particles[i]->getStrength().y() << ", " << particles[i]->getStrength().z() << std::endl;
+
 }

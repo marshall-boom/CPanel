@@ -333,7 +333,7 @@ Eigen::Vector3d wakePanel::panToPartStrengthT1(){
         edge3strength = (this->getMu())*ringVecs[2];
     }
 
-    return edge1strength + edge2strength + edge3strength;
+    return -edge1strength + edge2strength +edge3strength;
 }
 
 Eigen::Vector3d wakePanel::panToPartStrength(){
@@ -364,7 +364,7 @@ Eigen::Vector3d wakePanel::panToPartStrength(){
         edge3strength = (this->getMu())*ringVecs[2];
     }
     
-    return edge1strength + edge3strength;
+    return -edge1strength + edge3strength;
 }
 
 
@@ -429,11 +429,11 @@ Eigen::Vector3d wakePanel::panToPartStrength(){
 std::vector<int> wakePanel::sortedEdgeInd(){
    
     // Function puts edges in order so that the proper edge can be identified when collapsing the panel.
-    //        __4___        --> y
+    //        __3___        --> y
     //       |      |      |
-    //      3|      |1     V
+    //      2|      |0     V
     //       |______|      x
-    //          2
+    //          1
     
     
     
@@ -459,7 +459,7 @@ std::vector<int> wakePanel::sortedEdgeInd(){
 }
 
 std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
-    // Finds the direction vectors of the panels
+    // Finds the unit direction vectors of the panels
     // CHANGING THIS to point in positive local x and y directions
     //        __4__>        --> y
     //       |      |      |
@@ -552,6 +552,22 @@ std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
 ////    std::cout << "test using the plot panel function in matlab" << std::endl;
 //    return strength;
 //}
+
+double wakePanel::getPartRadius(Eigen::Vector3d &Vinf, double &dt){
+    //radius will be the average distance between the spanwise particle seed points a la Quackenbush et al. eq. (9)
+
+    Eigen::Vector3d currPnt = this->partSeedPt(Vinf, dt);
+    
+    wakePanel* neighbor1 = this->getEdges()[sortedEdgeInd()[0]]->getOtherWakePan(this);
+    wakePanel* neighbor2 = this->getEdges()[sortedEdgeInd()[2]]->getOtherWakePan(this);
+    
+    Eigen::Vector3d neighbor1Pnt = neighbor1->partSeedPt(Vinf, dt);
+    Eigen::Vector3d neighbor2Pnt = neighbor2->partSeedPt(Vinf, dt);
+    
+    return 0.5*(std::abs((currPnt-neighbor1Pnt).norm()) + std::abs((currPnt-neighbor2Pnt).norm()));
+    
+};
+
 
 std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {
     
