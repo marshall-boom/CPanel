@@ -39,7 +39,11 @@ class cpCase
     double beta;
     int timeStep = 0; //VPP
     bool vortPartFlag; //VPP
+    bool manualStepsSet;
+    double numSteps = 1000; // Run for a LOT of steps before convergence criteria kills solution
     double dt;
+    std::vector<double> CL; //VPP
+
     
     
     Eigen::Vector3d Vinf;
@@ -50,10 +54,13 @@ class cpCase
     std::vector<wakePanel*>* wPanels;
 //    std::vector<wakePanel*>* wake2panels; //2BW
     std::vector<particle*> particles;
+    std::vector<Eigen::Vector3d> seedPts;
+    std::vector<double> seedRadii;
+    std::vector<double> prevPanStrength; // this and panStrengthChange are to check convergence
+    Eigen::VectorXd panStrengthChange;
 
     Eigen::VectorXd sigmas;
-    Eigen::VectorXd wake2Doublets;
-    Eigen::VectorXd particleStrengths;
+//    Eigen::VectorXd wake2Doublets;
     Eigen::MatrixXd D;
     
     double CL_trefftz;
@@ -91,9 +98,12 @@ class cpCase
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
 //    void collapsePanels(); //BW2
+    void findSeedPoints();
+    void findSeedRadii();
     void collapseBufferWake();
     void convectParticles();
     void vortexStretching();
+    void viscousDiffusion();
 
 
 //    void convectBufferWake(); //VPP
@@ -108,8 +118,12 @@ public:
 //        wake2panels = geom->getWake2Panels(); //2BW
         PG = sqrt(1-pow(mach,2));
         vortPartFlag = inParams->vortPartFlag; //VPP
-//        dt = inParams->timeK*inParams->cref/Vinf.norm(); //VPP
         dt = geom->dt;
+        if(inParams->numSteps != 0){
+            manualStepsSet = true;
+            numSteps = inParams->numSteps;
+        }
+        
     }
     
     virtual ~cpCase();

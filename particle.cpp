@@ -33,7 +33,7 @@ Eigen::Vector3d particle::partVelInfl(const Eigen::Vector3d &POI){
 
 Eigen::Vector3d particle::partVelInflGaussian(const Eigen::Vector3d &POI){
     
-    double coreOverlap = 1; // The amount of core overlap between neighboring particles. Wincklemans used 1.3. More info: calebretta pp. 47
+    double coreOverlap = 1.3; // The amount of core overlap between neighboring particles. Wincklemans used 1.3. More info: calebretta pp. 47
     
     double sigma = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*this->radius,2))/std::sqrt(2);
 
@@ -62,10 +62,10 @@ Eigen::Vector3d particle::partStretching(particle* part){
     Eigen::Vector3d alphaQ = part->getStrength();
     Eigen::Vector3d alphaP = this->getStrength();
 
-    Eigen::Vector3d strengthChange = 1/(4*M_PI)*( 1.5*(dist.norm()*dist.norm() + 3.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,3.5))*alphaP.dot(dist)*dist.cross(alphaQ) +
-                                                 (alphaP.dot(dist.cross(alphaQ)))*dist+
+    Eigen::Vector3d strengthChange = 1/(4*M_PI)*( (dist.norm()*dist.norm() + 3.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,3.5))*dist.cross(alphaQ));//+
+                                                // (dist.norm()*dist.norm() + 4.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,4.5))
                                                  
-                                                 105*nu*pow(sigma,4)/(pow(dist.norm()*dist.norm()+sigma*sigma,4.5))*(volP*alphaQ - volQ*alphaP));
+                                                // 105*nu*pow(sigma,4)/(pow(dist.norm()*dist.norm()+sigma*sigma,4.5))*(volP*alphaQ - volQ*alphaP));
     
 //    
 //    Eigen::Vector3d firstTerm = 1.5*(dist.norm()*dist.norm() + 3.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,3.5))*alphaP.dot(dist)*dist.cross(alphaQ);
@@ -121,9 +121,33 @@ Eigen::Matrix3d particle::partStretchingGaussian(particle* part){
     Eigen::Vector3d a = part->getStrength();
     alphaTilda << 0,-a.z(),a.y(),a.z(),0,-a.x(),-a.y(),a.x(),0;
     
-    Eigen::Matrix3d gradient = 1/pow(sigij,3)*alphaTilda*inflMat;
+    Eigen::Matrix3d gradient = 1/pow(sigij,3)*inflMat*alphaTilda;
     
     return gradient;
+}
+
+
+Eigen::Vector3d particle::partDiffusion(particle* part){
+    double nu = 1.983e-5;
+    
+    Eigen::Vector3d Xi = this->getPos();
+    Eigen::Vector3d Xj = part->getPos();
+
+    double coreOverlap = 1.3;
+    double sigij = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
+
+    double rho = (Xi-Xj).norm()/sigij;
+    double eta = 1/(pow(2*M_PI,1.5)*pow(sigij,3))*exp(-0.5*rho*rho);
+
+    double Vi = 4*M_PI/3*pow(this->radius,3); //Not 100% sure this is the best way to find Volume. Could put it in constructor?
+    double Vj = 4*M_PI/3*pow(part->radius,3);
+    
+//    double Vi = 1/eta;
+//    double Vj = 1/eta;
+    
+    double xi = 1/(pow(2*M_PI,1.5))*exp(-rho*rho/2);
+
+    return 2*nu/(sigij*sigij)*xi*(Vi*part->strength-Vj*this->strength);
 }
 
 

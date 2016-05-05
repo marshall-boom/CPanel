@@ -201,99 +201,25 @@ edge* wakePanel::getTE()
 //    
 //}
 
-std::vector<cpNode*> wakePanel::pointsInOrder(){
-    wakePanel* pan = this;
-    
-    std::vector<edge*> panEdges = pan->getEdges();
-    std::vector<cpNode*> ptsIO;
-    ptsIO.push_back(panEdges[0]->getN1());
-    ptsIO.push_back(panEdges[0]->getN2());
-    
-    int pt = panEdges[0]->getN2()->getIndex();
-    int edge1n1 = panEdges[0]->getN1()->getIndex();
-    int edge1n2 = panEdges[0]->getN2()->getIndex();
-    edge* nextEdge;
-    
-    for(int i=0; i<panEdges.size(); i++){
-        int n1 = panEdges[i]->getN1()->getIndex();
-        int n2 = panEdges[i]->getN2()->getIndex();
-        
-        bool samepanel =false;
-        if((n1==edge1n1 && n2==edge1n2) || (n1==edge1n2 && n2==edge1n1)){
-            samepanel = true;
-        }
-        if(n1==pt && samepanel==false){
-            nextEdge = panEdges[i];
-            pt = nextEdge->getN2()->getIndex();
-            ptsIO.push_back(panEdges[i]->getN2());
-            break;
-        }
-        if(n2==pt && samepanel == false){
-            nextEdge = panEdges[i];
-            pt = nextEdge->getN1()->getIndex();
-            ptsIO.push_back(panEdges[i]->getN1());
-            break;
-        }
-    }
-    
-    edge1n1 = nextEdge->getN1()->getIndex();
-    edge1n2 = nextEdge->getN2()->getIndex();
-    
-    for(int i=0; i<panEdges.size(); i++){
-        int n1 = panEdges[i]->getN1()->getIndex();
-        int n2 = panEdges[i]->getN2()->getIndex();
-        
-        bool samepanel = false;
-        if((n1==edge1n1 && n2==edge1n2) || (n1==edge1n2 && n2==edge1n1)){
-            samepanel = true;
-        }
-        if(n1==pt && samepanel==false){
-            ptsIO.push_back(panEdges[i]->getN2());
-        }
-        if(n2==pt && samepanel == false){
-            ptsIO.push_back(panEdges[i]->getN1());
-        }
-    }
-    
-    return ptsIO;
-}
 
-//std::vector<Eigen::Vector3d> wakePanel::VPshedPts(){ //BW2
-//    wakePanel* pan = this;
-//    std::vector<Eigen::Vector3d> shedPts;
-//    Eigen::Vector3d a,b,c,d,cen;
-//    
-//    a = pan->pointsInOrder()[0]->getPnt();
-//    b = pan->pointsInOrder()[1]->getPnt();
-//    c = pan->pointsInOrder()[2]->getPnt();
-//    d = pan->pointsInOrder()[3]->getPnt();
-//    cen = pan->getCenter();
-//    
-//    shedPts.push_back((a+((a+b)/2)+cen+((d+a)/2))/4);
-//    shedPts.push_back((b+((b+c)/2)+cen+((a+b)/2))/4);
-//    shedPts.push_back((c+((c+d)/2)+cen+((b+c)/2))/4);
-//    shedPts.push_back((d+((d+a)/2)+cen+((c+d)/2))/4);
-//    
-//    return shedPts;
-//}
 
-Eigen::Vector3d wakePanel::partSeedPt(Eigen::Vector3d &Vinf, double &dt){ //vpp
-    
-//    Eigen::Vector3d projAngle = (this->getUpper()->getNormal() + this->getLower()->getNormal())/2;
-    edge* edge2 = this->getEdges()[this->sortedEdgeInd()[1]];
-    edge* edge4 = this->getEdges()[this->sortedEdgeInd()[3]]; // node proj. works from trailing edge only
-    Eigen::Vector3d TEn1, TEn2, projn1, projn2;
-    TEn1 = edge2->getN1()->getPnt();
-    TEn2 = edge2->getN2()->getPnt();
+Eigen::Vector3d wakePanel::partSeedPt(Eigen::Vector3d &Vinf, double &dt){ //VPP
+  // Using the trailing edge and first wake panel to build off so it can be modified if second wake panel is implemented
+  //  0---1
+  //  |   |  spanwise orientation is not accounted for and might be opposite
+  //  3---2  of the diagram
 
-    projn1 = edge4->getN1()->secProjNode(dt, Vinf.norm());
-    projn2 = edge4->getN2()->secProjNode(dt, Vinf.norm());
+    Eigen::Vector3d n0,n1,n2,n3;
+    edge* edge0 = this->getEdges()[0]; // node proj. works from trailing edge only
+    edge* edge2 = this->getEdges()[2]; // Downstream edge
     
-    // average points for all of these. that should be it.
+    n0 = edge2->getN1()->getPnt();
+    n1 = edge2->getN2()->getPnt();
+
+    n2 = edge0->getN1()->secProjNode(dt, Vinf.norm());
+    n3 = edge0->getN2()->secProjNode(dt, Vinf.norm());
     
-    
-    Eigen::Vector3d seedPt = (TEn1+ TEn2+ projn1+ projn2)/4;
-    return seedPt;
+    return (n0+n1+n2+n3)/4;
 }
 
 Eigen::Vector3d wakePanel::panToPartStrengthT1(){
@@ -302,205 +228,135 @@ Eigen::Vector3d wakePanel::panToPartStrengthT1(){
     //      3|      |1     V
     //       |______|      x
     //          2
-    // For the first time step, there is no downstream vorticity so edge 2 needs to be accounted for. Edge 4 is never included because that edge is forced to have the same strength as the body edge in order to enforce the kutta condition. Collapse is illustrated on pg. 25
+    // For the first time step, there is no downstream vorticity so edge 2 needs to be accounted for. Edge 4 is never included because that edge is forced to have the same strength as the body edge in order to enforce the kutta condition. Collapse is illustrated on pg. 25 of INNWIND EU or pdf named 'Genuvp in report'
     
     Eigen::Vector3d edge1strength, edge2strength, edge3strength;
-    std::vector<int> sortedEdgeInd = this->sortedEdgeInd();
     std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
     
+    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
+    edge* edge1, *edge3;
+    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
+        edge1 = this->getEdges()[1];
+        edge3 = this->getEdges()[3];
+    }else{
+        edge1 = this->getEdges()[3];
+        edge3 = this->getEdges()[1];
+    }
     
     // Edge 1
-    wakePanel* neighbPan = this->getEdges()[sortedEdgeInd[0]]->getOtherWakePan(this);
-    
-    double neighbPanMu;
+    wakePanel* neighbPan = edge1->getOtherWakePan(this);
     if(neighbPan){
-        neighbPanMu = neighbPan->getMu();
-        edge1strength = (this->getMu() - neighbPanMu)/2*ringVecs[0]; // If neighbor panel, have to share strength with it.
-    }else{ // If no wake pan, use whole strength
-        edge1strength = (this->getMu())*ringVecs[0];
+        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]; // If neighbor panel, have to share strength with it
+    }else{  // If no wake pan, use whole strength
+        edge1strength = (this->getMu())*ringVecs[1];
     }
 
     // Edge 2
-    edge2strength = (this->getMu())*ringVecs[1];
+    edge2strength = (this->getMu())*ringVecs[2];
     
     // Edge 3
-    neighbPan = this->getEdges()[sortedEdgeInd[2]]->getOtherWakePan(this);
+    neighbPan = edge3->getOtherWakePan(this);
     
     if(neighbPan){
-        neighbPanMu = neighbPan->getMu();
-        edge3strength = (neighbPanMu - this->getMu())/2*ringVecs[2];
+        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3];
     }else{ // If no wake pan,
-        edge3strength = (this->getMu())*ringVecs[2];
+        edge3strength = (-this->getMu())*ringVecs[3];
     }
 
-    return -edge1strength + edge2strength +edge3strength;
+    return -edge1strength + edge2strength -edge3strength; //I don't know why, but this is negative for some reason
 }
+
 
 Eigen::Vector3d wakePanel::panToPartStrength(){
-
     Eigen::Vector3d edge1strength, edge3strength;
-    std::vector<int> sortedEdgeInd = this->sortedEdgeInd();
     std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
     
+    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
+    edge* edge1, *edge3;
+    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
+        edge1 = this->getEdges()[1];
+        edge3 = this->getEdges()[3];
+    }else{
+        edge1 = this->getEdges()[3];
+        edge3 = this->getEdges()[1];
+    }
     
     // Edge 1
-    wakePanel* neighbPan = this->getEdges()[sortedEdgeInd[0]]->getOtherWakePan(this);
-    
-    double neighbPanMu;
+    wakePanel* neighbPan = edge1->getOtherWakePan(this);
     if(neighbPan){
-        neighbPanMu = neighbPan->getMu();
-        edge1strength = (this->getMu() - neighbPanMu)/2*ringVecs[0]; // If neighbor panel, have to share strength with it.
-    }else{ // If no wake pan, use whole strength
-        edge1strength = (this->getMu())*ringVecs[0];
+        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]; // If neighbor panel, have to share strength with it
+    }else{  // If no wake pan, use whole strength
+        edge1strength = (this->getMu())*ringVecs[1];
     }
     
     // Edge 3
-    neighbPan = this->getEdges()[sortedEdgeInd[2]]->getOtherWakePan(this);
+    neighbPan = edge3->getOtherWakePan(this);
     
     if(neighbPan){
-        neighbPanMu = neighbPan->getMu();
-        edge3strength = (neighbPanMu - this->getMu())/2*ringVecs[2];
+        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3];
     }else{ // If no wake pan,
-        edge3strength = (this->getMu())*ringVecs[2];
+        edge3strength = (-this->getMu())*ringVecs[3];
     }
     
-    return -edge1strength + edge3strength;
+    return -edge1strength -edge3strength;
 }
 
-
-//std::vector<double> wakePanel::shedPanletArea(){
-//    // Calculate the area of the panlets. Using an iregular polygon to calculate the area for more accuracy over trapezoidal approximation. More info here: keisan.casio.com/exec/system/1322718508
-//    wakePanel* pan = this;
-//    int numPanlets = 4;
-//    std::vector<double> panletAreas;
-//    
-//    Eigen::Vector3d pt0,pt1,pt2,pt3;
-//    pt0 = pan->getNodes()[0]->getPnt();
-//    pt1 = pan->getNodes()[1]->getPnt();
-//    pt2 = pan->getNodes()[2]->getPnt();
-//    pt3 = pan->getNodes()[3]->getPnt();
-//    
-//    Eigen::Vector3d mid01,mid12,mid23,mid30; // Midpoint of panel edges
-//    mid01 = (pt1+pt0)/2;
-//    mid12 = (pt2+pt1)/2;
-//    mid23 = (pt3+pt2)/2;
-//    mid30 = (pt0+pt3)/2;
-//    
-//    std::vector<std::vector<Eigen::Vector3d>> panlets;
-//    Eigen::Vector3d dummy;
-//    panlets.resize(numPanlets,std::vector<Eigen::Vector3d>(pan->getNodes().size(),dummy));
-//    panlets[0][0] = pt0; panlets[0][1] = mid01; panlets[0][2] = center; panlets[0][3] = mid30;
-//    panlets[1][0] = pt1; panlets[1][1] = mid12; panlets[1][2] = center; panlets[1][3] = mid01;
-//    panlets[2][0] = pt2; panlets[2][1] = mid23; panlets[2][2] = center; panlets[2][3] = mid12;
-//    panlets[3][0] = pt3; panlets[3][1] = mid30; panlets[3][2] = center; panlets[3][3] = mid23;
-//    
-//    
-//    for(int i=0; i<numPanlets; i++){
-//        double aLen,bLen,cLen,dLen; // Vector Magnitudes
-//        double th1,th2,theta,s,polyArea;
-//        Eigen::Vector3d p0,p1,p2,p3;
-//        Eigen::Vector3d avec,bvec,cvec,dvec;
-//        
-//        p0 = panlets[i][0]; p1 = panlets[i][1]; p2 = panlets[i][2]; p3 = panlets[i][3];
-//        
-//        avec = p1-p0;
-//        bvec = p2-p1;
-//        cvec = p3-p2;
-//        dvec = p0-p3;
-//        
-//        aLen = avec.norm();
-//        bLen = bvec.norm();
-//        cLen = cvec.norm();
-//        dLen = dvec.norm();
-//        s = (aLen+bLen+cLen+dLen)/2;
-//        
-//        th1 = acos((avec.dot(bvec))/(aLen*bLen));
-//        th2 = acos((cvec.dot(dvec))/(cLen*dLen));
-//        theta = th1+th2;
-//        
-//        polyArea = pow(((s-aLen)*(s-bLen)*(s-cLen)*(s-dLen)-aLen*bLen*cLen*dLen*pow(cos(theta/2),2)),.5);
-//        
-//        panletAreas.push_back(polyArea);
-//    }
-//    
-//    return panletAreas;
-//}
-
-std::vector<int> wakePanel::sortedEdgeInd(){
-   
-    // Function puts edges in order so that the proper edge can be identified when collapsing the panel.
-    //        __3___        --> y
-    //       |      |      |
-    //      2|      |0     V
-    //       |______|      x
-    //          1
-    
-    
-    
-    std::vector<int> sortedEdgeInd(this->getEdges().size());
-    
-    std::vector<double> mpX(this->getEdges().size());
-    std::vector<double> mpY(this->getEdges().size());
-    
-    for(int i=0; i<mpX.size();i++){
-        mpX[i] = this->getEdges()[i]->getMidPoint()[0];
-        mpY[i] = this->getEdges()[i]->getMidPoint()[1];
-    }
-    
-    std::vector<int> mpXsorted = sort_indexes(mpX);
-    std::vector<int> mpYsorted = sort_indexes(mpY);
-
-    sortedEdgeInd[3] = mpXsorted[0]; // Comparing the edge midpoints to find max and min x,y for use in
-    sortedEdgeInd[1] = mpXsorted[3];
-    sortedEdgeInd[2] = mpYsorted[0];
-    sortedEdgeInd[0] = mpYsorted[3];
-   
-    return sortedEdgeInd;
-}
 
 std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
-    // Finds the unit direction vectors of the panels
-    // CHANGING THIS to point in positive local x and y directions
-    //        __4__>        --> y
+    // Finds the unit direction vector of each panel edge pointing in the global coordinates shown below for reference
+    //
+    //        __0__>        --> y
     //       |      |      |
     //      3|      |1     V
     //       \/___>\/      x
     //          2
     
-    wakePanel* pan = this;
     std::vector<Eigen::Vector3d> ringVecs;
-    std::vector<int> edgeIndexes = pan->sortedEdgeInd();
     
-    // Edge 1:
-    Eigen::Vector3d n1 = pan->getEdges()[edgeIndexes[0]]->getN1()->getPnt();
-    Eigen::Vector3d n2 = pan->getEdges()[edgeIndexes[0]]->getN2()->getPnt();
-    if(n2.x() > n1.x()){
+    // Edge 0:
+    Eigen::Vector3d n1 = this->getEdges()[0]->getN1()->getPnt();
+    Eigen::Vector3d n2 = this->getEdges()[0]->getN2()->getPnt();
+
+    if(n2.y() > n1.y()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm()); // Return unit vector
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
     }
+    
+    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
+    edge* edge1, *edge3;
+    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
+        edge1 = this->getEdges()[1];
+        edge3 = this->getEdges()[3];
+    }else{
+        edge1 = this->getEdges()[3];
+        edge3 = this->getEdges()[1];
+    }
+    
+    // Edge 1:
+    n1 = edge1->getN1()->getPnt();
+    n2 = edge1->getN2()->getPnt();
+
+    if(n2.x() > n1.x()){
+        ringVecs.push_back((n2-n1)/(n2-n1).norm());
+    }else{
+        ringVecs.push_back((n1-n2)/(n1-n2).norm());
+    }
+    
     // Edge 2:
-    n1 = pan->getEdges()[edgeIndexes[1]]->getN1()->getPnt();
-    n2 = pan->getEdges()[edgeIndexes[1]]->getN2()->getPnt();
-    
+    n1 = this->getEdges()[2]->getN1()->getPnt();
+    n2 = this->getEdges()[2]->getN2()->getPnt();
     if(n2.y() > n1.y()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm());
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
     }
+  
     // Edge 3:
-    n1 = pan->getEdges()[edgeIndexes[2]]->getN1()->getPnt();
-    n2 = pan->getEdges()[edgeIndexes[2]]->getN2()->getPnt();
-    if(n2.x() > n1.x()){ //just changed this.
-        ringVecs.push_back((n2-n1)/(n2-n1).norm());
-    }else{
-        ringVecs.push_back((n1-n2)/(n1-n2).norm());
-    }
-    // Edge 4:
-    n1 = pan->getEdges()[edgeIndexes[3]]->getN1()->getPnt();
-    n2 = pan->getEdges()[edgeIndexes[3]]->getN2()->getPnt();
+    n1 = edge3->getN1()->getPnt();
+    n2 = edge3->getN2()->getPnt();
     
-    if(n2.y() > n1.y()){
+    if(n2.x() > n1.x()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm());
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
@@ -509,63 +365,25 @@ std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
     return ringVecs;
 }
 
-//Eigen::Vector3d wakePanel::findPartStrength(){
-//    Eigen::Vector3d strength;
-//    
-//    std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
-//    std::vector<int> sortedInd = this->sortedEdgeInd();
-//    
-//    
-//    std::vector<double> edgeStrengths;
-//    for(int i=0; i<ringVecs.size(); i++){
-//        wakePanel* neighbPan = this->getEdges()[sortedEdgeInd()[i]]->getOtherWakePan(this);
-//        double neighbPanMu;
-//        
-//        if(neighbPan){
-//            neighbPanMu = neighbPan->getMu();
-//        }else{
-//            neighbPanMu = 0;
-//        }
-//        edgeStrengths.push_back(this->getMu() - neighbPanMu);
-////        std::cout << "edge "+std::to_string(i)+" strength: " << edgeStrengths[i] << std::endl;
-//    }
-//
-////    std::cout << "\n\n\n";
-////    for(int i=0;i<4;i++){
-////        std::cout << "plot3(" << this->getNodes()[i]->getPnt().x() << "," << this->getNodes()[i]->getPnt().y() << "," << this->getNodes()[i]->getPnt().z() << ",'g*');" << std::endl;
-////    }
-//    
-//    // Vector Direction
-//    Eigen::Vector3d vec13avg = (ringVecs[0]-ringVecs[2])/2; // Filament 3 pointing -x dir.
-//    Eigen::Vector3d vec24avg = (ringVecs[3]-ringVecs[1])/2; // Filament 2 pointing -y dir.
-//    
-////    for(int i=0;i<this->getNodes().size();i++){
-////        std::cout << "pt"+std::to_string(i)+" = [" << this->getNodes()[i]->getPnt().x() << "," << this->getNodes()[i]->getPnt().y() << ","<< this->getNodes()[i]->getPnt().z() << "];" << std::endl;
-////    }
-//    
-////    std::cout << "streamWise = [" << vec13avg.x() << "," << vec13avg.y() << ","<< vec13avg.z() << "];" << std::endl;
-////    std::cout << "spanWise = [" << vec24avg.x() << "," << vec24avg.y() << ","<< vec24avg.z() << "];" << std::endl;
-////    std::cout << "center = [" << this->getCenter().x() << "," << this->getCenter().y() << ","<< this->getCenter().z() << "];" << std::endl;
-//
-//    strength = (edgeStrengths[2]-edgeStrengths[0])*vec24avg + (edgeStrengths[3]-edgeStrengths[1])*vec13avg;
-//    
-////    std::cout << "test using the plot panel function in matlab" << std::endl;
-//    return strength;
-//}
-
 double wakePanel::getPartRadius(Eigen::Vector3d &Vinf, double &dt){
     //radius will be the average distance between the spanwise particle seed points a la Quackenbush et al. eq. (9)
 
     Eigen::Vector3d currPnt = this->partSeedPt(Vinf, dt);
     
-    wakePanel* neighbor1 = this->getEdges()[sortedEdgeInd()[0]]->getOtherWakePan(this);
-    wakePanel* neighbor2 = this->getEdges()[sortedEdgeInd()[2]]->getOtherWakePan(this);
+    wakePanel* neighbor1 = this->getEdges()[1]->getOtherWakePan(this);
+    wakePanel* neighbor2 = this->getEdges()[3]->getOtherWakePan(this);
     
-    Eigen::Vector3d neighbor1Pnt = neighbor1->partSeedPt(Vinf, dt);
-    Eigen::Vector3d neighbor2Pnt = neighbor2->partSeedPt(Vinf, dt);
-    
-    return 0.5*(std::abs((currPnt-neighbor1Pnt).norm()) + std::abs((currPnt-neighbor2Pnt).norm()));
-    
+    std::vector<double> dist;
+    if(neighbor1){
+        Eigen::Vector3d neighbor1Pnt = neighbor1->partSeedPt(Vinf, dt);
+        dist.push_back(std::abs((currPnt-neighbor1Pnt).norm()));
+    }
+    if(neighbor2){
+        Eigen::Vector3d neighbor2Pnt = neighbor2->partSeedPt(Vinf, dt);
+        dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
+    }
+
+    return std::accumulate(dist.begin(), dist.end(), 0.0)/dist.size();
 };
 
 

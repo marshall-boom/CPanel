@@ -230,23 +230,25 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
         ///*************************************************///
         // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Should put this in its own function.
-        std::vector<edge*> Tedges;
-        for(int i=0; i<edges.size(); i++){
-            if(edges[i]->isTE()){
-                Tedges.push_back(edges[i]);
-            }
-        }
-        Eigen::MatrixXd TEdist;
-        TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size());
-        for(int i=0; i<Tedges.size(); i++){
-            for(int j=0; j<Tedges.size(); j++){
-                if(i!=j){
-                    TEdist(i,j) = std::abs((Tedges[i]->getMidPoint()-Tedges[j]->getMidPoint()).norm());
+        if(dt == 0){
+            std::vector<edge*> Tedges;
+            for(int i=0; i<edges.size(); i++){
+                if(edges[i]->isTE()){
+                    Tedges.push_back(edges[i]);
                 }
             }
+            Eigen::MatrixXd TEdist;
+            TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size());
+            for(int i=0; i<Tedges.size(); i++){
+                for(int j=0; j<Tedges.size(); j++){
+                    if(i!=j){
+                        TEdist(i,j) = std::abs((Tedges[i]->getMidPoint()-Tedges[j]->getMidPoint()).norm());
+                    }
+                }
+            }
+            double minDist = TEdist.minCoeff();
+            dt = minDist/inputV;
         }
-        double minDist = TEdist.minCoeff();
-        dt = minDist/inputV;
         std::cout << "dt = " << dt << std::endl;
         
         
@@ -325,9 +327,11 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                         n2secIndex = nodeCounter+nNodes;
                         nodeCounter++;
                     }
-                    wakeConnectivity.row(panelCounter) << n1index, n2index, n2firstIndex, n1firstIndex;
+                    
+                    wakeConnectivity.row(panelCounter) << n1index, n2index, n2firstIndex, n1firstIndex; //built TE first
+
                     panelCounter++;
-                    //getTEiD
+                    //getTEiD?
                     VPwakeID.push_back(1001); // First row of wake panels
                     isFirstPanel.push_back(true);
                     
@@ -502,7 +506,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             std::cout << "\t< N > - No, recalculate them." << std::endl;
             std::cin >> in;
             std::cout << std::endl;
-            if (in == "Y")
+            if (in == "Y" || in == "y")
             {
                 readInfCoeff();
                 read = true;

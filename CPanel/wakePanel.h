@@ -10,6 +10,7 @@
 #define __CPanel__wakePanel__
 
 #include <iostream>
+#include <numeric>
 #include "panel.h"
 #include "panelOctree.h"
 #include "wakeLine.h"
@@ -49,16 +50,11 @@ public:
     edge* getTE();
     bool isTEpanel() {return TEpanel;}
     
-    std::vector<cpNode*> pointsInOrder();
-//    std::vector<Eigen::Vector3d> VPshedPts(); //BW2
     Eigen::Vector3d partSeedPt(Eigen::Vector3d &Vinf, double &dt);
     Eigen::Vector3d panToPartStrengthT1();
     Eigen::Vector3d panToPartStrength();
 
-//    std::vector<double> shedPanletArea();
     std::vector<Eigen::Vector3d> vortexRingVectors();
-    std::vector<int> sortedEdgeInd();
-//    Eigen::Vector3d findPartStrength();
     double getPartRadius(Eigen::Vector3d &Vinf, double &dt);
 
     

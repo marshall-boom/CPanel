@@ -34,6 +34,8 @@ public:
     Eigen::Vector3d partVelInflGaussian(const Eigen::Vector3d &POI);
     Eigen::Vector3d partStretching(particle* part);
     Eigen::Matrix3d partStretchingGaussian(particle* part);
+    Eigen::Vector3d partDiffusion(particle* part);
+
 };
 
 

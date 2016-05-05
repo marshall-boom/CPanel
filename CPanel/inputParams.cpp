@@ -128,14 +128,14 @@ bool inputParams::set()
                 {
                     fid >> vortPartFlag;
                 }
-                else if (s1.compare("Time_Constant_K") == 0)
+                else if (s1.compare("Time_Step") == 0)
                 {
-                    fid >> timeK;
+                    fid >> timeStep;
                 }
-                else if (s1.compare("C_w") == 0)
+                else if (s1.compare("numSteps") == 0)
                 {
-                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-                    fid >> c_w;
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');                    
+                    fid >> numSteps;
                 }
             }
         }
@@ -206,6 +206,12 @@ void inputParams::print(std::ostream &stream)
     
     stream << std::setw(nChars) << "Write Inf Coeff to File " << "-> ";
     if (writeCoeffFlag)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
+    
+    stream << std::setw(nChars) << "Vortex Particle Wake " << "-> ";
+    if (vortPartFlag)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
@@ -323,10 +329,14 @@ void inputParams::writeInputFile()
     fid << vortPartFlag << std::endl;
     fid << std::endl;
     fid << "% Unsteady Particle Wake Options %" << std::endl;
-    fid << "Time_Constant_K" << std::endl;
-    fid << timeK << std::endl;
-    fid << "C_w (Buffer wake length constant. Recommended 0.3)" << std::endl;
-    fid << c_w << std::endl;
+    fid << "Time_Step" << std::endl;
+    fid << timeStep << std::endl;
+    fid << "numSteps" << std::endl;
+    fid << numSteps << std::endl;
+    //    fid << "C_w (Buffer wake length constant. Recommended 0.3)" << std::endl;
+    //    fid << c_w << std::endl;
+    
+    
     
     fid.close();
 }

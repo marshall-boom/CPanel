@@ -92,9 +92,9 @@ public:
         infCoeffFile = temp.str();
         writeCoeffFlag = p->writeCoeffFlag;
         vortPartFlag = p->vortPartFlag;
-        c_w = p->c_w;
+//        c_w = p->c_w;
         inputV = p->velocities(0); //VPP I didn't change this. Just noting that velocity doesn't change for geometries.
-        dt = p->timeK*p->cref/inputV;
+        dt = p->timeStep;
         readTri(p->geomFile->file, p->normFlag);
     }
     
