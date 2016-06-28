@@ -25,6 +25,7 @@
 #include "edge.h"
 #include "inputParams.h"
 #include "cpNode.h"
+#include "octreeFile.h"
 
 class geometry
 {

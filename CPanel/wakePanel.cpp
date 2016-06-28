@@ -84,7 +84,7 @@ void wakePanel::setMu()
     doubletStrength = (1-interpCoeff)*interpPans[0]->getMu() + (interpCoeff-1)*interpPans[1]->getMu() + interpCoeff*interpPans[2]->getMu() - interpCoeff*interpPans[3]->getMu();
 }
 
-void wakePanel::manuallySetMu(double strength) //VPP 
+void wakePanel::setMu(double strength) //VPP
 {
     doubletStrength = strength;
 }

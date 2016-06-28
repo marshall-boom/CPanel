@@ -19,6 +19,7 @@
 class wakePanel;
 class wakeLine;
 class geometry;
+class particle;
 
 class wake
 {
@@ -86,6 +87,7 @@ public:
     Eigen::VectorXd getSpanwiseCl() {return Cl;}
     Eigen::VectorXd getSpanwiseCd() {return Cd;}
     Eigen::VectorXd getSpanwisePnts() {return yLoc;}
+    
 };
 
 #endif /* defined(__CPanel__wake__) */

@@ -24,6 +24,7 @@
 //#include "streamline.h"
 #include "particle.h"
 #include "edge.h" //VPP
+#include "particleOctree.h"
 
 
 
@@ -43,8 +44,6 @@ class cpCase
     double numSteps = 1000; // Run for a LOT of steps before convergence criteria kills solution
     double dt;
     std::vector<double> CL; //VPP
-
-    
     
     Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform;
@@ -82,7 +81,6 @@ class cpCase
     
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
     void setSourceStrengths();
-    void setVPSourceStrengths();
     bool solveMatrixEq();
     bool solveVPmatrixEq(); //VPP
     void compVelocity();
@@ -103,7 +101,11 @@ class cpCase
     void collapseBufferWake();
     void convectParticles();
     void vortexStretching();
-    void viscousDiffusion();
+    void particleStrengthUpdate();
+    void particleStrengthUpdateGaussian();
+    
+    double trefftzPlaneCd(std::vector<particle*> particles);
+
 
 
 //    void convectBufferWake(); //VPP

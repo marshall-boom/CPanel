@@ -95,7 +95,8 @@ void panel::setGeom()
 
 void panel::setPotential(Eigen::Vector3d Vinf)
 {
-    potential = Vinf.dot(center)-doubletStrength;
+//    potential = Vinf.dot(center)-doubletStrength; // Katz 11.74
+    potential = -doubletStrength; // taking out the freestream potential so that I can add the vortex particle velocity influence in after the
 }
 
 bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &projectedPnt)
@@ -270,7 +271,7 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
 Eigen::Vector3d panel::vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s)
 {
     double core = .05;
-    return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b))+(pow(core,2)));
+    return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b))+(pow(core*s.norm(),2))); //VPP s is side length and was not included before. Excluding side length makes for an arbitrary core size for different geometry?
 }
 
 double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m,const Eigen::Vector3d &n)

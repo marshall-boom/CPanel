@@ -74,13 +74,12 @@ public:
     double dist2Pan(bodyPanel* other);
     
     void computeVelocity(double PG, const Eigen::Vector3d &Vinf);
+    void computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::Vector3d sumPartInfl);
     void computeCp(double Vinf);
+    
     Eigen::Vector3d computeMoments(const Eigen::Vector3d &cg);
     
     void setSigma(Eigen::Vector3d Vinf, double Vnorm);
-    void setVPSigma(Eigen::Vector3d Vinf, double Vnorm, std::vector<particle*> particles);
-
-    
     void setMu(double dubStrength);
     
     void setStreamFlag();

@@ -67,7 +67,7 @@ public:
     void setGeom();
         
     void setPotential(Eigen::Vector3d Vinf);
-    
+
     bool inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &projectedPnt);
     
     double dubPhiInf(const Eigen::Vector3d &POI);

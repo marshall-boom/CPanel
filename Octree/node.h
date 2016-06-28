@@ -204,6 +204,24 @@ public:
         return flag;
     }
     
+    bool isSameLevel(node<type>* otherNode)
+    {
+        bool isSame = this->getLevel()==otherNode->getLevel()?true:false;
+        return isSame;
+    }
+    
+    bool isFarField(node<type>* otherNode)
+    {
+        double centerToCenterDist = (this->getOrigin()-otherNode->getOrigin).norm();
+        bool sameLevel = isSameLevel(otherNode);
+        
+        if(std::abs(centerToCenterDist) > std::abs(this->halfDimension()) && sameLevel){
+            return true;
+        }else{
+            return false;
+        }
+    };
+    
     int getChildContainingMember(const member<type> &member)
     {
         return getChildContainingPnt(member.getRefPoint());
@@ -309,6 +327,7 @@ public:
             return recursiveMembers;
         }
     }
+    
 
     
     Eigen::Vector3d getOrigin() {return origin;}

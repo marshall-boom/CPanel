@@ -14,13 +14,20 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "panelOctree.h"
+#include "particleOctree.h"
 
 class octreeFile
 {
     void writeFile(std::string filename,panelOctree* oct);
+    void writeFile(std::string filename,particleOctree* oct);
     
 public:
     octreeFile(std::string filename,panelOctree* oct)
+    {
+        writeFile(filename,oct);
+    }
+    
+    octreeFile(std::string filename,particleOctree* oct)
     {
         writeFile(filename,oct);
     }

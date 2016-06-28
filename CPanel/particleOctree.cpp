@@ -3,7 +3,23 @@
 //  CPanel - Unstructured Panel Code
 //
 //  Created by Connor Sousa on 5/9/16.
-//  Copyright (c) 2016 Chris Satterwhite. All rights reserved.
+//  Copyright (c) 2016 Connor Sousa. All rights reserved.
 //
 
 #include "particleOctree.h"
+
+Eigen::Vector3d particleOctree::findRefPoint(const particle &obj)
+{
+    return obj.getPos();
+}
+
+//Eigen::Vector3d sumPartStrengths(node<particle*>* node)
+//{
+//    std::vector<particle**> nodeParts = node->getMembers();
+//    Eigen::Vector3d nodeStrength = Eigen::Vector3d::Zero();
+//    for(int i=0; i<nodeParts.size(); i++)
+//    {
+//        nodeStrength += (*nodeParts[i])->getStrength();
+//    }
+//    
+//}

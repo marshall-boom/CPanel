@@ -387,6 +387,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "Building Octree..." << std::endl;
 
         createOctree();
+        std::string file_name = "/Users/C_Man/Desktop/CPanelCases/OctreeFiles/PanelOctree.txt";
+        octreeFile* oct;
+        oct = new octreeFile(file_name,&pOctree);
         
         // Set neighbors
         std::cout << "Finding Panel Neighbors..." << std::endl;

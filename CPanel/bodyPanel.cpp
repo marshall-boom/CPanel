@@ -83,17 +83,7 @@ void bodyPanel::setTipFlag()
 
 void bodyPanel::setSigma(Eigen::Vector3d Vinf, double Vnorm)
 {
-    sourceStrength = (-Vinf.dot(normal)+Vnorm);
-}
-
-void bodyPanel::setVPSigma(Eigen::Vector3d Vinf, double Vnorm, std::vector<particle*> particles)
-{
-    Eigen::Vector3d sumVinfl = {0,0,0};
-    
-    for(int i=0; i<particles.size(); i++){
-        sumVinfl += particles[i]->partVelInfl(this->getCenter());
-    }
-    sourceStrength = (-(Vinf+sumVinfl).dot(normal)+Vnorm);
+    sourceStrength = (-Vinf.dot(normal)+Vnorm); //CS: I think the Vnorm would be something emminating from the panel, not influencing it.
 }
 
 void bodyPanel::setMu(double dubStrength)
@@ -354,7 +344,7 @@ void bodyPanel::setCluster()
 Eigen::Vector3d bodyPanel::pntVelocity(const Eigen::Vector3d &pnt,double pntPotential, double PG, const Eigen::Vector3d &Vinf)
 {
     Eigen::Vector3d vel;
-    
+
     if (cluster.size() == 0)
     {
         setCluster();
@@ -383,6 +373,7 @@ Eigen::Vector3d bodyPanel::pntVelocity(const Eigen::Vector3d &pnt,double pntPote
     vel(0) /= PG; // Prandlt Glauert Correction
     return vel;
 }
+
 
 Eigen::Vector3d bodyPanel::velocity2D(const Eigen::Vector3d &pnt,double pntPotential)
 {
@@ -456,10 +447,61 @@ void bodyPanel::computeCp(double Vinf)
     Cp = (1-pow(velocity.norm()/Vinf,2));
 }
 
+
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
     velocity = pntVelocity(center,potential,PG,Vinf);
 }
+
+void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::Vector3d sumPartInfl)
+{
+    //    Eigen::Vector3d Upart = global2local(sumPartInfl, false);
+    //    Upart.z()=0; //Katz fig. 10.14 shows z is panel normal.
+    //    Eigen::Vector3d Upt = local2global(Upart,false); //tested the direction by dotting with normal and it was correct
+//    velocity = pntVelocity(center,potential,PG,Vinf);
+    
+    Eigen::Vector3d pertVelocity,FSinLocalCoords,pertVelocityLocal,totLocalVelocity;
+    FSinLocalCoords = global2local(Vinf+sumPartInfl, false); //same as g
+
+    pertVelocity = pntVelocity(center,potential,PG,Vinf); //same as q
+    pertVelocityLocal = global2local(pertVelocity,false);
+    totLocalVelocity = pertVelocityLocal + FSinLocalCoords;
+    totLocalVelocity.z() = 0;
+    
+    velocity = local2global(totLocalVelocity, false);
+    
+    
+    //    std::cout << "velocity: " << this->velocity.x() << " , " << this->velocity.y() << " , " << this->velocity.z() << std::endl;
+//    double ndotv = normal.dot(velocity);
+//    std::cout << "n.v: " << ndotv << std::endl;
+    
+    //plot panel
+//    std::vector<cpNode *> nodes = this->getNodes();
+//    std::cout << "plot3([";
+//    for (int i=0; i<nodes.size(); i++) {
+//        std::cout << nodes[i]->getPnt().x() << ",";
+//    }
+//    std::cout << nodes[0]->getPnt().x();
+//    std::cout << "],[";
+//    for (int i=0; i<nodes.size(); i++) {
+//        std::cout << nodes[i]->getPnt().y() << ",";
+//    }
+//    std::cout << nodes[0]->getPnt().y();
+//    std::cout << "],[";
+//    for (int i=0; i<nodes.size(); i++) {
+//        std::cout << nodes[i]->getPnt().z() << ",";
+//    }
+//    std::cout << nodes[0]->getPnt().z();
+//    std::cout << "]);" << std::endl;
+    
+    //plot normal vector
+//    std::cout << "quiver3(" << center.x() <<","<< center.y() <<","<< center.z() <<","<< normal.x() <<","<<normal.y() <<","<<normal.z() <<",.05);" << std::endl;
+    
+    //plot velocity
+//    std::cout << "quiver3(" << center.x() <<","<< center.y() <<","<< center.z() <<","<< velocity.x() <<","<<velocity.y() <<","<<velocity.z() <<",.0005);" << std::endl;
+
+}
+
 
 Eigen::Vector3d bodyPanel::computeMoments(const Eigen::Vector3d &cg)
 {

@@ -43,7 +43,7 @@ public:
     Eigen::Vector3d panelV(const Eigen::Vector3d &POI);
 
     void setMu();
-    void manuallySetMu(double strength); //2BW
+    void setMu(double strength); //2BW
     void setStrength();
     bodyPanel* getUpper() {return upperPan;}
     bodyPanel* getLower() {return lowerPan;}

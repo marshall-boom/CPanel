@@ -387,3 +387,4 @@ Eigen::Vector3d wake::pntInWake(double x, double y)
     }
     return pntInWake;
 }
+

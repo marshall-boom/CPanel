@@ -20,6 +20,7 @@ class octree
     node<type> *root_node;
     short maxMembersPerNode;
     std::vector<member<type>> members;
+    short numLevels;
     
     void boundingBox(Eigen::Vector3d &boxMin, Eigen::Vector3d &boxMax)
     {
@@ -206,6 +207,19 @@ public:
         return current_node;
     }
     
+    short numTreeLevels()
+    {
+        short levels = 0;
+        std::vector<node<type>*> nodes = getNodes();
+        for(int i=0; i<nodes.size(); i++)
+        {
+            if(nodes[i]->getLevel()>levels)
+            {
+                levels++;
+            }
+        }
+    }
+    
     node<type>* findNodeContainingMember(type* obj)
     {
         member<type> temp = createMember(obj);
@@ -230,6 +244,17 @@ public:
             }
         }
         return true;
+    }
+    
+    std::vector<node<type>*> getLevelNodes(short level)
+    {
+        std::vector<node<type>*> nodes = this->getNodes();
+//        std::vector<node<type>*> levelNodes;
+//        for(int i=0; i<nodes().size(){
+//            if(nodes
+//        }
+//    
+//            }
     }
     
     std::vector<node<type>*> getNodes()
