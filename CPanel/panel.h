@@ -44,9 +44,7 @@ protected:
     Eigen::Vector3d velocity;
     double Cp;
     int ID;
-    
-    Eigen::Vector3d global2local(const Eigen::Vector3d &globalVec,bool translate);
-    Eigen::Vector3d local2global(const Eigen::Vector3d &localVec,bool translate);
+    double core = 0.05;
     
     Eigen::Vector3d vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s);
     double vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m,const Eigen::Vector3d &n);
@@ -56,6 +54,14 @@ protected:
     double pntDubPhi(const double &PN, const double &PJK);
     
     Eigen::Vector3d pntDubV(const Eigen::Vector3d n,const Eigen::Vector3d &pjk);
+    
+    Eigen::Matrix3d velocityGradientPointDoublet(Eigen::Vector3d POI);
+    Eigen::Matrix3d velocityGradientDoublet(Eigen::Vector3d POI);
+    Eigen::Matrix3d gradDoub(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s);
+
+//    Eigen::Matrix3d velocityGradientTriDoublet(Eigen::Vector3d POI);
+//    Eigen::Matrix3d velocityGradientQuadDoublet(Eigen::Vector3d POI);
+    bool nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI);
     
 public:
     panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,int surfID);
@@ -69,6 +75,10 @@ public:
     void setPotential(Eigen::Vector3d Vinf);
 
     bool inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &projectedPnt);
+    bool onPanelCheck(const Eigen::Vector3d &POI);
+
+    Eigen::Vector3d global2local(const Eigen::Vector3d &globalVec,bool translate);
+    Eigen::Vector3d local2global(const Eigen::Vector3d &localVec,bool translate);
     
     double dubPhiInf(const Eigen::Vector3d &POI);
     Eigen::Vector3d dubVInf(const Eigen::Vector3d &POI);

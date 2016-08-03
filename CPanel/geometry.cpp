@@ -229,7 +229,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "\tPanels : " << nTris << std::endl;
         
         ///*************************************************///
-        // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Should put this in its own function.
+        // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the smallest time wake panel. Should put this in its own function.
         if(dt == 0){
             std::vector<edge*> Tedges;
             for(int i=0; i<edges.size(); i++){

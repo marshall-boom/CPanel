@@ -55,8 +55,6 @@ class cpCase
     std::vector<particle*> particles;
     std::vector<Eigen::Vector3d> seedPts;
     std::vector<double> seedRadii;
-    std::vector<double> prevPanStrength; // this and panStrengthChange are to check convergence
-    Eigen::VectorXd panStrengthChange;
 
     Eigen::VectorXd sigmas;
 //    Eigen::VectorXd wake2Doublets;
@@ -105,7 +103,9 @@ class cpCase
     void particleStrengthUpdateGaussian();
     
     double trefftzPlaneCd(std::vector<particle*> particles);
+    Eigen::Vector3d velocityInflFromEverything(Eigen::Vector3d POI);
 
+    bool rungeKuttaStep = false;
 
 
 //    void convectBufferWake(); //VPP

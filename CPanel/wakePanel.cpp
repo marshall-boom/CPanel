@@ -252,7 +252,7 @@ Eigen::Vector3d wakePanel::panToPartStrengthT1(){
     }
 
     // Edge 2
-    edge2strength = (this->getMu())*ringVecs[2];
+    edge2strength = {0,0,0};//(this->getMu())*ringVecs[2];
     
     // Edge 3
     neighbPan = edge3->getOtherWakePan(this);
@@ -268,7 +268,7 @@ Eigen::Vector3d wakePanel::panToPartStrengthT1(){
 
 
 Eigen::Vector3d wakePanel::panToPartStrength(){
-    Eigen::Vector3d edge1strength, edge3strength;
+    Eigen::Vector3d edge1strength, edge2strength, edge3strength;
     std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
     
     // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
@@ -289,6 +289,12 @@ Eigen::Vector3d wakePanel::panToPartStrength(){
         edge1strength = (this->getMu())*ringVecs[1];
     }
     
+    // Edge 2
+    // change in strength of the back ring vector. The 'prevStrength' value is initialized at zero so it will be equivalent to ignoring it on the first loop.
+    edge2strength = {0,0,0};
+    //(this->getMu()-this->getPrevStrength())*ringVecs[2];
+    //causes divergence rigth now. Will put back in when mroe stable and check with a finer case.
+    
     // Edge 3
     neighbPan = edge3->getOtherWakePan(this);
     
@@ -298,8 +304,10 @@ Eigen::Vector3d wakePanel::panToPartStrength(){
         edge3strength = (-this->getMu())*ringVecs[3];
     }
     
-    return -edge1strength -edge3strength;
+    return -edge1strength + edge2strength -edge3strength;
 }
+
+
 
 
 std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
@@ -374,11 +382,13 @@ double wakePanel::getPartRadius(Eigen::Vector3d &Vinf, double &dt){
     wakePanel* neighbor2 = this->getEdges()[3]->getOtherWakePan(this);
     
     std::vector<double> dist;
-    if(neighbor1){
+    if(neighbor1) // If there is a neighbor, then use it
+    {
         Eigen::Vector3d neighbor1Pnt = neighbor1->partSeedPt(Vinf, dt);
         dist.push_back(std::abs((currPnt-neighbor1Pnt).norm()));
     }
-    if(neighbor2){
+    if(neighbor2)
+    {
         Eigen::Vector3d neighbor2Pnt = neighbor2->partSeedPt(Vinf, dt);
         dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
     }
@@ -398,5 +408,33 @@ std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {
     
     return idx;
 }
+
+Eigen::Vector3d wakePanel::partStretching(particle* part){
+    Eigen::Vector3d POI = part->getPos();
+    Eigen::Vector3d partStretching;
+    double dist2panel = (POI-center).norm();
+    bool isFarField = false;
+    Eigen::MatrixXd velGradMat = Eigen::Matrix3d::Zero();
+    
+    if(dist2panel/longSide > 5){
+        isFarField = true;
+    }
+    
+    if(isFarField)
+    {
+        velGradMat += velocityGradientPointDoublet(POI);
+    }
+    else
+    {
+        velGradMat += velocityGradientDoublet(POI);
+    }
+    
+    partStretching = velGradMat*part->getStrength();
+    
+    return partStretching;
+}
+
+
+
 
 

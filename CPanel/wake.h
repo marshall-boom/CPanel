@@ -39,8 +39,6 @@ class wake
     Eigen::VectorXd Cd;
     
     
-    
-    
     void setWakeDimensions();
     wakeLine* findWakeLine(double y);
     double Vradial(Eigen::Vector3d pWake);

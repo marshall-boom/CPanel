@@ -18,6 +18,7 @@
 //
 //class edge;
 class cpNode;
+class particle;
 
 class bodyPanel : public panel
 {
@@ -48,6 +49,9 @@ class bodyPanel : public panel
     bool clusterTest(bodyPanel* other, double angle,bool upFlag,bool lowFlag);
     bool nearTrailingEdge();
     
+    Eigen::Matrix3d velocityGradientPointSource(Eigen::Vector3d POI);
+    Eigen::Matrix3d velocityGradientQuadSource(Eigen::Vector3d POI);
+    Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID);
@@ -101,6 +105,9 @@ public:
     double getCp() {return Cp;}
     
     std::vector<bodyPanel*> getCluster() {return cluster;}
+    
+    Eigen::Vector3d partStretching(particle* part);
+    
 };
 
 #endif /* defined(__CPanel__bodyPanel__) */

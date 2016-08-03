@@ -25,13 +25,15 @@ class wakePanel : public panel
     bodyPanel* lowerPan;
     bool TEpanel;
     wake* parentWake;
+    double prevStrength = 0;
     
 public:
     wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
     
     wakePanel(const wakePanel &copy);
     
-    
+    double getPrevStrength() {return prevStrength;};
+    void setPrevStrength(double previousStrength) {prevStrength = previousStrength;};
     void setTEpanel();
     void setUpper(bodyPanel* up);
     void setLower(bodyPanel* lp);
@@ -59,6 +61,8 @@ public:
 
     
     std::vector<int> sort_indexes(std::vector<double> &v);
+    Eigen::Vector3d partStretching(particle* part);
+
 };
 
 #endif /* defined(__CPanel__wakePanel__) */

@@ -38,16 +38,12 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
         bool breakFlag = false;
 //        std::cout << "time step = " << dt << std::endl;
         for(int i=0; i<numSteps; i++){
-            std::cout << "Time step " << timeStep << ". Flow time = " << timeStep*dt << std::endl;
-            std::cout << "Tracking " << particles.size() << " particles..." << std::endl;
+            std::cout << "Time step " << timeStep << ". Flow time = " << timeStep*dt << ". " << particles.size() << " particles" << std::endl;
             convectParticles();
             particleStrengthUpdate();
 //            particleStrengthUpdateGaussian();
             collapseBufferWake();
-//            if(panStrengthChange.norm() < 0.02 && manualStepsSet == false && timeStep > 2){
-//                std::cout << "Convergence criteria met" << std::endl;
-//                breakFlag = true;
-//            }
+//          Will have to redo convergence criteria. deleted panStrength change vector and put value in the wakePanel object instead
             setSourceStrengths();
             std::cout << "Solving singularity strengths..." << std::endl;
             converged = solveVPmatrixEq();
@@ -62,10 +58,9 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
             
             writeFiles();
             timeStep++;
-            std::cout << "part strength change norm = " << panStrengthChange.norm() << std::endl;
-            if(breakFlag){
-                break;
-            }
+//            if(breakFlag){
+//                break;
+//            }
         }
         
         std::cout << "New Trefftz Plane CD = " << trefftzPlaneCd(particles) << std::endl;
@@ -219,13 +214,6 @@ bool cpCase::solveMatrixEq()
         (*wPanels)[i]->setPotential(Vinf);
     }
     
-    if(vortPartFlag){
-        panStrengthChange.resize(wPanels->size());
-        for(int i=0; i<wPanels->size(); i++){
-            prevPanStrength.push_back((*wPanels)[i]->getMu());
-        }
-    }
-    
     return converged;
 }
 
@@ -259,10 +247,9 @@ bool cpCase::solveVPmatrixEq()
     }
     for (int i=0; i<wPanels->size(); i++)
     {
-        prevPanStrength[i] = (*wPanels)[i]->getMu();
+        (*wPanels)[i]->setPrevStrength((*wPanels)[i]->getMu());
         (*wPanels)[i]->setMu();
         (*wPanels)[i]->setPotential(Vinf);
-        panStrengthChange[i] = (*wPanels)[i]->getMu()-prevPanStrength[i];
     }
     return converged;
 }
@@ -654,75 +641,118 @@ void cpCase::collapseBufferWake(){
         double radius = seedRadii[i]; //(*wPanels)[i]->getPartRadius(Vinf,dt);
         Eigen::Vector3d strength;
         if(timeStep == 1){
-//            strength = (*wPanels)[i]->panToPartStrengthT1();
-            strength = (*wPanels)[i]->panToPartStrength();
+            strength = (*wPanels)[i]->panToPartStrengthT1();
+//            strength = (*wPanels)[i]->panToPartStrength();
         }else{
             strength = (*wPanels)[i]->panToPartStrength();
         }
         
-        p = new particle(pos, strength, radius, {0,0,0}, {0,0,0});
+        p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous positon and strength values used for advanced time stepper.
         particles.push_back(p);
     }
 }
 
+Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
+    
+    // Freestream influence
+    Eigen::Vector3d velOnPart = Vinf; // Initialize with freestream
+    
+    // Body panel influence
+//    Eigen::Vector3d bPanInfl = Eigen::Vector3d::Zero();
+    for(int j=0;j<(*bPanels).size();j++)
+    {
+        velOnPart += (*bPanels)[j]->panelV(POI);
+    }
+    
+    // Buffer wake influence
+//    Eigen::Vector3d wPanInfl = Eigen::Vector3d::Zero();
+    for(int j=0;j<(*wPanels).size();j++)
+    {
+        velOnPart += (*wPanels)[j]->panelV(POI);
+    }
+    
+    // Particle influence
+//    Eigen::Vector3d partInfl = Eigen::Vector3d::Zero();
+    for(int j=0;j<particles.size();j++)
+    {
+//        if(i != j)
+//        {
+            velOnPart += particles[j]->partVelInfl(POI);
+//        }
+    }
+    
+//    Eigen::Vector3d velOnPart = FSinfl + bPanInfl + wPanInfl + partInfl;
+    return velOnPart;
+}
 
 void cpCase::convectParticles(){
-    
+    std::vector<Eigen::Vector3d> newPartPositions;
     for(int i=0;i<particles.size();i++){
         
-        // Freestream influence
-        Eigen::Vector3d FSinfl = Vinf; // Initialize with freestream
-        
-        // Body panel influence
-        Eigen::Vector3d bPanInfl = Eigen::Vector3d::Zero();
-        for(int j=0;j<(*bPanels).size();j++)
-        {
-            bPanInfl += (*bPanels)[j]->panelV(particles[i]->getPos());
-        }
-
-        // Buffer wake influence
-        Eigen::Vector3d wPanInfl = Eigen::Vector3d::Zero();
-        for(int j=0;j<(*wPanels).size();j++)
-        {
-            wPanInfl += (*wPanels)[j]->panelV(particles[i]->getPos());
-        }
-        
-        // Particle influence
-        Eigen::Vector3d partInfl = Eigen::Vector3d::Zero();
-        for(int j=0;j<particles.size();j++)
-        {
-            if(i != j)
-            {
-                partInfl += particles[j]->partVelInfl(particles[i]->getPos());
-            }
-        }
-        
-        Eigen::Vector3d velOnPart = FSinfl + bPanInfl + wPanInfl + partInfl;
         Eigen::Vector3d newPos;
-        if(particles[i]->getPrevVelInfl().isZero())
-        {
-            newPos = particles[i]->getPos() + dt*velOnPart;
-        }else
-        {
-            newPos = particles[i]->getPos() + dt*(1.5*velOnPart - 0.5*particles[i]->getPrevVelInfl()); //Adams bashforth scheme
-        }
         
-        particles[i]->setPrevVelInfl(velOnPart);
-        particles[i]->setPos(newPos);
+        if(rungeKuttaStep){
+            Eigen::Vector3d POI = particles[i]->getPos();
+            Eigen::Vector3d k1 = velocityInflFromEverything(POI);
+            Eigen::Vector3d k2 = velocityInflFromEverything(POI+k1*dt/2);
+            Eigen::Vector3d k3 = velocityInflFromEverything(POI+k2*dt/2);
+            Eigen::Vector3d k4 = velocityInflFromEverything(POI+k3*dt);
+
+            newPartPositions.push_back(POI + dt*(k1/6 + k2/3 + k3/3 + k4/6));
+            
+        }
+        else // Do Adams Bashforth
+        {
+            Eigen::Vector3d velOnPart = velocityInflFromEverything(particles[i]->getPos());
+            
+            if(particles[i]->getPrevVelInfl().isZero())
+            {
+                newPos = particles[i]->getPos() + dt*velOnPart;
+            }
+            else
+            {
+                newPos = particles[i]->getPos() + dt*(1.5*velOnPart - 0.5*particles[i]->getPrevVelInfl()); //Adams bashforth scheme
+            }
+            
+            particles[i]->setPrevVelInfl(velOnPart);
+            newPartPositions.push_back(newPos);
+        }
+    }
+    
+    for(int i=0;i<particles.size();i++){
+        particles[i]->setPos(newPartPositions[i]);
+
     }
 }
+
 
 
 void cpCase::particleStrengthUpdate(){
     // This function uses the combined vortex stretching and diffusion equation used by Wincklemans for a regularized vortex core with high algebraic smoothing. (he refers to it as the strength update equation.)
     
     std::vector<Eigen::Vector3d> stretchDiffVec; // Creating a vector of diffusion values because the strength change needs to be set after all particle influences have been calculated
-    for(int i=0; i<particles.size(); i++){
+    for(int i=0; i<particles.size(); i++)
+    {
         Eigen::Vector3d dAlpha = Eigen::Vector3d::Zero();
-        for(int j=0; j<particles.size(); j++){
+        for(int j=0; j<particles.size(); j++)
+        {
                 dAlpha += particles[i]->partStrengthUpdate(particles[j]);
         }
         stretchDiffVec.push_back(dAlpha);
+    }
+    
+    //combine these loops after everything is debugged
+    for (int i=0; i<particles.size(); i++) {
+        Eigen::Vector3d dAlpha = Eigen::Vector3d::Zero();
+        for(int j=0; j<(*bPanels).size(); j++)
+        {
+            dAlpha += (*bPanels)[j]->partStretching(particles[i]);
+        }
+        for(int j=0;j<(*wPanels).size(); j++)
+        {
+            dAlpha += (*wPanels)[j]->partStretching(particles[i]);
+        }
+        stretchDiffVec[i] += dAlpha;
     }
     
     for(int i=0;i<particles.size();i++){
@@ -832,3 +862,6 @@ double cpCase::trefftzPlaneCd(std::vector<particle*> particles){
 //        Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
 //    }
 };
+
+
+

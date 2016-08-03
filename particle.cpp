@@ -126,3 +126,13 @@ Eigen::Vector3d particle::viscousDiffusionGaussian(particle* part){
 }
 
 
+
+
+
+
+
+
+
+
+
+
