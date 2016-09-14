@@ -181,7 +181,7 @@ void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eige
     double PN = pjk.dot(local.row(2));
     if (pjk.norm()/longSide > 5)
     {
-        vSrc = pntSrcV(pjk);
+        vSrc = -pntSrcV(pjk); // Connor added this becuase I believe this number should be negative. Figure 10.17 shows a positive velocity influence from pnt source. CPanel matches this in tests, however, sign convention for CPanel/VSaero is opposite of Katz
         vDub = pntDubV(local.row(2),pjk);
     }
     else
@@ -216,6 +216,19 @@ void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eige
         vSrc /= (4*M_PI);
     }
 }
+
+Eigen::Vector3d bodyPanel::pntVInf(const Eigen::Vector3d &POI)
+{
+    // Function should only be used for CPanel test function.
+
+    // VSAero source and doublet velocity influence formulation
+    Eigen::Vector3d pjk = POI-center;
+    Eigen::Matrix3d local = getLocalSys();
+    double PN = pjk.dot(local.row(2));
+    
+    return sourceStrength*pntSrcV(pjk) + doubletStrength*pntDubV(local.row(2),pjk); //pntDubVinf
+}
+
 
 double bodyPanel::srcSidePhi(const double &PN,const double &Al, const double &phiV,const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s)
 {

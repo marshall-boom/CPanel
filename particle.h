@@ -12,18 +12,22 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "bodyPanel.h"
+#include "wakePanel.h"
 //#include <math.h>
+
+class wakePanel;
 
 class particle {
     
-    int nParticles;
     Eigen::Vector3d pos;
     Eigen::Vector3d strength;
     Eigen::Vector3d previousVelInfl, previousStrengthUpdate; //used for Adams-Bashforth stepping routine
     double radius;
-    double coreOverlap = 1.3; // The amount of core overlap between neighboring particles. Wincklemans used 1.3. More info: calebretta pp. 47
+    double coreOverlap = 1.5; // The amount of core overlap between neighboring particles. Wincklemans used 1.3. More info: calebretta pp. 47
     
 public:
+    wakePanel* parentPanel;
+    
     particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate);
     
     void setPrevVelInfl(Eigen::Vector3d vel) {previousVelInfl = vel;};
@@ -50,6 +54,7 @@ public:
     Eigen::Vector3d ptSourceStretching(bodyPanel* bPan);
     Eigen::Vector3d ptDoubletStretching(bodyPanel* bPan);
     
+    void setParentWake(wakePanel* pan){parentPanel = pan;};
 
 };
 

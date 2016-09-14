@@ -47,6 +47,8 @@ Eigen::Vector3d particle::partStrengthUpdate(particle* part){
 }
 
 Eigen::Vector3d particle::partVelInflGaussian(particle* part){
+    // Velocity influence with Gaussian smoothing
+    
     // 'part' is the influenced particle
     double sigma = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
     
@@ -98,7 +100,7 @@ Eigen::Vector3d particle::vortexStretchingGaussian(particle* part){
     
     Eigen::Matrix3d alphaTilda;
     Eigen::Vector3d a = part->getStrength();
-    alphaTilda << 0,-a.z(),a.y(),a.z(),0,-a.x(),-a.y(),a.x(),0;
+    alphaTilda << 0,-a.z(),a.y(),a.z(),0,-a.x(),-a.y(),a.x(),0; // cross product matrix
     
     Eigen::Matrix3d velGradient = 1/pow(sigij,3)*alphaTilda*inflMat;
     
@@ -117,7 +119,7 @@ Eigen::Vector3d particle::viscousDiffusionGaussian(particle* part){
     double sigij = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
     double rho = (Xi-Xj).norm()/sigij;
 
-    double Vi = 4*M_PI/3*pow(this->radius,3); //Not 100% sure this is the best way to find Volume. Could put it in constructor?
+    double Vi = 4*M_PI/3*pow(this->radius,3); //Not 100% sure this is the best way to find Volume. Could put it in constructor? Also, should it be spherical, or cubic. Maybe more info in Calebretta...
     double Vj = 4*M_PI/3*pow(part->radius,3);
     
     double xi = 1/(pow(2*M_PI,1.5)*pow(rho,3))*exp(-rho*rho/2);

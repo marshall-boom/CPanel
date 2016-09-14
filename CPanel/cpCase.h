@@ -25,6 +25,7 @@
 #include "particle.h"
 #include "edge.h" //VPP
 #include "particleOctree.h"
+#include "vortexFil.h"
 
 
 
@@ -53,8 +54,7 @@ class cpCase
     std::vector<wakePanel*>* wPanels;
 //    std::vector<wakePanel*>* wake2panels; //2BW
     std::vector<particle*> particles;
-    std::vector<Eigen::Vector3d> seedPts;
-    std::vector<double> seedRadii;
+    std::vector<vortexFil*> filaments;
 
     Eigen::VectorXd sigmas;
 //    Eigen::VectorXd wake2Doublets;
@@ -91,12 +91,16 @@ class cpCase
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
 //    void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat); //2BW
     void writeParticleData(boost::filesystem::path path);
+    void writeFilamentData(boost::filesystem::path path);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
 //    void collapsePanels(); //BW2
-    void findSeedPoints();
-    void findSeedRadii();
     void collapseBufferWake();
+    void collapseWakeForEachEdge();
+    bool edgeIsUsed(edge* thisEdge, std::vector<edge*> pEdges);
+    Eigen::Vector3d edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum);
+    Eigen::Vector3d seedPos(wakePanel* pan, int edgeNum);
+
     void convectParticles();
     void vortexStretching();
     void particleStrengthUpdate();
@@ -146,6 +150,9 @@ public:
     Eigen::Vector3d get_dF_dBeta() {return dF_dBeta;}
     Eigen::Vector3d get_dM_dAlpha() {return dM_dAlpha;}
     Eigen::Vector3d get_dM_dBeta() {return dM_dBeta;}
+    
+    struct partWakeMaxDims{};
+    partWakeMaxDims partMaxDims();
     
 };
 #endif /* defined(__CPanel__runCase__) */

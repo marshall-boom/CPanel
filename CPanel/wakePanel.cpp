@@ -203,25 +203,6 @@ edge* wakePanel::getTE()
 
 
 
-Eigen::Vector3d wakePanel::partSeedPt(Eigen::Vector3d &Vinf, double &dt){ //VPP
-  // Using the trailing edge and first wake panel to build off so it can be modified if second wake panel is implemented
-  //  0---1
-  //  |   |  spanwise orientation is not accounted for and might be opposite
-  //  3---2  of the diagram
-
-    Eigen::Vector3d n0,n1,n2,n3;
-    edge* edge0 = this->getEdges()[0]; // node proj. works from trailing edge only
-    edge* edge2 = this->getEdges()[2]; // Downstream edge
-    
-    n0 = edge2->getN1()->getPnt();
-    n1 = edge2->getN2()->getPnt();
-
-    n2 = edge0->getN1()->secProjNode(dt, Vinf.norm());
-    n3 = edge0->getN2()->secProjNode(dt, Vinf.norm());
-    
-    return (n0+n1+n2+n3)/4;
-}
-
 Eigen::Vector3d wakePanel::panToPartStrengthT1(){
     //                      --> y
     //       |      |      |
@@ -246,21 +227,21 @@ Eigen::Vector3d wakePanel::panToPartStrengthT1(){
     // Edge 1
     wakePanel* neighbPan = edge1->getOtherWakePan(this);
     if(neighbPan){
-        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]; // If neighbor panel, have to share strength with it
+        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]*edge3->length(); // If neighbor panel, have to share strength with it
     }else{  // If no wake pan, use whole strength
-        edge1strength = (this->getMu())*ringVecs[1];
+        edge1strength = (this->getMu())*ringVecs[1]*edge3->length();
     }
 
     // Edge 2
-    edge2strength = {0,0,0};//(this->getMu())*ringVecs[2];
+    edge2strength = (this->getMu())*ringVecs[2]*this->getEdges()[2]->length();
     
     // Edge 3
     neighbPan = edge3->getOtherWakePan(this);
     
     if(neighbPan){
-        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3];
+        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3]*edge3->length();
     }else{ // If no wake pan,
-        edge3strength = (-this->getMu())*ringVecs[3];
+        edge3strength = (-this->getMu())*ringVecs[3]*edge3->length();
     }
 
     return -edge1strength + edge2strength -edge3strength; //I don't know why, but this is negative for some reason
@@ -284,9 +265,9 @@ Eigen::Vector3d wakePanel::panToPartStrength(){
     // Edge 1
     wakePanel* neighbPan = edge1->getOtherWakePan(this);
     if(neighbPan){
-        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]; // If neighbor panel, have to share strength with it
+        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]*edge1->length(); // If neighbor panel, have to share strength with it
     }else{  // If no wake pan, use whole strength
-        edge1strength = (this->getMu())*ringVecs[1];
+        edge1strength = (this->getMu())*ringVecs[1]*edge1->length();
     }
     
     // Edge 2
@@ -299,19 +280,22 @@ Eigen::Vector3d wakePanel::panToPartStrength(){
     neighbPan = edge3->getOtherWakePan(this);
     
     if(neighbPan){
-        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3];
+        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3]*edge3->length();
     }else{ // If no wake pan,
-        edge3strength = (-this->getMu())*ringVecs[3];
+        edge3strength = (-this->getMu())*ringVecs[3]*edge3->length();
     }
     
     return -edge1strength + edge2strength -edge3strength;
 }
 
 
-
-
 std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
     // Finds the unit direction vector of each panel edge pointing in the global coordinates shown below for reference
+    
+    
+    // Should really re-do this whole thing and make the panels follow righthand rule or whatever so that I can just add the two strengths from adjacent panels
+    
+    
     //
     //        __0__>        --> y
     //       |      |      |
@@ -321,17 +305,21 @@ std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
     
     std::vector<Eigen::Vector3d> ringVecs;
     
-    // Edge 0:
+    // Edge 0: Panel is built with trailing edge first
     Eigen::Vector3d n1 = this->getEdges()[0]->getN1()->getPnt();
     Eigen::Vector3d n2 = this->getEdges()[0]->getN2()->getPnt();
-
+    
     if(n2.y() > n1.y()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm()); // Return unit vector
+        std::cout << "quiver3("<<n1.x()<<","<<n1.y()<<","<<n1.z()<<",";
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
+        std::cout << "quiver3("<<n2.x()<<","<<n2.y()<<","<<n2.z()<<",";
     }
     
-    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
+    std::cout << ringVecs[0].x() <<","<< ringVecs[0].y() <<","<< ringVecs[0].z() <<",'r');"<< std::endl;
+    
+    // Find edge 1. Next is either 1st or 3rd in edge vector
     edge* edge1, *edge3;
     if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
         edge1 = this->getEdges()[1];
@@ -344,31 +332,46 @@ std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
     // Edge 1:
     n1 = edge1->getN1()->getPnt();
     n2 = edge1->getN2()->getPnt();
-
+    
     if(n2.x() > n1.x()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm());
+        std::cout << "quiver3("<<n1.x()<<","<<n1.y()<<","<<n1.z()<<",";
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
+        std::cout << "quiver3("<<n2.x()<<","<<n2.y()<<","<<n2.z()<<",";
     }
+    
+    std::cout << ringVecs[1].x() <<","<< ringVecs[1].y() <<","<< ringVecs[1].z() <<",'g');"<< std::endl;
+
     
     // Edge 2:
     n1 = this->getEdges()[2]->getN1()->getPnt();
     n2 = this->getEdges()[2]->getN2()->getPnt();
     if(n2.y() > n1.y()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm());
+        std::cout << "quiver3("<<n1.x()<<","<<n1.y()<<","<<n1.z()<<",";
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
+        std::cout << "quiver3("<<n2.x()<<","<<n2.y()<<","<<n2.z()<<",";
     }
-  
+    
+    std::cout << ringVecs[2].x() <<","<< ringVecs[2].y() <<","<< ringVecs[2].z() <<",'b');"<< std::endl;
+
+    
     // Edge 3:
     n1 = edge3->getN1()->getPnt();
     n2 = edge3->getN2()->getPnt();
     
     if(n2.x() > n1.x()){
         ringVecs.push_back((n2-n1)/(n2-n1).norm());
+        std::cout << "quiver3("<<n1.x()<<","<<n1.y()<<","<<n1.z()<<",";
     }else{
         ringVecs.push_back((n1-n2)/(n1-n2).norm());
+        std::cout << "quiver3("<<n2.x()<<","<<n2.y()<<","<<n2.z()<<",";
     }
+    
+    std::cout << ringVecs[3].x() <<","<< ringVecs[3].y() <<","<< ringVecs[3].z() <<",'k*');"<< std::endl;
+
     
     return ringVecs;
 }
@@ -434,7 +437,105 @@ Eigen::Vector3d wakePanel::partStretching(particle* part){
     return partStretching;
 }
 
+std::vector<cpNode*> wakePanel::pointsInOrder(){
 
+    //       1------0       --> y
+    //       |      |      |
+    //       |      |      V
+    //       |      |
+    //       2------3      x
+    //
+    
+    std::vector<edge*> pEdges = this->getEdges();
+    std::vector<cpNode*> ptsIO;
+    
+    // Trailing edge panel is built first
+    if (pEdges[0]->getN1()->getPnt().y() > pEdges[0]->getN2()->getPnt().y()) {
+        ptsIO.push_back(pEdges[0]->getN1());
+        ptsIO.push_back(pEdges[0]->getN2());
+    }else{
+        ptsIO.push_back(pEdges[0]->getN2());
+        ptsIO.push_back(pEdges[0]->getN1());
+    }
+    
+    // Point 2 will be connected to 1, but not zero
+    cpNode* n0 = ptsIO[0];
+    cpNode* n1 = ptsIO[1];
+    for (int i=0; i<pEdges.size(); i++) {
+        // If edge contains n1
+        if(pEdges[i]->getN1() == n1 || pEdges[i]->getN2() == n1){
+            // If edge does not contain n0
+            if(pEdges[i]->getN1() != n0 && pEdges[i]->getN2() != n0){
+                if (pEdges[i]->getN1() == n1) {
+                    ptsIO.push_back(pEdges[i]->getN2());
+                }else{
+                    ptsIO.push_back(pEdges[i]->getN1());
+                }
+            }
+        }
+    }
 
+    // The last node is the only one not used
+    std::vector<cpNode*> pNodes = this->getNodes();
+    for (int i=0; i<pNodes.size(); i++) {
+        if (pNodes[i] != ptsIO[0] && pNodes[i] != ptsIO[1] && pNodes[i] != ptsIO[2]) {
+            ptsIO.push_back(pNodes[i]);
+        }
+    }
 
+    return ptsIO;
+}
 
+std::vector<edge*> wakePanel::edgesInOrder(){
+    // Since the points in order is already verified, this function will use them to place the edges in the correct order. ,
+    //       ----0---       --> y
+    //       |      |      |
+    //       1      3      V
+    //       |      |      x
+    //       ----2---
+    //
+    std::vector<edge*> edgesIO(4);
+    std::vector<cpNode*> ptsIO = this->pointsInOrder();
+    std::vector<edge*> pEdges = this->getEdges();
+    
+    // The trailing edge is built first and the parallel downstream edge is always built third
+    edgesIO[0] = pEdges[0];
+    edgesIO[2] = pEdges[2];
+    
+    // Look at second edge in vector to see if it's #1
+    cpNode* N1 = pEdges[1]->getN1();
+    cpNode* N2 = pEdges[1]->getN2();
+    
+    cpNode* n1 = ptsIO[1];
+    cpNode* n2 = ptsIO[2];
+    
+    // If N1 is either of the edge nodes AND N2 is either of the edge nodes then it is #1
+    if ((N1==n1 || N1==n2) && (N2==n1 || N2==n2)) {
+        edgesIO[1] = pEdges[1];
+        edgesIO[3] = pEdges[3];
+    }else{
+        edgesIO[3] = pEdges[1];
+        edgesIO[1] = pEdges[3];
+    }
+    
+    return edgesIO;
+}
+
+Eigen::Vector3d wakePanel::partSeedPt(Eigen::Vector3d &Vinf, double &dt){ //VPP
+    // Using the trailing edge and first wake panel to build off so it can be modified if second wake panel is implemented
+    //  1---0
+    //  |   |  spanwise orientation is not accounted for and might be opposite
+    //  2---3  of the diagram but average still works
+    
+    Eigen::Vector3d n0,n1,n2,n3;
+    edge* edge0 = this->getEdges()[0]; // Node proj. works from trailing edge only
+    edge* edge2 = this->getEdges()[2]; // Downstream edge
+    
+    n0 = edge2->getN1()->getPnt();
+    n1 = edge2->getN2()->getPnt();
+    
+    n2 = edge0->getN1()->secProjNode(dt, Vinf.norm());
+    n3 = edge0->getN2()->secProjNode(dt, Vinf.norm());
+    
+    return (n0+n1+n2+n3)/4;
+}

@@ -25,7 +25,7 @@
 #include "edge.h"
 #include "inputParams.h"
 #include "cpNode.h"
-#include "octreeFile.h"
+//#include "octreeFile.h" //Taking this out just for CPanel test. Need to put back in after I figure it out...
 
 class geometry
 {
@@ -83,6 +83,8 @@ class geometry
     void readInfCoeff();
     void writeInfCoeff();
     
+    void vortRingVecTest();
+    
 public:
     double dt; //making public so cpCase can access it
 
@@ -129,6 +131,7 @@ public:
     Eigen::MatrixXd* getA() {return &A;}
     Eigen::MatrixXd* getB() {return &B;}
     Eigen::MatrixXd* getC() {return &C;}
+    
     
 };
 

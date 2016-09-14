@@ -13,6 +13,8 @@
 #include <vector>
 #include <cmath>
 #include <Eigen/Dense>
+#include "particle.h"
+
 //#include "wakePanel.h"
 //#include "wakeLine.h"
 
@@ -43,7 +45,8 @@ class wake
     wakeLine* findWakeLine(double y);
     double Vradial(Eigen::Vector3d pWake);
     Eigen::Vector3d pntInWake(double x, double y);
-    Eigen::Vector3d pntVel(Eigen::Matrix<double,1,3> POI, Eigen::MatrixXd pntCloud,Eigen::Matrix<bool,Eigen::Dynamic,1> upperFlag, Eigen::Vector3d Vinf);
+//    Eigen::Vector3d pntVel(Eigen::Matrix<double,1,3> POI, Eigen::MatrixXd pntCloud,Eigen::Matrix<bool,Eigen::Dynamic,1> upperFlag, Eigen::Vector3d Vinf);
+    Eigen::Vector3d pntVel(Eigen::Vector3d POI);
     
 public:
     wake(int wakeID, geometry* geom) : ID(wakeID), geom(geom), yMin(0) {}
@@ -61,7 +64,7 @@ public:
     std::vector<wakePanel*> getPanels() const {return wpanels;}
     
     void trefftzPlane(double Vinf,double Sref);
-    
+    double trefftzPlaneFromVel(double Vinf,double Sref);
     Eigen::Vector3d lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc);
     
     

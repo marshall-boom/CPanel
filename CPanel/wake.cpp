@@ -148,8 +148,8 @@ void wake::trefftzPlane(double Vinf,double Sref)
     Cl = Eigen::VectorXd::Zero(nPnts+1);
     Cd = Eigen::VectorXd::Zero(nPnts+1);
     Eigen::MatrixXd trefftzPnts = Eigen::MatrixXd::Zero(nPnts+1,3);
-
     double xTrefftz = x0+2*(xf-x0)/3;
+    
     Eigen::Vector3d pWake;
     for (int i=1; i<nPnts; i++)
     {
@@ -170,6 +170,123 @@ void wake::trefftzPlane(double Vinf,double Sref)
         CD += 1.0/3*step*(Cd(i)+4*Cd(i+1)+Cd(i+2));
         i += 2;
     }
+}
+
+double wake::trefftzPlaneFromVel(double Vinf,double Sref)
+{
+    // Use Simpsons rule for 2D integration to integrate (v^w +w^2) around the area of the Trefftz plane
+    int m = 4; // steps in the y direction (MUST be even for simpsons rule)
+    int n = 4; // steps in the z direction
+    double nPts = (m+1)*(n+1);
+    
+    Eigen::VectorXd yLoc(m+1);
+    Eigen::VectorXd zLoc(n+1);
+    
+    // Limits of integration
+    double a,b,c,d;
+    a = yMin-4; // arbitrary for now...
+    b = yMax+4;
+    c = z0-4;
+    d = zf+4;
+
+    // Survey point locations
+    double xTrefftz = x0+2*(xf-x0)/3;
+    Eigen::MatrixXd Y(m+1,n+1);
+    Eigen::MatrixXd Z(m+1,n+1);
+    
+    for(int i=0; i<m+1; i++){
+        for(int j=0; j<n+1; j++){
+            Y(i,j) = a+(i-1)*(b-a)/m;
+            Z(i,j) = c+(j-1)*(d-c)/n;
+        }
+    }
+    
+    // Build row and column vectors to make W matrix
+    Eigen::VectorXd matRow = Eigen::VectorXd::Ones(m+1);
+    for(int i=1; i<m; i++){ //
+        if(i%2 == 0){ //isEven
+            matRow(i) = 2;
+        }else{
+            matRow(i) = 4;
+        }
+    }
+
+    Eigen::VectorXd matCol = Eigen::VectorXd::Ones(n+1);
+    for(int i=1; i<n; i++){ // 
+        if(i%2 == 0){
+            matCol(i) = 2;
+        }else{
+            matCol(i) = 4;
+        }
+    }
+
+    Eigen::MatrixXd CDmat(m+1,n+1);
+    Eigen::MatrixXd CLmat(m+1,n+1);
+    Eigen::MatrixXd ymat(m+1,n+1);
+    Eigen::MatrixXd zmat(m+1,n+1);
+    Eigen::MatrixXd vmat(m+1,n+1);
+    Eigen::MatrixXd wmat(m+1,n+1);
+    
+    // Evaluate integral
+    for(int i=0; i<m+1; i++){
+        for(int j=0; j<n+1; j++){
+            Eigen::Vector3d planePnt;
+            planePnt << xTrefftz, Y(i,j), Z(i,j);
+            Eigen::Vector3d vPnt = pntVel(planePnt);
+//            multMat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2)); // Wmatrix Coeff. * velocity of wake
+            CDmat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2))/(Vinf*Vinf*Sref); // Wmatrix Coeff. * velocity of wake
+            CLmat(i,j) = matRow(i)*matCol(j)*(vPnt.z())/(Vinf*Sref);
+            ymat(i,j) = planePnt.y();
+            zmat(i,j) = planePnt.z();
+            vmat(i,j) = vPnt.y();
+            wmat(i,j) = vPnt.z();
+        }
+    }
+//    Cl(i) = 2*dPhi(i)/(Vinf*Sref);
+//    Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
+
+    //========printing out quiver plot for matlab======//
+//    std::cout << "y = [";
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            std::cout << ymat(i,j) << ",";
+//        }
+//        std::cout << ";";
+//    }
+//    std::cout << "];" << std::endl;
+//    
+//    std::cout << "z = [";
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            std::cout << zmat(i,j) << ",";
+//        }
+//        std::cout << ";";
+//    }
+//    std::cout << "];" << std::endl;
+//    
+//    std::cout << "v = [";
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            std::cout << vmat(i,j) << ",";
+//        }
+//        std::cout << ";";
+//    }
+//    std::cout << "];" << std::endl;
+//    
+//    std::cout << "w = [";
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            std::cout << wmat(i,j) << ",";
+//        }
+//        std::cout << ";";
+//    }
+//    std::cout << "];" << std::endl;
+    
+    // Simpson's summation
+    double CL = -2*(b-a)*(d-c)/(9*m*n)*CLmat.sum(); //The negative is because w is pointing 'down' in the wake and the '2*' was pulled out of the integral
+    std::cout << "\nmyTrefftzCL = " << CL << std::endl;
+    
+    return (b-a)*(d-c)/(9*m*n)*CDmat.sum();
 }
 
 Eigen::Vector3d wake::lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc)
@@ -345,11 +462,12 @@ double wake::Vradial(Eigen::Vector3d pWake)
     chtlsnd weightsZ(x0,dZ,3,Xb,Vb,V0);
     double w = weightsZ.getF().row(0)*dPhiz;
     Vr = sqrt(pow(v,2)+pow(w,2));
-    return Vr;
+    return w;
 }
 
 Eigen::Vector3d wake::pntInWake(double x, double y)
-{
+{   //Connor's note: function finds the TE that projects out to the input point and then finds where the point lies on the trailing edge. Some testing (with a flat wake) showed that it doesn't change the x or y inputs, maybe it just finds the 'z' value??
+    
     Eigen::Vector3d p1,p2,tvec,pnt,out,pntInWake;
     double t,scale;
     std::vector<edge*> edges;
@@ -388,3 +506,14 @@ Eigen::Vector3d wake::pntInWake(double x, double y)
     return pntInWake;
 }
 
+Eigen::Vector3d wake::pntVel(Eigen::Vector3d POI){
+    
+    Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
+    std::vector<wakePanel*> wPans = this->wpanels;
+    
+    for(int i=1; i<this->wpanels.size(); i++){
+        velInfl+=wPans[i]->panelV(POI);
+    }
+    
+    return velInfl;
+}

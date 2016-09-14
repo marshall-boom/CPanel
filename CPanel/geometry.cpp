@@ -228,35 +228,40 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "\tEdges : " << edges.size() << std::endl;
         std::cout << "\tPanels : " << nTris << std::endl;
         
-        ///*************************************************///
-        // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the smallest time wake panel. Should put this in its own function.
-        if(dt == 0){
-            std::vector<edge*> Tedges;
-            for(int i=0; i<edges.size(); i++){
-                if(edges[i]->isTE()){
-                    Tedges.push_back(edges[i]);
-                }
-            }
-            Eigen::MatrixXd TEdist;
-            TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size());
-            for(int i=0; i<Tedges.size(); i++){
-                for(int j=0; j<Tedges.size(); j++){
-                    if(i!=j){
-                        TEdist(i,j) = std::abs((Tedges[i]->getMidPoint()-Tedges[j]->getMidPoint()).norm());
-                    }
-                }
-            }
-            double minDist = TEdist.minCoeff();
-            dt = minDist/inputV;
-        }
-        std::cout << "dt = " << dt << std::endl;
+
         
         
         if(vortPartFlag){
+            
+            ///*************************************************///
+            // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the smallest time wake panel. Should put this in its own function.
+            if(dt == 0){
+                std::vector<edge*> Tedges;
+                for(int i=0; i<edges.size(); i++){
+                    if(edges[i]->isTE()){
+                        Tedges.push_back(edges[i]);
+                    }
+                }
+                Eigen::MatrixXd TEdist;
+                TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size());
+                for(int i=0; i<Tedges.size(); i++){
+                    for(int j=0; j<Tedges.size(); j++){
+                        if(i!=j){
+                            TEdist(i,j) = std::abs((Tedges[i]->getMidPoint()-Tedges[j]->getMidPoint()).norm());
+                        }
+                    }
+                }
+                double minDist = TEdist.minCoeff();
+                dt = minDist/inputV;
+            }
+            std::cout << "dt = " << dt << std::endl;
+            
+            
             std::cout << "Creating buffer wake..." << std::endl;
             for(int i=0; i<allID.size(); i++){
                 if(allID(i) >= 1000){
-                    std::cout << "ERROR: Please use input file without wake when using the vortex particle wake option" << std::endl;
+                    std::cout << "ERROR: Please use input file without wake panels when using the vortex particle wake option. Change this to call wake destructor before proceeding as normal" << std::endl;
+                    std::exit(0);
                 }
             }
             int numTEnodes = 0, numTEedges=0;
@@ -387,9 +392,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "Building Octree..." << std::endl;
 
         createOctree();
-        std::string file_name = "/Users/C_Man/Desktop/CPanelCases/OctreeFiles/PanelOctree.txt";
-        octreeFile* oct;
-        oct = new octreeFile(file_name,&pOctree);
+//        std::string file_name = "/Users/C_Man/Desktop/CPanelCases/OctreeFiles/PanelOctree.txt";
+//        octreeFile* oct;
+//        oct = new octreeFile(file_name,&pOctree);
         
         // Set neighbors
         std::cout << "Finding Panel Neighbors..." << std::endl;
@@ -504,16 +509,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         if (infCoeffFileExists())
         {
             std::string in;
-            std::cout << "\nInfluence Coefficients have already been calculated for a geometry with this name, would you like to use these coefficients?" << std::endl;
-            std::cout << "\t< Y > - Yes, use coefficients." << std::endl;
-            std::cout << "\t< N > - No, recalculate them." << std::endl;
-            std::cin >> in;
+            std::cout << "for development convenience, the input coefficients have been detecetd and will be used. take this back out after development. It is in geometry class." << std::endl;
+//            std::cout << "\nInfluence Coefficients have already been calculated for a geometry with this name, would you like to use these coefficients?" << std::endl;
+//            std::cout << "\t< Y > - Yes, use coefficients." << std::endl;
+//            std::cout << "\t< N > - No, recalculate them." << std::endl;
+//            std::cin >> in;
             std::cout << std::endl;
-            if (in == "Y" || in == "y")
-            {
+//            if (in == "Y" || in == "y")
+//            {
                 readInfCoeff();
                 read = true;
-            }
+//            }
         }
         
         if (!read)
@@ -1040,4 +1046,27 @@ void geometry::clusterCheck()
         fid << "\n";
     }
     fid.close();
+}
+
+
+void geometry::vortRingVecTest(){
+    // Outputs a MATLAB script that plots the wake panels with each vector
+    
+    std::cout << "clear all; close all; clc;" << std::endl;
+    for(int i=0; i<wPanels.size(); i++){
+        std::vector<edge*> edges = wPanels[i]->getEdges();
+        std::vector<Eigen::Vector3d> vortRings = wPanels[i]->vortexRingVectors();
+        
+        
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

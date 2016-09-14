@@ -72,7 +72,8 @@ public:
     
     void panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &phiDub);
     void panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eigen::Vector3d &vDub);
-    
+    Eigen::Vector3d pntVInf(const Eigen::Vector3d &POI);
+
     Eigen::Vector3d pntVelocity(const Eigen::Vector3d &pnt,double pntPotential, double PG, const Eigen::Vector3d &Vinf);
     
     double dist2Pan(bodyPanel* other);

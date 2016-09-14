@@ -17,15 +17,18 @@
 
 class wake;
 class bodyPanel;
+class particle;
 class edge;
+class vortexFil;
 
 class wakePanel : public panel
 {
     bodyPanel* upperPan;
     bodyPanel* lowerPan;
     bool TEpanel;
-    wake* parentWake;
+    wake* parentWake = nullptr;
     double prevStrength = 0;
+    vortexFil* vortFil;
     
 public:
     wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
@@ -52,7 +55,6 @@ public:
     edge* getTE();
     bool isTEpanel() {return TEpanel;}
     
-    Eigen::Vector3d partSeedPt(Eigen::Vector3d &Vinf, double &dt);
     Eigen::Vector3d panToPartStrengthT1();
     Eigen::Vector3d panToPartStrength();
 
@@ -63,6 +65,15 @@ public:
     std::vector<int> sort_indexes(std::vector<double> &v);
     Eigen::Vector3d partStretching(particle* part);
 
+    std::vector<cpNode*> pointsInOrder();
+    std::vector<edge*> edgesInOrder();
+    
+    vortexFil* getVortFil(){return vortFil;};
+    void setVortFil(vortexFil* filament){vortFil = filament;};
+    
+    Eigen::Vector3d partSeedPt(Eigen::Vector3d &Vinf, double &dt);
+
+    
 };
 
 #endif /* defined(__CPanel__wakePanel__) */

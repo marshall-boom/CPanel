@@ -1,4 +1,4 @@
-//
+
 //  panel.cpp
 //  CPanel
 //
@@ -240,18 +240,17 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
     }
 }
 
-
 Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
 {
     // VSAero doublet velocity influence formulation
     Eigen::Vector3d vel = Eigen::Vector3d::Zero(3);
     Eigen::Vector3d pjk = POI-center;
     Eigen::Matrix3d local = getLocalSys();
-//    if (pjk.norm() < 0.0000001)
-//    {
-//        vel << 0,0,0;
-//        return vel;
-//    }
+    //    if (pjk.norm() < 0.0000001)
+    //    {
+    //        vel << 0,0,0;
+    //        return vel;
+    //    }
     if (pjk.norm()/longSide > 5)
     {
         return pntDubV(local.row(2),pjk);
@@ -259,7 +258,6 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
     else
     {
         Eigen::Vector3d p1,p2,a,b,s;
-        bool isNearFilament;
         int i1,i2;
         for (int i=0; i<nodes.size(); i++)
         {
@@ -279,21 +277,18 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
             b = POI-p2;
             s = p2-p1;
             
-            isNearFilament = nearFilamentCheck(p1,p2,POI);
+            vel += vortexV(a,b,s);
             
-            if(isNearFilament == false)
-            {
-                vel += vortexV(a,b,s);
-            }
         }
         return vel/(4*M_PI);
     }
 }
 
+
 Eigen::Vector3d panel::vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s)
 {
     
-    return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b))+pow(core*s.norm(),2)); //VPP s is side length and was not included before. Excluding side length makes for an arbitrary core size for different geometry
+    return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b)));//+pow(core*s.norm(),2)); // Connor: s is side length and was not included before. Excluding side length makes for an arbitrary core size for different geometry
 }
 
 double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m,const Eigen::Vector3d &n)
@@ -432,7 +427,7 @@ Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
         {
             // Only add the w gradint values, as u and v are zero on the panel. Katz
             velGradMat.col(2) += gradDoub(a,b,s).col(2);
-            std::cout << "particle is on Panel" << std::endl;
+            std::cout << "particle is on Panel" << std::endl; // Also, convet the Katz values to VSaero by dividing(or mult) by 4pi. Do for both source and doublet.
         }
     }
     
@@ -483,21 +478,37 @@ Eigen::Matrix3d panel::gradDoub(const Eigen::Vector3d &a, const Eigen::Vector3d 
 }
 
 bool panel::nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI){
-    // Function checks if a point of interest is near a filament. First, the POI is compared with the filament endpoints to see if it is within the core radius value. Next, the cross product is taken between the two vectors going from each endpoint to the POI. If this cross product is within the core value times the edge length, then
+    // Function checks if a point of interest is near a filament. First, the POI (point of interest) is compared with the filament endpoints to see if it is within the core radius value. Next, the cross product is taken between the two vectors going from each endpoint to the POI. If this cross product is within the core value times the edge length, then it is near.
+    
     
     bool isNear = false;
+    double edgeLength = (p2-p1).norm();
+    double p1d = (p1-POI).norm();
+    double p2d = (p2-POI).norm();
     
-    if((p1-POI).norm() < core || (p2-POI).norm() < core)
+    // Check to see if POI is within the core radius of end points
+    if(p1d < core*edgeLength || p2d < core*edgeLength)
     {
         isNear = true;
         return isNear;
     }
     
-    double dist = ((p1-POI).cross(p2-POI)).norm();
-    Eigen::Vector3d s = p2-p1;
+    // Check to see if point is also outside of the edges
+    bool outsideEdges = false;
+    if(p1d > edgeLength || p2d > edgeLength){
+        outsideEdges = true;
+    }
     
-    if(dist < core*s.norm())
+    // Check to see if point is within core distance height
+    bool isWithinHeight = false;
+    double dist = ((p1-POI).cross(p2-POI)).norm()/edgeLength;
+    
+    if(dist < core*edgeLength)
     {
+        isWithinHeight = true;
+    }
+    
+    if(isWithinHeight && !outsideEdges){
         isNear = true;
     }
 
