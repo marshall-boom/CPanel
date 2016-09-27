@@ -10,16 +10,7 @@
 
 Eigen::Vector3d particleOctree::findRefPoint(const particle &obj)
 {
-    return obj.getPos();
+    return obj.pos;
 }
 
-//Eigen::Vector3d sumPartStrengths(node<particle*>* node)
-//{
-//    std::vector<particle**> nodeParts = node->getMembers();
-//    Eigen::Vector3d nodeStrength = Eigen::Vector3d::Zero();
-//    for(int i=0; i<nodeParts.size(); i++)
-//    {
-//        nodeStrength += (*nodeParts[i])->getStrength();
-//    }
-//    
-//}
+

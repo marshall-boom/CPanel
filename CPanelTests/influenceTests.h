@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <Eigen/Dense>
+#include <random>
 #include "src/cpptest.h"
 #include "bodyPanel.h"
 #include "cpNode.h"
@@ -20,18 +21,32 @@
 #include "geometry.h"
 #include <cmath>
 #include "DoubVelData.h"
+#include "particle.h"
+#include "particleOctree.h"
+#include "particleFMM.h"
+#include "octreeFile.h"
 
 
 class influenceTests{
     
     double maxCoefficient(Eigen::MatrixXd mat);
+    void barnesHutTest(std::vector<particle*> testParts);
+    void interactionListTest(std::vector<particle*> testParts);
+    std::vector<particle*> randomParticleGenerator(int numParts);
+    void BarnesHutSpeedTest(std::vector<particle*> testParts);
+    void speedTestGraphComparison();
+    // Random number generator using code from here: https://isocpp.org/files/papers/n3551.pdf
+    double pick_a_number( double from, double upto );
+    std::vector<int> linspace(int a, int b, int n);
+
     
+
 public:
     void panelVConstTest(Eigen::MatrixXd testingPoints, Eigen::MatrixXd velocityData, bodyPanel* tPan);
     void panelVPntTest(Eigen::MatrixXd testingPoints, Eigen::MatrixXd velocityData, bodyPanel* tPan);
     void velocityComparer(DoubVelData* dat);
-
     
+    void FMMtests();
 };
 
 

@@ -24,7 +24,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
     
     converged = solveMatrixEq();
 
-    
+    std::cout << "starting wake" << std::endl;
     
     if(vortPartFlag){
         std::cout << "Writing timestep " << timeStep << " files..." << std::endl;
@@ -38,29 +38,48 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
 //        bool breakFlag = false;
 //        std::cout << "time step = " << dt << std::endl;
         for(int i=0; i<numSteps; i++){
-            std::cout << "Time step " << timeStep<< "/" << numSteps << ". Flow time = " << timeStep*dt << ". " << particles.size() << " particles" << std::endl;
-            convectParticles();
+            std::cout << "Time step " << timeStep<< "/" << numSteps << ". Flow time = " << timeStep*dt << std::endl;
+
 //            particleStrengthUpdate(); //commenting until big bug is found.
 //            particleStrengthUpdateGaussian();
 //            collapseBufferWake();
             collapseWakeForEachEdge();
+            
+            
+            if(accelerate){
+                
+//                partOctree.clearTree();
+//                partOctree.addData(particles);
+                
+                partOctree.removeData();
+                partOctree.setMaxMembers(10); //Bares Hut
+                partOctree.addData(particles);
+                
+                for (int i=0; i<particles.size(); i++) {
+                    particles[i]->velOn = {0,0,0};
+                }
+                FMM.build(&partOctree);
+            }
+            
+            std::cout << "Setting source strengths..." << std::endl;
             setSourceStrengths();
             std::cout << "Solving singularity strengths..." << std::endl;
             converged = solveVPmatrixEq();
-            compVelocity();
-//            particleOctree partOctree;
-//            partOctree.getNodes()[0]->
-//            partOctree.setMaxMembers(10);
-//            partOctree.addData(particles);
-//           std::string file_name = "/Users/C_Man/Desktop/CPanelCases/OctreeFiles/ParticleOctree"+std::to_string(timeStep)+".txt";
-//            octreeFile* oct;
-//            oct = new octreeFile(file_name,&partOctree);
+//            std::cout << "Computing forces..." << std::endl;
+//            compVelocity();
             
+         
+
+            std::cout << "writing files" << std::endl;
             writeFiles();
             timeStep++;
-//            if(breakFlag){
-//                break;
-//            }
+            
+
+            
+            
+            std::cout << "Convecting " << particles.size() << " particles" << std::endl;
+            convectParticles();
+
         }
         
 //        std::cout << "New Trefftz Plane CD = " << trefftzPlaneCd(particles) << std::endl;
@@ -174,10 +193,13 @@ void cpCase::setSourceStrengths()
     for (int i=0; i<bPanels->size(); i++)
     {
         Eigen::Vector3d sumVelInfl = Eigen::Vector3d::Zero();
-        for(int j=0;j<particles.size(); j++){
-            sumVelInfl+=particles[j]->partVelInfl((*bPanels)[i]->getCenter());
+        
+        if (accelerate && timeStep >0){
+            FMM.barnesHut((*bPanels)[i]->getCenter());
         }
-        for(int j=0; j<filaments.size(); j++){
+        
+        for(int j=0; j<filaments.size(); j++)
+        {
             sumVelInfl+=filaments[j]->velInfl((*bPanels)[i]->getCenter());
         }
         (*bPanels)[i]->setSigma((Vinf+sumVelInfl),0);
@@ -561,7 +583,7 @@ void cpCase::writeParticleData(boost::filesystem::path path)
     Eigen::MatrixXd partMat(particles.size(),3);
     for (int i=0; i<particles.size(); i++)
     {
-        partMat.row(i) = particles[i]->getPos();
+        partMat.row(i) = particles[i]->pos;
     }
     
     std::vector<cellDataArray> data;
@@ -571,7 +593,7 @@ void cpCase::writeParticleData(boost::filesystem::path path)
     strength.data.resize(particles.size(),3);
     for (int i=0; i<particles.size(); i++)
     {
-        strength.data.row(i) = particles[i]->getStrength();
+        strength.data.row(i) = particles[i]->strength;
         con(i) = i;
     }
     data.push_back(strength);
@@ -675,20 +697,31 @@ void cpCase::collapseWakeForEachEdge(){
     // Create filament
     if(timeStep == 1){
         for(int i=0; i<(*wPanels).size(); i++){
+            vortexFil* fil;
             Eigen::Vector3d p1,p2;
             p1 = (*wPanels)[i]->pointsInOrder()[2]->getPnt();
             p2 = (*wPanels)[i]->pointsInOrder()[3]->getPnt();
             
-            vortexFil* fil = new vortexFil(p1, p2,-(*wPanels)[i]->getMu(), (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+            if(startingWake){
+                fil = new vortexFil(p1, p2,-(*wPanels)[i]->getMu(), (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+            }else{
+                fil = new vortexFil(p1, p2,0, (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+            }
             filaments.push_back(fil);
             (*wPanels)[i]->setVortFil(fil);
         }
     }else{
-        for(int i=0; i<(*wPanels).size(); i++){
-            filaments[i]->setStrength(-(*wPanels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+        if(startingWake){
+            for(int i=0; i<(*wPanels).size(); i++){
+                filaments[i]->setStrength(-(*wPanels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+            }
+        }else{
+            for(int i=0; i<(*wPanels).size(); i++){
+                filaments[i]->setStrength(-(*wPanels)[i]->getMu());
+            }
         }
     }
-
+    
 }
 
 bool cpCase::edgeIsUsed(edge* thisEdge, std::vector<edge*> pEdges){
@@ -710,11 +743,24 @@ Eigen::Vector3d cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)
 //        Eigen::Vector3d Rj = pan->pointsInOrder()[0]->getPnt();
 //        Eigen::Vector3d Ri = pan->pointsInOrder()[1]->getPnt();
 //        strength = (pan->getMu())*(Ri-Rj);
-//    }
+    //    }
     if(edgeNum == 2) { // If is far edge, don't need to worry about neighbor panel
         Eigen::Vector3d Rj = pan->pointsInOrder()[2]->getPnt();
         Eigen::Vector3d Ri = pan->pointsInOrder()[3]->getPnt();
-        strength = (pan->getMu()-pan->getPrevStrength())*(Ri-Rj);
+        if (startingWake) {
+            strength = (pan->getMu()-pan->getPrevStrength())*(Ri-Rj);
+        }
+        else{
+//            if(timeStep == 1){
+//                strength = Eigen::Vector3d::Zero();
+//            }else if(timeStep == 2){
+//                strength = (pan->getMu())*(Ri-Rj);
+//            }else{
+//                strength = (pan->getMu()-pan->getPrevStrength())*(Ri-Rj);
+//            }
+            strength = Eigen::Vector3d::Zero();
+
+        }
     }
     else if(edgeNum == 1){
         wakePanel* otherPan = curEdge->getOtherWakePan(pan);
@@ -760,7 +806,7 @@ Eigen::Vector3d cpCase::seedPos(wakePanel* pan, int edgeNum){
 }
 
 Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
-    
+        
     // Freestream influence
     Eigen::Vector3d velOnPart = Vinf;
     
@@ -774,10 +820,16 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
         velOnPart += (*wPanels)[j]->panelV(POI);
     }
     
+    
     // Particle influence
-    for(int j=0;j<particles.size();j++)
-    {
-        velOnPart += particles[j]->partVelInfl(POI);
+    if(accelerate){
+        velOnPart += FMM.barnesHut(POI);
+    }
+    else{
+        for(int j=0;j<particles.size();j++)
+        {
+            velOnPart += particles[j]->partVelInfl(POI);
+        }
     }
 
     // Vortex Filament influence
@@ -790,12 +842,17 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
 
 void cpCase::convectParticles(){
     std::vector<Eigen::Vector3d> newPartPositions;
+    
+//    particleFMM pFMM;
+//    pFMM.build(&partOctree);
+
+    
     for(int i=0;i<particles.size();i++){
         
         Eigen::Vector3d newPos;
         
         if(rungeKuttaStep){
-            Eigen::Vector3d POI = particles[i]->getPos();
+            Eigen::Vector3d POI = particles[i]->pos;
             Eigen::Vector3d k1 = velocityInflFromEverything(POI);
             Eigen::Vector3d k2 = velocityInflFromEverything(POI+k1*dt/2);
             Eigen::Vector3d k3 = velocityInflFromEverything(POI+k2*dt/2);
@@ -806,17 +863,17 @@ void cpCase::convectParticles(){
         }
         else // Do Adams Bashforth
         {
-            Eigen::Vector3d velOnPart = velocityInflFromEverything(particles[i]->getPos());
+            Eigen::Vector3d velOnPart = velocityInflFromEverything(particles[i]->pos);
             
             if(particles[i]->getPrevVelInfl().isZero())
             {
-                newPos = particles[i]->getPos() + dt*velOnPart;
+                newPos = particles[i]->pos + dt*velOnPart;
             }
             else{
                 // Adams bashforth scheme
-                newPos = particles[i]->getPos() + dt*(1.5*velOnPart - 0.5*particles[i]->getPrevVelInfl());
+                newPos = particles[i]->pos + dt*(1.5*velOnPart - 0.5*particles[i]->getPrevVelInfl());
             }
-            
+
             particles[i]->setPrevVelInfl(velOnPart);
             newPartPositions.push_back(newPos);
         }
@@ -864,10 +921,10 @@ void cpCase::particleStrengthUpdate(){
         Eigen::Vector3d newStrength;
         if(particles[i]->getprevStrengthUpdate().isZero())
         {
-            newStrength = particles[i]->getStrength() + stretchDiffVec[i]*dt;
+            newStrength = particles[i]->strength + stretchDiffVec[i]*dt;
         }else{
             //Adams bashforth
-            newStrength = particles[i]->getStrength() + dt*(1.5*stretchDiffVec[i] - 0.5*particles[i]->getprevStrengthUpdate());
+            newStrength = particles[i]->strength + dt*(1.5*stretchDiffVec[i] - 0.5*particles[i]->getprevStrengthUpdate());
         }
         particles[i]->setprevStrengthUpdate(stretchDiffVec[i]);
         particles[i]->setStrength(newStrength);
@@ -896,10 +953,10 @@ void cpCase::particleStrengthUpdateGaussian(){
         Eigen::Vector3d newStrength;
         if(particles[i]->getprevStrengthUpdate().isZero())
         {
-            newStrength = particles[i]->getStrength() + stretchDiffVec[i]*dt;
+            newStrength = particles[i]->strength + stretchDiffVec[i]*dt;
         }else
         {
-            newStrength = particles[i]->getStrength() + dt*(1.5*stretchDiffVec[i] - 0.5*particles[i]->getprevStrengthUpdate()); //Adams bashforth
+            newStrength = particles[i]->strength + dt*(1.5*stretchDiffVec[i] - 0.5*particles[i]->getprevStrengthUpdate()); //Adams bashforth
         }
         particles[i]->setprevStrengthUpdate(stretchDiffVec[i]);
         particles[i]->setStrength(newStrength);
@@ -909,27 +966,27 @@ void cpCase::particleStrengthUpdateGaussian(){
 //double cpCase::trefftzPlaneCd(std::vector<particle*> particles){
 //    int yPnts = 30;
 //    int zPnts = 30;
-//    double xPartMax=particles[0]->getPos().x();
-//    double yPartMax=particles[0]->getPos().y(); // initializing with first particle so that
-//    double yPartMin=particles[0]->getPos().y();
-//    double zPartMax=particles[0]->getPos().z();
-//    double zPartMin=particles[0]->getPos().z();
+//    double xPartMax=particles[0]->pos.x();
+//    double yPartMax=particles[0]->pos.y(); // initializing with first particle so that
+//    double yPartMin=particles[0]->pos.y();
+//    double zPartMax=particles[0]->pos.z();
+//    double zPartMin=particles[0]->pos.z();
 //    
 //    for(int i=0; i<particles.size(); i++){
-//        if(particles[i]->getPos().x() > xPartMax){
-//            xPartMax = particles[i]->getPos().x();
+//        if(particles[i]->pos.x() > xPartMax){
+//            xPartMax = particles[i]->pos.x();
 //        }
-//        if(particles[i]->getPos().y() > yPartMax){
-//            yPartMax = particles[i]->getPos().y();
+//        if(particles[i]->pos.y() > yPartMax){
+//            yPartMax = particles[i]->pos.y();
 //        }
-//        if(particles[i]->getPos().y() < yPartMin){
-//            yPartMin = particles[i]->getPos().y();
+//        if(particles[i]->pos.y() < yPartMin){
+//            yPartMin = particles[i]->pos.y();
 //        }
-//        if(particles[i]->getPos().z() > zPartMax){
-//            zPartMax = particles[i]->getPos().z();
+//        if(particles[i]->pos.z() > zPartMax){
+//            zPartMax = particles[i]->pos.z();
 //        }
-//        if(particles[i]->getPos().z() < zPartMax){
-//            zPartMin = particles[i]->getPos().z();
+//        if(particles[i]->pos.z() < zPartMax){
+//            zPartMin = particles[i]->pos.z();
 //        }
 //    }
 //

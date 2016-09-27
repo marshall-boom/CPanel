@@ -33,8 +33,8 @@ Eigen::Vector3d particle::partStrengthUpdate(particle* part){
     Eigen::Vector3d dist = part->pos - this->pos;
     double nu = 1.983e-5;
     
-    Eigen::Vector3d alphaP = this->getStrength();
-    Eigen::Vector3d alphaQ = part->getStrength();
+    Eigen::Vector3d alphaP = this->strength;
+    Eigen::Vector3d alphaQ = part->strength;
     
 
     Eigen::Vector3d firstTerm = (dist.norm()*dist.norm() + 2.5*sigma*sigma)/(pow(dist.norm()*dist.norm() + sigma*sigma,2.5)) * alphaP.cross(alphaQ);
@@ -52,7 +52,7 @@ Eigen::Vector3d particle::partVelInflGaussian(particle* part){
     // 'part' is the influenced particle
     double sigma = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
     
-    Eigen::Vector3d dist = part->getPos()-this->pos;
+    Eigen::Vector3d dist = part->pos-this->pos;
     double rho = dist.norm()/sigma;
     
     double K = (1/(4*M_PI*rho)*erf(rho/pow(2,0.5))-1/(pow(2*M_PI,1.5))*exp(-0.5*rho*rho))/(rho*rho);
@@ -74,8 +74,8 @@ Eigen::Vector3d particle::partVelInflGaussian(const Eigen::Vector3d &POI){
 
 
 Eigen::Vector3d particle::vortexStretchingGaussian(particle* part){
-    Eigen::Vector3d Xi = this->getPos();
-    Eigen::Vector3d Xj = part->getPos();
+    Eigen::Vector3d Xi = this->pos;
+    Eigen::Vector3d Xj = part->pos;
     
     double sigij = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
     
@@ -99,12 +99,12 @@ Eigen::Vector3d particle::vortexStretchingGaussian(particle* part){
     }
     
     Eigen::Matrix3d alphaTilda;
-    Eigen::Vector3d a = part->getStrength();
+    Eigen::Vector3d a = part->strength;
     alphaTilda << 0,-a.z(),a.y(),a.z(),0,-a.x(),-a.y(),a.x(),0; // cross product matrix
     
     Eigen::Matrix3d velGradient = 1/pow(sigij,3)*alphaTilda*inflMat;
     
-    return velGradient*this->getStrength();
+    return velGradient*this->strength;
 }
 
 
@@ -113,8 +113,8 @@ Eigen::Vector3d particle::viscousDiffusionGaussian(particle* part){
     
     double nu = 1.983e-5; //Change based off of input...
     
-    Eigen::Vector3d Xi = this->getPos();
-    Eigen::Vector3d Xj = part->getPos();
+    Eigen::Vector3d Xi = this->pos;
+    Eigen::Vector3d Xj = part->pos;
 
     double sigij = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
     double rho = (Xi-Xj).norm()/sigij;

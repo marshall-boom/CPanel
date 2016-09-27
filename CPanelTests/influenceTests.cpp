@@ -122,7 +122,204 @@ test->panelVPntTest(dat->MedSurveyPts, dat->medVelPnt, dat->testPan);
 }
 
 
+std::vector<particle*> influenceTests::randomParticleGenerator(int numParts){
+    // Function generates random particles with position and strength within 0 and 1 for each component
+    std::vector<particle*> particles;
+    
+    double radius = .5/numParts; // ~ avg. dist btw parts
+    for (int i=0; i<numParts; i++) {
+        
+        // Create random position and strength
+        Eigen::Vector3d pos, strength;
+        for (int j=0; j<pos.size(); j++)
+        {
+            pos(j) = pick_a_number(0,1);
+            strength(j) = pick_a_number(0,1);
+        }
+        
+        particle* p = new particle(pos,strength,radius, {0,0,0}, {0,0,0});
+        particles.push_back(p);
+    }
+    
+    return particles;
+}
 
+
+void influenceTests::FMMtests(){
+    
+    std::vector<particle*> testParts = randomParticleGenerator(100);
+    
+//    BarnesHutSpeedTest(testParts);
+//    barnesHutTest(testParts);
+//    interactionListTest(testParts);
+    speedTestGraphComparison();
+}
+
+void influenceTests::barnesHutTest(std::vector<particle*> testParts){
+    // This test creates an octree with random particles and then computes the velocity influnce by both the brute force method and then the Barnes Hut algorithm
+    
+    // Test params
+    Eigen::Vector3d POI = {0,0,0};
+
+    
+    // Manually sum up particle influences
+    std::cout << "Brute force method..." << std::endl;
+    Eigen::Vector3d allPartsVel = Eigen::Vector3d::Zero();
+    
+    clock_t partBegin = clock();
+    for (int i=0; i<testParts.size(); i++)
+    {
+        allPartsVel+=testParts[i]->partVelInfl(POI);
+    }
+    clock_t partEnd = clock();
+    std::cout << "Individual Particle Calc Time = " <<  (partEnd-partBegin) << " clocks" << std::endl;
+
+    
+    
+    // Barnes-Hut
+    std::cout << "Barnes-Hut method:" << std::endl;
+    
+    std::cout << "Building octree..." << std::endl;
+    clock_t octBuild_start = clock();
+        particleOctree partTree;
+        partTree.setMaxMembers(10);
+        partTree.addData(testParts);
+    clock_t octBuild_end = clock();
+    std::cout << "Treecode build time = " <<  (octBuild_end-octBuild_start) << " clocks" << std::endl;
+
+    // Writing octree output (not inlcuded in time)
+    std::string file_name = "/Users/C_Man/Desktop/CPanelDevelopment/FMM/testTree.txt";
+    octreeFile* oct;
+    oct = new octreeFile(file_name,&partTree);
+    
+    
+    std::cout << "Calculating expansions..." << std::endl;
+    clock_t expBuild_start = clock();
+        particleFMM FMM;
+        FMM.build(&partTree);
+    clock_t expBuild_end = clock();
+    std::cout << "Particle Expansions build time = " <<  (expBuild_end-expBuild_start) << " clocks" << std::endl;
+
+    
+    std::cout << "Velocity using Barnes-Hut..." << std::endl;
+    clock_t bhBegin = clock();
+        Eigen::Vector3d barnesHutVel = FMM.barnesHut(POI);
+    clock_t bhEnd = clock();
+    std::cout << "Barnes Hut time = " <<  (bhEnd-bhBegin) << " clocks" << std::endl;
+
+
+    std::cout << "Brute force method vel = {"<<allPartsVel.x()<<", "<<allPartsVel.y()<<","<<allPartsVel.z()<<"}"<<std::endl;
+    std::cout << "Barnes-Hut velocity    = {"<<barnesHutVel.x()<<", "<<barnesHutVel.y()<<","<<barnesHutVel.z()<<"}"<<std::endl;
+
+    double percDiffX = (allPartsVel.x()-barnesHutVel.x())/allPartsVel.x()*100;
+    double percDiffY = (allPartsVel.y()-barnesHutVel.y())/allPartsVel.y()*100;
+    double percDiffZ = (allPartsVel.z()-barnesHutVel.z())/allPartsVel.z()*100;
+
+    std::cout << "% diff = {" << percDiffX<<"%, "<<percDiffY<<"%, "<<percDiffZ<<"%} "<<std::endl;
+    
+    std::cout <<  std::endl;
+    
+}
+
+void influenceTests::BarnesHutSpeedTest(std::vector<particle*> testParts){
+    // Function goes through each interaction like what would happen to advance a cloud of particles.
+    std::cout << "------------Number of test particles = " << testParts.size() << "--------------" << std::endl;
+    
+    
+    // Brute Force
+//    std::cout << "Brute force method..." << std::endl;
+    clock_t bruteForceBegin = clock();
+    std::vector<Eigen::Vector3d> velOnVec;
+    for (int i=0; i<testParts.size(); i++)
+    {
+        Eigen::Vector3d velOn = Eigen::Vector3d::Zero();
+        for (int j=0; j<testParts.size(); j++)
+        {
+            velOn += testParts[j]->partVelInfl(testParts[i]->pos);
+        }
+        velOnVec.push_back(velOn);
+    }
+    clock_t bfTime = (clock()-bruteForceBegin);
+    std::cout << "Brute force method = " <<  bfTime << " clocks" << std::endl;
+
+    
+    
+    // Barnes Hut
+//    clock_t barnesHutBegin = clock();
+    
+    // Build octree
+    particleOctree partTree;
+    partTree.setMaxMembers(1);
+    partTree.addData(testParts);
+    
+    // Build Expansions
+    particleFMM FMM;
+    FMM.build(&partTree);
+    
+    std::vector<Eigen::Vector3d> velOnVecBH;
+    clock_t barnesHutBegin = clock();
+    for (int i=0; i<testParts.size(); i++)
+    {
+//        clock_t oneBH = clock();
+        velOnVecBH.push_back(FMM.barnesHut(testParts[i]->pos));
+//        clock_t oneBHend = clock();
+//        std::cout << "one BH calc: " << oneBHend-oneBH << std::endl;
+    }
+    clock_t bhTime = (clock()-barnesHutBegin);
+    std::cout << "Barnes Hut method  = " << bhTime  << " clocks" << std::endl;
+
+    // Converting clock time to double so can do math with it
+    std::string bhTimeString = std::to_string(bhTime);
+    std::string::size_type sz;     // alias of size_t
+    double bhTimeD = std::stod (bhTimeString, &sz);
+    
+    std::string bfTimeString = std::to_string(bfTime);
+    double bfTimeD = std::stod (bfTimeString, &sz);
+    
+    std::cout << "Speed up  = " << (bfTimeD/bhTimeD)-1 << " times faster" << std::endl;
+}
+
+void influenceTests::speedTestGraphComparison()
+{
+    int a = 500;
+    int b = 10000;
+    int n = 20;
+    std::vector<int> numParts = linspace(a, b, n);
+    
+    for (int i=0; i<numParts.size(); i++)
+    {
+        std::vector<particle*> testParts = randomParticleGenerator(numParts[i]);
+        BarnesHutSpeedTest(testParts);
+    }
+
+}
+
+
+std::vector<int> influenceTests::linspace(int a, int b, int n)
+{
+    std::vector<int> linSpaced;
+    
+    int step = (b-a)/(n-1);
+    
+    for (int i=0; i<n; i++) {
+        linSpaced.push_back(a+step*i);
+    }
+    return linSpaced;
+}
+
+std::default_random_engine & global_urng( )
+{
+    static std::default_random_engine u{};
+    return u;
+}
+
+double influenceTests::pick_a_number( double from, double upto )
+{
+    static std::uniform_real_distribution<> d{};
+    using parm_t = decltype(d)::param_type;
+    
+    return d( global_urng(), parm_t{from, upto} );
+}
 
 
 

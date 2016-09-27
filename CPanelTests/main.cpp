@@ -40,7 +40,6 @@ int main(int argc, const char * argv[])
     geometry geom(&inData);
     
     
-    
     int numFiles = 7;
     
     for (int i=0; i<numFiles; i++) {
@@ -54,14 +53,14 @@ int main(int argc, const char * argv[])
         dat = readDataFile(fid);
         createTestPanel(dat, &geom);
         
-        GeomTests *geomTest = new GeomTests(dat->testPan);
-        geomTest->conductTests(dat->testPan, &geom);
+//        GeomTests *geomTest = new GeomTests(dat->testPan);
+//        geomTest->conductTests(dat->testPan, &geom);
         
         
         influenceTests* test = new influenceTests();
         
+        test->FMMtests();
         test->velocityComparer(dat);
-        
         
     }
     

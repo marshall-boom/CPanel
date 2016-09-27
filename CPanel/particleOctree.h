@@ -17,12 +17,11 @@ class particle;
 
 class particleOctree : public octree<particle>
 {
-    
+
 public:
     particleOctree() : octree() {}
     
     Eigen::Vector3d findRefPoint(const particle &obj);
-    Eigen::Vector3d sumPartStrengths(node<particle*>* node);
 };
 
 

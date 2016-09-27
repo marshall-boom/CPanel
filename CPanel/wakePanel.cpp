@@ -413,7 +413,7 @@ std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {
 }
 
 Eigen::Vector3d wakePanel::partStretching(particle* part){
-    Eigen::Vector3d POI = part->getPos();
+    Eigen::Vector3d POI = part->pos;
     Eigen::Vector3d partStretching;
     double dist2panel = (POI-center).norm();
     bool isFarField = false;
@@ -432,7 +432,7 @@ Eigen::Vector3d wakePanel::partStretching(particle* part){
         velGradMat += velocityGradientDoublet(POI);
     }
     
-    partStretching = velGradMat*part->getStrength();
+    partStretching = velGradMat*part->strength;
     
     return partStretching;
 }

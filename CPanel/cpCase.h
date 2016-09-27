@@ -26,6 +26,8 @@
 #include "edge.h" //VPP
 #include "particleOctree.h"
 #include "vortexFil.h"
+#include "particleFMM.h"
+#include "octreeFile.h"
 
 
 
@@ -44,6 +46,7 @@ class cpCase
     bool manualStepsSet;
     double numSteps = 1000; // Run for a LOT of steps before convergence criteria kills solution
     double dt;
+    bool startingWake = true;
     std::vector<double> CL; //VPP
     
     Eigen::Vector3d Vinf;
@@ -111,7 +114,12 @@ class cpCase
 
     bool rungeKuttaStep = false;
 
-
+    
+    particleOctree partOctree;
+    particleFMM FMM;
+    
+    bool accelerate = true;
+    
 //    void convectBufferWake(); //VPP
 
     

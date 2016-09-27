@@ -1,0 +1,223 @@
+TOctree
+v6
+r1
+cCheck dependencies
+cCompileC build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.o /Users/C_Man/code/CPanel/Octree/main.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/SDKSettings.plist
+c00000000534C24ED000000000000044C
+t1397499117
+s1100
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/CoreServices/SystemVersion.plist
+c00000000534C24ED00000000000001DE
+t1397499117
+s478
+
+N/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/5.1/include/module.map
+c00000000534C25110000000000000ADC
+t1397499153
+s2780
+
+N/Users/C_Man/code/CPanel/Octree/main.cpp
+c00000000552431AE000000000000041D
+t1428435374
+s1053
+
+N/Users/C_Man/code/CPanel/build/CPanel - Unstructured Panel Code.build/Release/Octree.build/Objects-normal/x86_64/main.o
+t2
+s0
+
+CCheck dependencies
+r0
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies18"Check dependenciesf54778dd518abd41^3df32ede518abd41^---0#1#1#--18"Check dependencies36"1F287FA9-07D3-4856-97BC-3781C26F7982-
+
+CCompileC build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.o /Users/C_Man/code/CPanel/Octree/main.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s495604190.247215
+e495604193.782630
+r0
+xCompileC
+xbuild/CPanel - Unstructured Panel Code.build/Release/Octree.build/Objects-normal/x86_64/main.o
+x/Users/C_Man/code/CPanel/Octree/main.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+d/Users/C_Man/code/CPanel/Octree/main.cpp
+d/Users/C_Man/code/CPanel/Octree/octree.h
+d/Users/C_Man/code/eigen/Eigen/Dense
+d/Users/C_Man/code/eigen/Eigen/Core
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/DisableStupidWarnings.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/Macros.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/MKL_support.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/Constants.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/ForwardDeclarations.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/Meta.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/StaticAssert.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/XprHelper.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/Memory.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/NumTraits.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/MathFunctions.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/GenericPacketMath.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/arch/SSE/PacketMath.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/arch/SSE/MathFunctions.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/arch/SSE/Complex.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/arch/Default/Settings.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Functors.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/DenseCoeffsBase.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/DenseBase.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/BlockMethods.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/MatrixBase.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/CommonCwiseUnaryOps.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/CommonCwiseBinaryOps.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/MatrixCwiseUnaryOps.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/MatrixCwiseBinaryOps.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/EigenBase.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Assign.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/BlasUtil.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/DenseStorage.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/NestByValue.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/ForceAlignedAccess.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/ReturnByValue.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/NoAlias.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/PlainObjectBase.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Matrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Array.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/CwiseBinaryOp.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/CwiseUnaryOp.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/CwiseNullaryOp.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/CwiseUnaryView.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/SelfCwiseBinaryOp.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Dot.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/StableNorm.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/MapBase.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Stride.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Map.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Block.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/VectorBlock.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Ref.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Transpose.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/DiagonalMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Diagonal.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/DiagonalProduct.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/PermutationMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Transpositions.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Redux.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Visitor.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Fuzzy.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/IO.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Swap.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/CommaInitializer.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Flagged.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/ProductBase.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/GeneralProduct.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/TriangularMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/SelfAdjointView.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/GeneralBlockPanelKernel.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/Parallelizer.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/CoeffBasedProduct.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/GeneralMatrixVector.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/GeneralMatrixMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/SolveTriangular.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/GeneralMatrixMatrixTriangular.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/SelfadjointMatrixVector.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/SelfadjointMatrixMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/SelfadjointProduct.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/SelfadjointRank2Update.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/TriangularMatrixVector.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/TriangularMatrixMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/TriangularSolverMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/products/TriangularSolverVector.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/BandMatrix.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/CoreIterators.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/BooleanRedux.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Select.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/VectorwiseOp.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Random.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Replicate.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/Reverse.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/ArrayBase.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/ArrayCwiseUnaryOps.h
+d/Users/C_Man/code/eigen/Eigen/src/plugins/ArrayCwiseBinaryOps.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/ArrayWrapper.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/GlobalFunctions.h
+d/Users/C_Man/code/eigen/Eigen/src/Core/util/ReenableStupidWarnings.h
+d/Users/C_Man/code/eigen/Eigen/LU
+d/Users/C_Man/code/eigen/Eigen/src/misc/Solve.h
+d/Users/C_Man/code/eigen/Eigen/src/misc/Kernel.h
+d/Users/C_Man/code/eigen/Eigen/src/misc/Image.h
+d/Users/C_Man/code/eigen/Eigen/src/LU/FullPivLU.h
+d/Users/C_Man/code/eigen/Eigen/src/LU/PartialPivLU.h
+d/Users/C_Man/code/eigen/Eigen/src/LU/Determinant.h
+d/Users/C_Man/code/eigen/Eigen/src/LU/Inverse.h
+d/Users/C_Man/code/eigen/Eigen/src/LU/arch/Inverse_SSE.h
+d/Users/C_Man/code/eigen/Eigen/Cholesky
+d/Users/C_Man/code/eigen/Eigen/src/Cholesky/LLT.h
+d/Users/C_Man/code/eigen/Eigen/src/Cholesky/LDLT.h
+d/Users/C_Man/code/eigen/Eigen/QR
+d/Users/C_Man/code/eigen/Eigen/Jacobi
+d/Users/C_Man/code/eigen/Eigen/src/Jacobi/Jacobi.h
+d/Users/C_Man/code/eigen/Eigen/Householder
+d/Users/C_Man/code/eigen/Eigen/src/Householder/Householder.h
+d/Users/C_Man/code/eigen/Eigen/src/Householder/HouseholderSequence.h
+d/Users/C_Man/code/eigen/Eigen/src/Householder/BlockHouseholder.h
+d/Users/C_Man/code/eigen/Eigen/src/QR/HouseholderQR.h
+d/Users/C_Man/code/eigen/Eigen/src/QR/FullPivHouseholderQR.h
+d/Users/C_Man/code/eigen/Eigen/src/QR/ColPivHouseholderQR.h
+d/Users/C_Man/code/eigen/Eigen/SVD
+d/Users/C_Man/code/eigen/Eigen/src/SVD/JacobiSVD.h
+d/Users/C_Man/code/eigen/Eigen/src/SVD/UpperBidiagonalization.h
+d/Users/C_Man/code/eigen/Eigen/Geometry
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/OrthoMethods.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/EulerAngles.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Homogeneous.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/RotationBase.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Rotation2D.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Quaternion.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/AngleAxis.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Transform.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Translation.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Scaling.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Hyperplane.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/ParametrizedLine.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/AlignedBox.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/Umeyama.h
+d/Users/C_Man/code/eigen/Eigen/src/Geometry/arch/Geometry_SSE.h
+d/Users/C_Man/code/eigen/Eigen/Eigenvalues
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/Tridiagonalization.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/RealSchur.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/HessenbergDecomposition.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/EigenSolver.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/SelfAdjointEigenSolver.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/ComplexSchur.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/ComplexEigenSolver.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/RealQZ.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h
+d/Users/C_Man/code/eigen/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h
+d/Users/C_Man/code/CPanel/Octree/node.h
+d/Users/C_Man/code/CPanel/Octree/member.h
+oIn file included from /Users/C_Man/code/CPanel/Octree/main.cpp:10:
+o[1m/Users/C_Man/code/CPanel/Octree/octree.h:249:50: [0m[0;1;35mwarning: [0m[1munused parameter
+o      'level' [-Wunused-parameter][0m
+o    std::vector<node<type>*> getLevelNodes(short level)
+o[0;1;32m                                                 ^
+o[0m[1m/Users/C_Man/code/CPanel/Octree/main.cpp:58:16: [0m[0;1;31merror: [0m[1mvariable type
+o      'testOctree' is an abstract class[0m
+o    testOctree myOctree;
+o[0;1;32m               ^
+o[0mIn file included from /Users/C_Man/code/CPanel/Octree/main.cpp:10:
+o[1m/Users/C_Man/code/CPanel/Octree/octree.h:265:29: [0m[0;1;30mnote: [0munimplemented pure
+o      virtual method 'findRefPoint' in 'testOctree'[0m
+o    virtual Eigen::Vector3d findRefPoint(const type &obj) = 0;
+o[0;1;32m                            ^
+o[0m1 warning and 1 error generated.
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection48"Compile /Users/C_Man/code/CPanel/Octree/main.cpp201"[1mCompileC[0m build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.o [1mOctree/main.cpp[0m normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler22883fde518abd41^1059c8e1518abd41^-876"In file included from /Users/C_Man/code/CPanel/Octree/main.cpp:10:[1m/Users/C_Man/code/CPanel/Octree/octree.h:249:50: [0m[0;1;35mwarning: [0m[1munused parameter      'level' [-Wunused-parameter][0m    std::vector<node<type>*> getLevelNodes(short level)[0;1;32m                                                 ^[0m[1m/Users/C_Man/code/CPanel/Octree/main.cpp:58:16: [0m[0;1;31merror: [0m[1mvariable type      'testOctree' is an abstract class[0m    testOctree myOctree;[0;1;32m               ^[0mIn file included from /Users/C_Man/code/CPanel/Octree/main.cpp:10:[1m/Users/C_Man/code/CPanel/Octree/octree.h:265:29: [0m[0;1;30mnote: [0munimplemented pure      virtual method 'findRefPoint' in 'testOctree'[0m    virtual Eigen::Vector3d findRefPoint(const type &obj) = 0;[0;1;32m                            ^[0m1 warning and 1 error generated.2(36%IDEClangDiagnosticActivityLogMessage2@24"Unused parameter 'level'-495604193#18446744073709551615#0#1(2@66"In file included from /Users/C_Man/code/CPanel/Octree/main.cpp:10:-495604193#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@47"file:///Users/C_Man/code/CPanel/Octree/main.cpp0000000000000000^9#9#9#9#170#0#21"Apple LLVM 5.0 Notice--1#27"com.apple.dt.IDE.diagnostic3@47"file:///Users/C_Man/code/CPanel/Octree/octree.h0000000000000000^248#49#248#49#7163#0#14"Semantic Issue--2@47"Variable type 'testOctree' is an abstract class-495604193#18446744073709551615#0#1(2@64"Unimplemented pure virtual method 'findRefPoint' in 'testOctree'-495604193#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@47"file:///Users/C_Man/code/CPanel/Octree/octree.h0000000000000000^264#28#264#28#7518#0#14"Semantic Issue--2#27"com.apple.dt.IDE.diagnostic3@47"file:///Users/C_Man/code/CPanel/Octree/main.cpp0000000000000000^57#15#57#15#1007#0#14"Semantic Issue--0#0#1#-19%DVTDocumentLocation4@47"file:///Users/C_Man/code/CPanel/Octree/main.cpp0000000000000000^2946"[1mCompileC[0m build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.o [1mOctree/main.cpp[0m normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/C_Man/code/CPanel    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=80 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fcolor-diagnostics -std=gnu++11 -stdlib=libc++ -fmodules -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wunused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.9 -g -fvisibility=hidden -fvisibility-inlines-hidden -Wno-sign-conversion -iquote /Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Octree-generated-files.hmap -I/Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Octree-own-target-headers.hmap -I/Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Octree-all-target-headers.hmap -iquote /Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Octree-project-headers.hmap -I/Users/C_Man/code/CPanel/build/Release/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/usr/local/include -I/Users/C_Man/code/boost_1_57_0 -I/Users/C_Man/code/cpptest-1.1.2 -I/Users/C_Man/code/eigen -I/Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/DerivedSources/x86_64 -I/Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/DerivedSources -F/Users/C_Man/code/CPanel/build/Release -MMD -MT dependencies -MF /Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.d --serialize-diagnostics /Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.dia -c /Users/C_Man/code/CPanel/Octree/main.cpp -o /Users/C_Man/code/CPanel/build/CPanel\ -\ Unstructured\ Panel\ Code.build/Release/Octree.build/Objects-normal/x86_64/main.o36"7731A915-225F-41DA-9A74-1A3ADE3AB371-
+bC1F46B06-3D91-47A6-A1B8-5B8FBA254869
+
+CGenerateDSYMFile /Users/C_Man/code/CPanel/build/Release/Octree.dSYM /Users/C_Man/code/CPanel/build/Release/Octree
+r0
+
+CLd /Users/C_Man/code/CPanel/build/Release/Octree normal x86_64
+r0
+

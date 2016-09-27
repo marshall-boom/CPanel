@@ -27,6 +27,7 @@ class node
     std::vector<member<type>> members;
     short level;
     short maxMembers;
+    double maxTheta = 0.5;
     
     void createChild(int childNumber)
     {
@@ -74,7 +75,9 @@ class node
         {
             for (int i=0; i<8; i++)
             {
-                children[i]->addLevel();
+                if(children[i]){
+                    children[i]->addLevel();
+                }
             }
         }
     }
@@ -210,17 +213,95 @@ public:
         return isSame;
     }
     
+    Eigen::Vector3d calcVel(Eigen::Vector3d POI)
+    {
+        
+        Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
+        if(this->isLeafNode())
+        {
+            // old
+//            velInfl = this->getMembers()[0]->partVelInfl(POI);
+            // new
+            std::vector<type*> nParts = this->getMembers();
+            for(int i=0; i<nParts.size(); i++)
+            {
+                velInfl+=nParts[i]->partVelInfl(POI);
+            }
+        }
+        else
+        {
+            if(this->isFarField(POI))
+            {
+                velInfl = this->multExp->partVelInfl(POI);
+            }
+            else
+            {
+                std::vector<node<type>*> children = this->getChildren();
+                for(int i=0; i<children.size() ; i++)
+                {
+                    velInfl += children[i]->calcVel(POI);
+                }
+            }
+        }
+        
+        return velInfl;
+    }
+    
+//    bool isFarField(node<type>* otherNode)
+//    {
+//        if(otherNode->getLevel() == 2){
+//            return false;
+//        }
+//        double centerToCenterDist = (this->getOrigin()-otherNode->getOrigin()).norm();
+//        bool sameLevel = isSameLevel(otherNode);
+//        
+//        if(std::abs(centerToCenterDist) > 2*(this->getHalfDimension()).norm() && sameLevel){
+//            return true;
+//        }else{
+//            return false;
+//        }
+//    };
+    
     bool isFarField(node<type>* otherNode)
     {
-        double centerToCenterDist = (this->getOrigin()-otherNode->getOrigin).norm();
-        bool sameLevel = isSameLevel(otherNode);
+
+        // Width of Node
+        double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
         
-        if(std::abs(centerToCenterDist) > std::abs(this->halfDimension()) && sameLevel){
+        // Particle distance
+        double d = (this->multExp->pos - otherNode->multExp->pos).norm();
+        
+        // theta = s/d;
+        if(s/d < maxTheta)
+        {
             return true;
-        }else{
+        }
+        else
+        {
             return false;
         }
     };
+    
+    bool isFarField(Eigen::Vector3d POI)
+    {
+        
+        // Width of Node
+        double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
+        
+        // Particle distance
+        double d = (this->multExp->pos - POI).norm();
+        
+        // theta = s/d;
+        if(s/d < maxTheta)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    };
+    
     
     int getChildContainingMember(const member<type> &member)
     {
@@ -228,7 +309,7 @@ public:
     }
     
     int getChildContainingPnt(const Eigen::Vector3d &pnt)
-    {
+    { // Finds child quadrant
         int child = 0;
         if (pnt(0) > origin[0])
         {
@@ -328,7 +409,48 @@ public:
         }
     }
     
-
+    bool hasChildren()
+    {
+        for(int i=0; i<8; i++)
+        {
+            node<type>* subNode = this->getChild(i);
+            if(subNode)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    std::vector<node<type>*> getChildren()
+    {
+        std::vector<node<type>*> children;
+        for(int i=0; i<8; i++)
+        {
+            node<type>* subNode = this->getChild(i);
+            if(subNode)
+            {
+                children.push_back(subNode);
+            }
+        }
+        return children;
+    }
+    
+    std::vector<type*> getChildExpans()
+    {
+        std::vector<node<type>*> children = this->getChildren();
+        std::vector<type*> childExps;
+        
+        for(int i=0; i<children.size(); i++)
+        {
+            childExps.push_back(children[i]->multExp);
+        }
+        
+        return childExps;
+    }
+    
+    type* multExp; // Public because will access a lot
+    void setMultExp(type* exp) {multExp = exp;};
     
     Eigen::Vector3d getOrigin() {return origin;}
     Eigen::Vector3d getHalfDimension() {return halfDimension;}
@@ -338,3 +460,7 @@ public:
 };
 
 #endif /* defined(__CPanel__node__) */
+
+
+
+
