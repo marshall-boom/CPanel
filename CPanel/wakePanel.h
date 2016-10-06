@@ -29,7 +29,7 @@ class wakePanel : public panel
     wake* parentWake = nullptr;
     double prevStrength = 0;
     vortexFil* vortFil;
-    
+        
 public:
     wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
     

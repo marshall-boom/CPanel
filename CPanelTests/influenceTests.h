@@ -35,9 +35,14 @@ class influenceTests{
     std::vector<particle*> randomParticleGenerator(int numParts);
     void BarnesHutSpeedTest(std::vector<particle*> testParts);
     void speedTestGraphComparison();
+    void accuracyTest();
+    void BarnesHutCarpetPlotData(std::vector<particle*> testParts);
+
+
     // Random number generator using code from here: https://isocpp.org/files/papers/n3551.pdf
     double pick_a_number( double from, double upto );
     std::vector<int> linspace(int a, int b, int n);
+    std::vector<double> linspace(double a, double b, int n);
 
     
 

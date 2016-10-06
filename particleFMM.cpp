@@ -33,7 +33,7 @@ void particleFMM::computeMultExp()
                 std::vector<particle*> parts = nodes[j]->getMembers();
                 Eigen::Vector3d pos = findExpPos(nodes[j]);
                 Eigen::Vector3d strength = findExpStrength(nodes[j]);
-                double radius = findExpRadius(nodes[j]); //!!! Need to find what the radius of this expansion should be!
+                double radius = nodes[j]->getHalfDimension().norm()*2*1.5;
                 
                 particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0});
                 nodes[j]->setMultExp(p);
@@ -45,7 +45,8 @@ void particleFMM::computeMultExp()
                 
                 Eigen::Vector3d pos = findExpPos(childExpans);
                 Eigen::Vector3d strength = findExpStrength(childExpans);
-                double radius = findExpRadius(childExpans);
+                double radius = nodes[j]->getHalfDimension().norm()*2*1.5;//findExpRadius(childExpans);
+                
                 particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0});
                 nodes[j]->setMultExp(p);
                 

@@ -16,7 +16,7 @@ void influenceTests::panelVConstTest(Eigen::MatrixXd testingPoints, Eigen::Matri
     {
         cpanelVelSurv.row(i) = tPan->panelV(testingPoints.row(i))*4*M_PI;
 //        Eigen::Vector3d survpnt = testingPoints.row(i);
-//        Eigen::Vector3d pntVel = tPan->pntVInf(testingPoints.row(i))*4*M_PI;
+//        Eigen::Vector3d pntVel =  tPan->pntVInf(testingPoints.row(i))*4*M_PI;
 //        Eigen::Vector3d constVel = tPan->panelV(testingPoints.row(i))*4*M_PI;
 //        Eigen::Vector3d expected = velocityData.row(i);
         
@@ -147,19 +147,22 @@ std::vector<particle*> influenceTests::randomParticleGenerator(int numParts){
 
 void influenceTests::FMMtests(){
     
-    std::vector<particle*> testParts = randomParticleGenerator(100);
+    std::vector<particle*> testParts = randomParticleGenerator(750);
     
 //    BarnesHutSpeedTest(testParts);
 //    barnesHutTest(testParts);
 //    interactionListTest(testParts);
-    speedTestGraphComparison();
+//    speedTestGraphComparison();
+    BarnesHutCarpetPlotData(testParts);
 }
 
 void influenceTests::barnesHutTest(std::vector<particle*> testParts){
     // This test creates an octree with random particles and then computes the velocity influnce by both the brute force method and then the Barnes Hut algorithm
     
+    
+    
     // Test params
-    Eigen::Vector3d POI = {0,0,0};
+    Eigen::Vector3d POI = {0.5,0.5,0.5};
 
     
     // Manually sum up particle influences
@@ -182,7 +185,8 @@ void influenceTests::barnesHutTest(std::vector<particle*> testParts){
     std::cout << "Building octree..." << std::endl;
     clock_t octBuild_start = clock();
         particleOctree partTree;
-        partTree.setMaxMembers(10);
+        partTree.setMaxMembers(1);
+        partTree.setMaxTheta(0.1);
         partTree.addData(testParts);
     clock_t octBuild_end = clock();
     std::cout << "Treecode build time = " <<  (octBuild_end-octBuild_start) << " clocks" << std::endl;
@@ -221,6 +225,116 @@ void influenceTests::barnesHutTest(std::vector<particle*> testParts){
     
 }
 
+void influenceTests::BarnesHutCarpetPlotData(std::vector<particle*> testParts)
+{
+    // Test conditions:
+    std::vector<int> maxMembers{1,3,5,7,10,12,15};
+    std::vector<double> maxThetas{0.05, 0.1, 0.15, 0.2, 0.25, 0.3};
+    
+    Eigen::MatrixXd errorMag(maxMembers.size(),maxThetas.size());
+    Eigen::MatrixXd boost(maxMembers.size(),maxThetas.size());
+    
+    
+    // ========== Error test ========== //
+    Eigen::Vector3d POI = {0.5,0.5,0};
+
+    // Brute force
+    Eigen::Vector3d allPartsVel = Eigen::Vector3d::Zero();
+    for (int i=0; i<testParts.size(); i++)
+    {
+        allPartsVel+=testParts[i]->partVelInfl(POI);
+    }
+    
+    // Barnes Hut
+    for (int i=0; i<maxMembers.size(); i++)
+    {
+        for (int j=0; j<maxThetas.size(); j++)
+        {
+            particleOctree partTree;
+            partTree.setMaxMembers(maxMembers[i]);
+            partTree.setMaxTheta(maxThetas[j]);
+            partTree.addData(testParts);
+            
+            particleFMM FMM;
+            FMM.build(&partTree);
+            Eigen::Vector3d barnesHutVel = FMM.barnesHut(POI);
+            
+            Eigen::Vector3d error;
+            error.x() = (allPartsVel.x()-barnesHutVel.x())/allPartsVel.x()*100;
+            error.y() = (allPartsVel.y()-barnesHutVel.y())/allPartsVel.y()*100;
+            error.z() = (allPartsVel.z()-barnesHutVel.z())/allPartsVel.z()*100;
+            
+//            std::cout << "% diff = {" << error.x()<<"%, "<<error.y()<<"%, "<<error.z()<<"%} "<<std::endl;
+
+            errorMag(i,j) = error.norm();
+        }
+    }
+
+    
+    std::cout << "error = \n" << errorMag << std::endl;
+
+    // ============ Speed Test ============== //
+    
+    // Brute Force
+    clock_t bruteForceBegin = clock();
+    std::vector<Eigen::Vector3d> velOnVec;
+    for (int i=0; i<testParts.size(); i++)
+    {
+        Eigen::Vector3d velOn = Eigen::Vector3d::Zero();
+        for (int j=0; j<testParts.size(); j++)
+        {
+            velOn += testParts[j]->partVelInfl(testParts[i]->pos);
+        }
+        velOnVec.push_back(velOn);
+    }
+    clock_t bfTime = (clock()-bruteForceBegin);
+    
+    // Converting to double so can do math with it
+    std::string bfTimeString = std::to_string(bfTime);
+    std::string::size_type sz;     // alias of size_t
+    double bfTimeD = std::stod (bfTimeString, &sz);
+    
+    
+    
+
+    // Barnes Hut
+    
+    for (int i=0; i<maxMembers.size(); i++)
+    {
+        for (int j=0; j<maxThetas.size(); j++)
+        {
+            clock_t barnesHutBegin = clock();
+            
+            particleOctree partTree;
+            partTree.setMaxMembers(maxMembers[i]);
+            partTree.setMaxTheta(maxThetas[j]);
+            partTree.addData(testParts);
+            
+            particleFMM FMM;
+            FMM.build(&partTree);
+            
+            std::vector<Eigen::Vector3d> velOnVecBH;
+            for (int k=0; k<testParts.size(); k++)
+            {
+                velOnVecBH.push_back(FMM.barnesHut(testParts[k]->pos));
+            }
+            clock_t bhTime = (clock()-barnesHutBegin);
+            
+            // Converting clock time to double so can do math with it
+            std::string bhTimeString = std::to_string(bhTime);
+            double bhTimeD = std::stod (bhTimeString, &sz);
+            
+            boost(i,j) = (bfTimeD/bhTimeD)-1;
+        }
+    }
+    
+    
+    std::cout << "Boost = \n" << boost << std::endl;
+    
+    
+    
+}
+
 void influenceTests::BarnesHutSpeedTest(std::vector<particle*> testParts){
     // Function goes through each interaction like what would happen to advance a cloud of particles.
     std::cout << "------------Number of test particles = " << testParts.size() << "--------------" << std::endl;
@@ -245,7 +359,7 @@ void influenceTests::BarnesHutSpeedTest(std::vector<particle*> testParts){
     
     
     // Barnes Hut
-//    clock_t barnesHutBegin = clock();
+    clock_t barnesHutBegin = clock();
     
     // Build octree
     particleOctree partTree;
@@ -257,7 +371,7 @@ void influenceTests::BarnesHutSpeedTest(std::vector<particle*> testParts){
     FMM.build(&partTree);
     
     std::vector<Eigen::Vector3d> velOnVecBH;
-    clock_t barnesHutBegin = clock();
+//    clock_t barnesHutBegin = clock();
     for (int i=0; i<testParts.size(); i++)
     {
 //        clock_t oneBH = clock();
@@ -278,6 +392,8 @@ void influenceTests::BarnesHutSpeedTest(std::vector<particle*> testParts){
     
     std::cout << "Speed up  = " << (bfTimeD/bhTimeD)-1 << " times faster" << std::endl;
 }
+
+
 
 void influenceTests::speedTestGraphComparison()
 {
@@ -300,6 +416,18 @@ std::vector<int> influenceTests::linspace(int a, int b, int n)
     std::vector<int> linSpaced;
     
     int step = (b-a)/(n-1);
+    
+    for (int i=0; i<n; i++) {
+        linSpaced.push_back(a+step*i);
+    }
+    return linSpaced;
+}
+
+std::vector<double> influenceTests::linspace(double a, double b, int n)
+{
+    std::vector<double> linSpaced;
+    
+    double step = (b-a)/(n-1);
     
     for (int i=0; i<n; i++) {
         linSpaced.push_back(a+step*i);

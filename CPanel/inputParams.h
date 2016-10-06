@@ -32,6 +32,9 @@ struct inputParams
 //    double c_w;
     double numSteps;
     double streamSpacing;
+    bool accel;
+    bool high_accuracy;
+    
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
         

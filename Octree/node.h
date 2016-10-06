@@ -27,8 +27,8 @@ class node
     std::vector<member<type>> members;
     short level;
     short maxMembers;
-    double maxTheta = 0.5;
-    
+    double maxTheta;
+
     void createChild(int childNumber)
     {
         // Child    0 1 2 3 4 5 6 7
@@ -44,7 +44,7 @@ class node
             {
                 tempHalfDimension[i] = 0.5*halfDimension[i];
             }
-            children[childNumber] = new node<type>(this,tempOrigin,tempHalfDimension,level,maxMembers);
+            children[childNumber] = new node<type>(this,tempOrigin,tempHalfDimension,level,maxMembers,maxTheta);
     }
     
     void pushMember(const member<type> &member)
@@ -94,7 +94,7 @@ class node
     }
     
 public:
-    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers) : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers)
+    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers, double maxTheta) : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers),maxTheta(maxTheta)
     {
         for (int i=0; i<8; i++)
         {
@@ -162,7 +162,7 @@ public:
         {
             tempHalfDimension[i] = 2*halfDimension[i];
         }
-        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers);
+        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers,maxTheta);
         
         int child = 0;
         for (int i=0; i<3; i++)
@@ -273,6 +273,7 @@ public:
         
         // theta = s/d;
         if(s/d < maxTheta)
+            // maxTheta was put in the particle class to allow for different values for panels if BH is implemented in the future
         {
             return true;
         }

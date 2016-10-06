@@ -46,8 +46,12 @@ class cpCase
     bool manualStepsSet;
     double numSteps = 1000; // Run for a LOT of steps before convergence criteria kills solution
     double dt;
-    bool startingWake = true;
     std::vector<double> CL; //VPP
+    
+    bool highAccuracy;
+    bool accelerate;
+
+
     
     Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform;
@@ -110,33 +114,33 @@ class cpCase
     void particleStrengthUpdateGaussian();
     
     double trefftzPlaneCd(std::vector<particle*> particles);
+    double trefftzPlaneCl(std::vector<particle*> particles);
+    
     Eigen::Vector3d velocityInflFromEverything(Eigen::Vector3d POI);
-
-    bool rungeKuttaStep = false;
-
+    Eigen::Vector3d velocityInflFromEverything(particle* part);
     
     particleOctree partOctree;
     particleFMM FMM;
-    
-    bool accelerate = true;
-    
+
 //    void convectBufferWake(); //VPP
 
-    
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
     {
-        Vinf = windToBody(V,alpha,beta);
+        Vinf = windToBody(V,alpha,beta); //Will need to incorporate something like this.
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
 //        wake2panels = geom->getWake2Panels(); //2BW
         PG = sqrt(1-pow(mach,2));
+        
         vortPartFlag = inParams->vortPartFlag; //VPP
         dt = geom->dt;
         if(inParams->numSteps != 0){
             manualStepsSet = true;
             numSteps = inParams->numSteps;
         }
+        accelerate = inParams->accel;
+        highAccuracy  = inParams->high_accuracy;
         
     }
     

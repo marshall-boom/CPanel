@@ -12,7 +12,7 @@
 
 void GeomTests::conductTests(bodyPanel* bPan, geometry* geom)
 {
-//    nearFilamentTest();
+    nearFilamentTest();
 //    wPanelVectorTest(geom);
 //    wPanelEdgesInOrderTest(geom);
 }

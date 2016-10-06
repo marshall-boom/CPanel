@@ -137,6 +137,13 @@ bool inputParams::set()
                     fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');                    
                     fid >> numSteps;
                 }
+                else if (s1.compare("Accelerate_Code") == 0)
+                {
+                    fid >> accel;
+                }
+                else if (s1.compare("High_Accuracy") == 0) {
+                    fid >> high_accuracy;
+                }
             }
         }
         makeWorkingDir();
@@ -215,6 +222,7 @@ void inputParams::print(std::ostream &stream)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
+
     
 }
 
@@ -327,6 +335,10 @@ void inputParams::writeInputFile()
     fid << writeCoeffFlag << std::endl;
     fid << "Vortex_Particle_Wake" << std::endl;
     fid << vortPartFlag << std::endl;
+    fid << "Accelerate_Code" << std::endl;
+    fid << accel << std::endl;
+    fid << "High_Accuracy" << std::endl;
+    fid << high_accuracy << std::endl;
     fid << std::endl;
     fid << "% Unsteady Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;

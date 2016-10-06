@@ -21,6 +21,7 @@ class octree
     short maxMembersPerNode;
     std::vector<member<type>> members;
     short numLevels;
+    double maxTheta = 0.5;
     
     void boundingBox(Eigen::Vector3d &boxMin, Eigen::Vector3d &boxMax)
     {
@@ -118,6 +119,11 @@ public:
     {
         maxMembersPerNode = maxMembers;
     }
+    
+    void setMaxTheta(double theta)
+    {
+        maxTheta = theta;
+    }
 
     void removeData(){
         
@@ -148,7 +154,7 @@ public:
             Eigen::Vector3d halfDimension;
             setDimensions(center,halfDimension);
             
-            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode);
+            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
             
             for (int i=0; i<members.size(); i++)
             {
@@ -185,7 +191,7 @@ public:
             Eigen::Vector3d halfDimension;
             setDimensions(center,halfDimension);
             
-            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode);
+            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
             
             root_node->addMember(newMember);
         }
@@ -292,17 +298,6 @@ public:
         }
     }
     
-    void clearTree(){
-        
-        
-        //Figure out how to delete tree each time and then will be good to go?
-        
-        
-        
-        if(root_node){
-            root_node = nullptr;
-        }
-    }
     
     std::vector<node<type>*> getNodes()
     {

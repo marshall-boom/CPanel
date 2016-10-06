@@ -36,7 +36,6 @@ public:
     
     void addBodyPan(bodyPanel* b);
     void addWakePan(wakePanel* w);
-//    void addSBWPan(secondBufferWake* w2); //2BW
     void setNeighbors();
     bool sameEdge(cpNode* node1, cpNode* node2);
     void flipDir();
@@ -64,6 +63,8 @@ public:
     Eigen::Vector3d getMidPoint();
     Eigen::Vector3d getNormal();
 //    double neighbPanMu(wakePanel* currentPan);
+    
+    bool containsNode(cpNode* node);
 };
 
 #endif /* defined(__CPanel__edge__) */

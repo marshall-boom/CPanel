@@ -53,8 +53,8 @@ int main(int argc, const char * argv[])
         dat = readDataFile(fid);
         createTestPanel(dat, &geom);
         
-//        GeomTests *geomTest = new GeomTests(dat->testPan);
-//        geomTest->conductTests(dat->testPan, &geom);
+        GeomTests *geomTest = new GeomTests(dat->testPan);
+        geomTest->conductTests(dat->testPan, &geom);
         
         
         influenceTests* test = new influenceTests();

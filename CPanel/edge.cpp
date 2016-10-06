@@ -32,11 +32,6 @@ void edge::addWakePan(wakePanel* w)
     checkTE();
 }
 
-//void edge::addSBWPan(secondBufferWake* w2) //2BW
-//{
-//    SBW2.push_back(w2);
-//}
-
 
 void edge::checkTE()
 {
@@ -246,5 +241,18 @@ Eigen::Vector3d edge::TEgamma()
 //    }
 //    return 0;
 //}
+
+bool edge::containsNode(cpNode* node)
+{
+    if(node == this->getN1() || node == this->getN2())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 
 

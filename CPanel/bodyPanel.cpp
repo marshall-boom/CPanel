@@ -108,7 +108,8 @@ double bodyPanel::panelPhi(const Eigen::Vector3d &POI)
 
 Eigen::Vector3d bodyPanel::panelV(const Eigen::Vector3d &POI)
 {
-    Eigen::Vector3d vSrc,vDub;
+    Eigen::Vector3d vSrc = Eigen::Vector3d::Zero();
+    Eigen::Vector3d vDub = Eigen::Vector3d::Zero();
     
     panelVInf(POI,vSrc,vDub);
     
@@ -457,7 +458,7 @@ Eigen::Vector3d bodyPanel::velocity3D(const Eigen::Vector3d &pnt,double pntPoten
 
 void bodyPanel::computeCp(double Vinf)
 {
-    Cp = (1-pow(velocity.norm()/Vinf,2));
+    Cp = (1-pow(velocity.norm()/Vinf,2)); // + ... change in strength = this->prevStrength
 }
 
 
@@ -468,6 +469,8 @@ void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::Vector3d sumPartInfl)
 {
+        // THIS FUNCTION IS STILL USED, BUT NEEDS TO BE LOOKED AT AND UNDERSTOOD BEFORE MODDING CPANEL.
+    
     //    Eigen::Vector3d Upart = global2local(sumPartInfl, false);
     //    Upart.z()=0; //Katz fig. 10.14 shows z is panel normal.
     //    Eigen::Vector3d Upt = local2global(Upart,false); //tested the direction by dotting with normal and it was correct

@@ -203,90 +203,90 @@ edge* wakePanel::getTE()
 
 
 
-Eigen::Vector3d wakePanel::panToPartStrengthT1(){
-    //                      --> y
-    //       |      |      |
-    //      3|      |1     V
-    //       |______|      x
-    //          2
-    // For the first time step, there is no downstream vorticity so edge 2 needs to be accounted for. Edge 4 is never included because that edge is forced to have the same strength as the body edge in order to enforce the kutta condition. Collapse is illustrated on pg. 25 of INNWIND EU or pdf named 'Genuvp in report'
-    
-    Eigen::Vector3d edge1strength, edge2strength, edge3strength;
-    std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
-    
-    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
-    edge* edge1, *edge3;
-    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
-        edge1 = this->getEdges()[1];
-        edge3 = this->getEdges()[3];
-    }else{
-        edge1 = this->getEdges()[3];
-        edge3 = this->getEdges()[1];
-    }
-    
-    // Edge 1
-    wakePanel* neighbPan = edge1->getOtherWakePan(this);
-    if(neighbPan){
-        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]*edge3->length(); // If neighbor panel, have to share strength with it
-    }else{  // If no wake pan, use whole strength
-        edge1strength = (this->getMu())*ringVecs[1]*edge3->length();
-    }
+//Eigen::Vector3d wakePanel::panToPartStrengthT1(){
+//    //                      --> y
+//    //       |      |      |
+//    //      3|      |1     V
+//    //       |______|      x
+//    //          2
+//    // For the first time step, there is no downstream vorticity so edge 2 needs to be accounted for. Edge 4 is never included because that edge is forced to have the same strength as the body edge in order to enforce the kutta condition. Collapse is illustrated on pg. 25 of INNWIND EU or pdf named 'Genuvp in report'
+//    
+//    Eigen::Vector3d edge1strength, edge2strength, edge3strength;
+//    std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
+//    
+//    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
+//    edge* edge1, *edge3;
+//    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
+//        edge1 = this->getEdges()[1];
+//        edge3 = this->getEdges()[3];
+//    }else{
+//        edge1 = this->getEdges()[3];
+//        edge3 = this->getEdges()[1];
+//    }
+//    
+//    // Edge 1
+//    wakePanel* neighbPan = edge1->getOtherWakePan(this);
+//    if(neighbPan){
+//        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]*edge3->length(); // If neighbor panel, have to share strength with it
+//    }else{  // If no wake pan, use whole strength
+//        edge1strength = (this->getMu())*ringVecs[1]*edge3->length();
+//    }
+//
+//    // Edge 2
+//    edge2strength = (this->getMu())*ringVecs[2]*this->getEdges()[2]->length();
+//    
+//    // Edge 3
+//    neighbPan = edge3->getOtherWakePan(this);
+//    
+//    if(neighbPan){
+//        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3]*edge3->length();
+//    }else{ // If no wake pan,
+//        edge3strength = (-this->getMu())*ringVecs[3]*edge3->length();
+//    }
+//
+//    return -edge1strength + edge2strength -edge3strength; //I don't know why, but this is negative for some reason
+//}
 
-    // Edge 2
-    edge2strength = (this->getMu())*ringVecs[2]*this->getEdges()[2]->length();
-    
-    // Edge 3
-    neighbPan = edge3->getOtherWakePan(this);
-    
-    if(neighbPan){
-        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3]*edge3->length();
-    }else{ // If no wake pan,
-        edge3strength = (-this->getMu())*ringVecs[3]*edge3->length();
-    }
 
-    return -edge1strength + edge2strength -edge3strength; //I don't know why, but this is negative for some reason
-}
-
-
-Eigen::Vector3d wakePanel::panToPartStrength(){
-    Eigen::Vector3d edge1strength, edge2strength, edge3strength;
-    std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
-    
-    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
-    edge* edge1, *edge3;
-    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
-        edge1 = this->getEdges()[1];
-        edge3 = this->getEdges()[3];
-    }else{
-        edge1 = this->getEdges()[3];
-        edge3 = this->getEdges()[1];
-    }
-    
-    // Edge 1
-    wakePanel* neighbPan = edge1->getOtherWakePan(this);
-    if(neighbPan){
-        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]*edge1->length(); // If neighbor panel, have to share strength with it
-    }else{  // If no wake pan, use whole strength
-        edge1strength = (this->getMu())*ringVecs[1]*edge1->length();
-    }
-    
-    // Edge 2
-    // change in strength of the back ring vector. The 'prevStrength' value is initialized at zero so it will be equivalent to ignoring it on the first loop.
-    edge2strength = {0,0,0};
-    //(this->getMu()-this->getPrevStrength())*ringVecs[2];
-    //causes divergence rigth now. Will put back in when mroe stable and check with a finer case.
-    
-    // Edge 3
-    neighbPan = edge3->getOtherWakePan(this);
-    
-    if(neighbPan){
-        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3]*edge3->length();
-    }else{ // If no wake pan,
-        edge3strength = (-this->getMu())*ringVecs[3]*edge3->length();
-    }
-    
-    return -edge1strength + edge2strength -edge3strength;
-}
+//Eigen::Vector3d wakePanel::panToPartStrength(){
+//    Eigen::Vector3d edge1strength, edge2strength, edge3strength;
+//    std::vector<Eigen::Vector3d> ringVecs = this->vortexRingVectors();
+//    
+//    // Find edge 1. Panel is built with the trailing edge first. Next is either 1st or 3rd in edge vector
+//    edge* edge1, *edge3;
+//    if(this->getEdges()[1]->getMidPoint().y() > this->getEdges()[3]->getMidPoint().y()){
+//        edge1 = this->getEdges()[1];
+//        edge3 = this->getEdges()[3];
+//    }else{
+//        edge1 = this->getEdges()[3];
+//        edge3 = this->getEdges()[1];
+//    }
+//    
+//    // Edge 1
+//    wakePanel* neighbPan = edge1->getOtherWakePan(this);
+//    if(neighbPan){
+//        edge1strength = (this->getMu()-neighbPan->getMu())/2*ringVecs[1]*edge1->length(); // If neighbor panel, have to share strength with it
+//    }else{  // If no wake pan, use whole strength
+//        edge1strength = (this->getMu())*ringVecs[1]*edge1->length();
+//    }
+//    
+//    // Edge 2
+//    // change in strength of the back ring vector. The 'prevStrength' value is initialized at zero so it will be equivalent to ignoring it on the first loop.
+//    edge2strength = {0,0,0};
+//    //(this->getMu()-this->getPrevStrength())*ringVecs[2];
+//    //causes divergence rigth now. Will put back in when mroe stable and check with a finer case.
+//    
+//    // Edge 3
+//    neighbPan = edge3->getOtherWakePan(this);
+//    
+//    if(neighbPan){
+//        edge3strength = (neighbPan->getMu() - this->getMu())/2*ringVecs[3]*edge3->length();
+//    }else{ // If no wake pan,
+//        edge3strength = (-this->getMu())*ringVecs[3]*edge3->length();
+//    }
+//    
+//    return -edge1strength + edge2strength -edge3strength;
+//}
 
 
 std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
@@ -437,16 +437,76 @@ Eigen::Vector3d wakePanel::partStretching(particle* part){
     return partStretching;
 }
 
-std::vector<cpNode*> wakePanel::pointsInOrder(){
 
+//
+//std::vector<cpNode*> wakePanel::pointsInOrder(){
+//// will use edges in order to find the correct points
+//    
+//    //           0
+//    //       1------0       --> y
+//    //       |      |      |
+//    //      1|      |3      V
+//    //       |      |
+//    //       2------3      x
+//    //           2
+//    
+//    
+//    std::vector<edge*> pEdges = this->edgesInOrder();
+//    std::vector<cpNode*> ptsIO(4);
+//    
+//    // Look at points on the trailing edge first
+//    cpNode* n1 = pEdges[0]->getN1();
+//    cpNode* n2 = pEdges[0]->getN2();
+//    
+//    // If n1 shares a node with edge3, then it is node0
+//    if(pEdges[3]->containsNode(n1))
+//    {
+//        ptsIO[0] = n1;
+//        ptsIO[1] = n2;
+//    }
+//    else{
+//        ptsIO[0] = n2;
+//        ptsIO[1] = n1;
+//    }
+//    
+//    // Now look at other edge
+//    n1 = pEdges[2]->getN1();
+//    n2 = pEdges[2]->getN2();
+//    
+//    // If n1 shares a node with edge1 then it is node 2
+//    if(pEdges[1]->containsNode(n1))
+//    {
+//        ptsIO[2] = n1;
+//        ptsIO[3] = n2;
+//    }
+//    else
+//    {
+//        ptsIO[2] = n2;
+//        ptsIO[3] = n1;
+//    }
+//    
+//
+//    return ptsIO;
+//}
+
+
+
+
+
+
+std::vector<cpNode*> wakePanel::pointsInOrder(){
+    // will use edges in order to find the correct points
+    
+    //           0
     //       1------0       --> y
     //       |      |      |
-    //       |      |      V
+    //      1|      |3      V
     //       |      |
     //       2------3      x
-    //
+    //           2
     
-    std::vector<edge*> pEdges = this->getEdges();
+    
+    std::vector<edge*> pEdges = this->edgesInOrder();
     std::vector<cpNode*> ptsIO;
     
     // Trailing edge panel is built first
@@ -474,7 +534,7 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
             }
         }
     }
-
+    
     // The last node is the only one not used
     std::vector<cpNode*> pNodes = this->getNodes();
     for (int i=0; i<pNodes.size(); i++) {
@@ -482,41 +542,65 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
             ptsIO.push_back(pNodes[i]);
         }
     }
-
+    
+    
     return ptsIO;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 std::vector<edge*> wakePanel::edgesInOrder(){
-    // Since the points in order is already verified, this function will use them to place the edges in the correct order. ,
+    // Can put in the constructor at a later time
+    
+    // Function will find the correct panel edges that look like this for a flat wake, but will still find the correct edges when the panel is flipped
+    
     //       ----0---       --> y
     //       |      |      |
     //       1      3      V
     //       |      |      x
     //       ----2---
     //
-    std::vector<edge*> edgesIO(4);
-    std::vector<cpNode*> ptsIO = this->pointsInOrder();
+    
+    std::vector<edge *> edgesIO(4);
     std::vector<edge*> pEdges = this->getEdges();
     
     // The trailing edge is built first and the parallel downstream edge is always built third
     edgesIO[0] = pEdges[0];
     edgesIO[2] = pEdges[2];
     
-    // Look at second edge in vector to see if it's #1
-    cpNode* N1 = pEdges[1]->getN1();
-    cpNode* N2 = pEdges[1]->getN2();
     
-    cpNode* n1 = ptsIO[1];
-    cpNode* n2 = ptsIO[2];
+    // Find the vectors in the drawing
+    Eigen::Vector3d a = pEdges[0]->getMidPoint() - this->getCenter();
+    Eigen::Vector3d b = this->getNormal();
     
-    // If N1 is either of the edge nodes AND N2 is either of the edge nodes then it is #1
-    if ((N1==n1 || N1==n2) && (N2==n1 || N2==n2)) {
-        edgesIO[1] = pEdges[1];
+    Eigen::Vector3d c = a.cross(b);
+    Eigen::Vector3d d = center+c;
+    
+    // See if edge1 midpoint or edge 3 midpoint is closer to the point d;
+    double distToE1 = (pEdges[1]->getMidPoint() - d).norm();
+    double distToE3 = (pEdges[3]->getMidPoint() - d).norm();
+    
+    if(distToE3 < distToE1)
+    {
         edgesIO[3] = pEdges[3];
-    }else{
+        edgesIO[1] = pEdges[1];
+    }
+    else
+    {
         edgesIO[3] = pEdges[1];
         edgesIO[1] = pEdges[3];
     }
+    
     
     return edgesIO;
 }

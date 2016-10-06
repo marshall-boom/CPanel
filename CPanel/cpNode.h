@@ -59,7 +59,6 @@ public:
     Eigen::Vector3d nodeWakeProjAngle();
     Eigen::Vector3d firstProjNode(double dt, double inputV);
     Eigen::Vector3d secProjNode(double dt, double inputV);
-
     
     bool isTE() {return TEnode;}
 

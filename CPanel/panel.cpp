@@ -95,6 +95,7 @@ void panel::setGeom()
 
 void panel::setPotential(Eigen::Vector3d Vinf)
 {
+    // LOOK UP AND SEE WHAT THIS SHOULD ACTUALY BE
 //    potential = Vinf.dot(center)-doubletStrength; // Katz 11.74
     potential = -doubletStrength; // taking out the freestream potential so that I can add the vortex particle velocity influence in after the
 }

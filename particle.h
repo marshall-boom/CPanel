@@ -24,7 +24,7 @@ class particle {
     
 public:
     double radius;
-    Eigen::Vector3d velOn; // Used for FMM. 
+    Eigen::Vector3d velOn; // Used for FMM.
 
     wakePanel* parentPanel;
     
