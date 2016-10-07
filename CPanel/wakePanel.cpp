@@ -379,7 +379,8 @@ std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
 double wakePanel::getPartRadius(Eigen::Vector3d &Vinf, double &dt){
     //radius will be the average distance between the spanwise particle seed points a la Quackenbush et al. eq. (9)
 
-    Eigen::Vector3d currPnt = this->partSeedPt(Vinf, dt);
+    Eigen::Vector3d currPnt = this->getCenter() + dt*Vinf;
+//    Eigen::Vector3d currPnt = this->partSeedPt(Vinf, dt);
     
     wakePanel* neighbor1 = this->getEdges()[1]->getOtherWakePan(this);
     wakePanel* neighbor2 = this->getEdges()[3]->getOtherWakePan(this);
@@ -387,12 +388,12 @@ double wakePanel::getPartRadius(Eigen::Vector3d &Vinf, double &dt){
     std::vector<double> dist;
     if(neighbor1) // If there is a neighbor, then use it
     {
-        Eigen::Vector3d neighbor1Pnt = neighbor1->partSeedPt(Vinf, dt);
+        Eigen::Vector3d neighbor1Pnt = neighbor1->getCenter() + dt*Vinf;
         dist.push_back(std::abs((currPnt-neighbor1Pnt).norm()));
     }
     if(neighbor2)
     {
-        Eigen::Vector3d neighbor2Pnt = neighbor2->partSeedPt(Vinf, dt);
+        Eigen::Vector3d neighbor2Pnt = neighbor2->getCenter() + dt*Vinf;
         dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
     }
 
@@ -500,7 +501,7 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
     //           0
     //       1------0       --> y
     //       |      |      |
-    //      1|      |3      V
+    //      1|      |3     V
     //       |      |
     //       2------3      x
     //           2
@@ -604,6 +605,7 @@ std::vector<edge*> wakePanel::edgesInOrder(){
     
     return edgesIO;
 }
+
 
 Eigen::Vector3d wakePanel::partSeedPt(Eigen::Vector3d &Vinf, double &dt){ //VPP
     // Using the trailing edge and first wake panel to build off so it can be modified if second wake panel is implemented

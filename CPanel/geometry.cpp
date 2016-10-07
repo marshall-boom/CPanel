@@ -230,23 +230,33 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
 
         
-        
-        if(vortPartFlag){
+        // The addition of wake panels begins after the body geometry is already finished...
+        if(vortPartFlag)
+        {
+            // Find time step if one is not provided. Might change this to be the average TEdist///
             
-            ///*************************************************///
             // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the smallest time wake panel. Should put this in its own function.
-            if(dt == 0){
+            if(dt == 0)
+            {
+                // Collect trailing edges
                 std::vector<edge*> Tedges;
-                for(int i=0; i<edges.size(); i++){
-                    if(edges[i]->isTE()){
+                for(int i=0; i<edges.size(); i++)
+                {
+                    if(edges[i]->isTE())
+                    {
                         Tedges.push_back(edges[i]);
                     }
                 }
+                
                 Eigen::MatrixXd TEdist;
+                // this should be re-done. If input a large geometry, the results will only be a spacing of 1...
                 TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size());
-                for(int i=0; i<Tedges.size(); i++){
-                    for(int j=0; j<Tedges.size(); j++){
-                        if(i!=j){
+                for(int i=0; i<Tedges.size(); i++)
+                {
+                    for(int j=0; j<Tedges.size(); j++)
+                    {
+                        if(i!=j)
+                        {
                             TEdist(i,j) = std::abs((Tedges[i]->getMidPoint()-Tedges[j]->getMidPoint()).norm());
                         }
                     }
@@ -258,45 +268,59 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             
             
             std::cout << "Creating buffer wake..." << std::endl;
-            for(int i=0; i<allID.size(); i++){
-                if(allID(i) >= 1000){
+            // VSP tags wakes with surface ID starting at 1000
+            for(int i=0; i<allID.size(); i++)
+            {
+                if(allID(i) >= 1000)
+                {
                     std::cout << "ERROR: Please use input file without wake panels when using the vortex particle wake option. Change this to call wake destructor before proceeding as normal" << std::endl;
                     std::exit(0);
                 }
             }
-            int numTEnodes = 0, numTEedges=0;
+            
+            // Finding the number of nodes and edges.
+            int numTEedges=0;
             for(int i=0; i<edges.size();i++){
                 if(edges[i]->isTE()){
                     numTEedges++;
                 }
             }
+            int numTEnodes = 0;
             for(int i=0; i<nodes.size();i++){
                 if(nodes[i]->isTE()){
                     numTEnodes++;
                 }
             }
             
-            Eigen::MatrixXd VPwakeNodes(2*numTEnodes,3);
+            Eigen::MatrixXd VPwakeNodes(2*numTEnodes,3); // Is a matrix bc that's what CPanel already uses
             Eigen::MatrixXi wakeConnectivity(2*numTEedges,4);
             std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
             int nodeCounter=0, panelCounter=0;
-            // another way to do it is that I could sweep through all of the wakes and for each wake, find the teNode with the smallest Y value (or smallest avg y value) and then for that wake, find the next edge. If the node 1 on teh next edge has a greater y value, then use that, otherwise use the other.
-            for(int i=0;i<edges.size();i++){
-                if(edges[i]->isTE()){
+            
+            for(int i=0;i<edges.size();i++)
+            {
+                if(edges[i]->isTE())
+                {
+                    // For all the trailing edges
+                    
+                    // Find the trialing nodes (by index?)
                     int n1index = edges[i]->getN1()->getIndex();
                     int n2index = edges[i]->getN2()->getIndex();
                     int n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
                     
                     bool isUsed = false;
-                    for(int j=0; j<usedTENodesIndex.size(); j++){
-                        if(n1index == usedTENodesIndex[j]){
+                    for(int j=0; j<usedTENodesIndex.size(); j++)
+                    {
+                        if(n1index == usedTENodesIndex[j])
+                        {
                             isUsed = true;
                             n1firstIndex = newNodesIndex[2*j]+nNodes;
                             n1secIndex = newNodesIndex[2*j+1]+nNodes;
                         }
                     }
                     
-                    if(isUsed == false){ // If it's used, don't change the n1 index and then get the first and sec. node indices.
+                    if(isUsed == false)
+                    { // If it's used, don't change the n1 index and then get the first and sec. node indices.
                         usedTENodesIndex.push_back(n1index);
                         
                         VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, inputV);
@@ -311,7 +335,8 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     }
                     //N2
                     isUsed = false;
-                    for(int j=0; j<usedTENodesIndex.size();j++){
+                    for(int j=0; j<usedTENodesIndex.size();j++)
+                    {
                         if(n2index == usedTENodesIndex[j]){
                             isUsed = true;
                             n2firstIndex = newNodesIndex[2*j]+nNodes;
@@ -319,7 +344,8 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                         }
                     }
                      
-                    if(isUsed == false){
+                    if(isUsed == false)
+                    {
                         usedTENodesIndex.push_back(n2index);
                         
                         VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, inputV);
@@ -363,9 +389,11 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             nTris += wakes[0]->getPanels().size(); // Adjusting to include buffer wake
             
             int nBufferPan = 0;
-            for(int i=0; i<wakes.size(); i++){
+            for(int i=0; i<wakes.size(); i++)
+            {
                 std::vector<wakePanel*> wpans = wakes[i]->getPanels();
-                for(int j=0; j<wpans.size();j++){
+                for(int j=0; j<wpans.size();j++)
+                {
                     nBufferPan++;
                 }
             }
@@ -509,24 +537,23 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         if (infCoeffFileExists())
         {
             std::string in;
-            std::cout << "for development convenience, the input coefficients have been detecetd and will be used. take this back out after development. It is in geometry class." << std::endl;
-//            std::cout << "\nInfluence Coefficients have already been calculated for a geometry with this name, would you like to use these coefficients?" << std::endl;
-//            std::cout << "\t< Y > - Yes, use coefficients." << std::endl;
-//            std::cout << "\t< N > - No, recalculate them." << std::endl;
-//            std::cin >> in;
+            std::cout << "\nInfluence Coefficients have already been calculated for a geometry with this name, would you like to use these coefficients?" << std::endl;
+            std::cout << "\t< Y > - Yes, use coefficients." << std::endl;
+            std::cout << "\t< N > - No, recalculate them." << std::endl;
+            std::cin >> in;
             std::cout << std::endl;
-//            if (in == "Y" || in == "y")
-//            {
+            if (in == "Y" || in == "y")
+            {
                 readInfCoeff();
                 read = true;
-//            }
+            }
         }
         
         if (!read)
         {
             std::cout << "Building Influence Coefficient Matrix..." << std::endl;
             setInfCoeff();
-//            setWakeInfCoeff(); //2BW
+            setWakeInfCoeff(); //2BW
         }
     }
     else
@@ -668,40 +695,38 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
 void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> isFirstPanel){ //rename to create first buffer wake?
     
     wake* w1 = nullptr;
-//    wake* w2 = nullptr; //BW2
     wakePanel* wPan;
+    wakePanel* firstPan; // Used only to keep track of panel for setting bw2's parent
     std::vector<edge*> pEdges;
+    
     
     for (int i=0; i<wakeConnectivity.rows(); i++)
     {
         std::vector<cpNode*> pNodes;
-        for(int j=0; j<wakeConnectivity.row(i).size(); j++){
+        for(int j=0; j<wakeConnectivity.row(i).size(); j++)
+        {
             pNodes.push_back(nodes[wakeConnectivity(i,j)]);
         }
-        pEdges = panEdges(pNodes); //Create edge or find edge that already exists
+        pEdges = panEdges(pNodes); // Create edges or find edges that already exists
         
-        if(isFirstPanel[i]){
-            if (i==0){
+        if(isFirstPanel[i])
+        {
+            if (i==0){ // CAN TAKE THIS OUT OF hERE AND PUT ABOVE THE LOOP
                 w1 = new wake(VPwakeID[i],this);
                 wakes.push_back(w1);
             }
             wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
             w1->addPanel(wPan);
-            
-        }else{
-//            if (i==1){ //BW2
-//                w2 = new wake(VPwakeID[i],this);
-//                wakes.push_back(w2);
-//            }
-//            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
-//            w2->addPanel(wPan);
-            
-            // Since I build the panels from the trailing edge out, there should ALWAYS be a 1st bufer wake panel before bw2
-            //bw2 = new secondBufferWake(pNodes,pEdges,wakeNorms.row(i),w1,wPan,VPwakeID[i]);
+            firstPan = wPan;
+        }
+        else
+        {
+            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
+            wPan->setBufferParent(firstPan); //warning can be ignored because there will always be a first panel before the second
+            w2Panels.push_back(wPan);
         }
     }
     
-//    wPanels2 = w2->getPanels(); //2BW
 }
 
 std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
@@ -832,40 +857,28 @@ void geometry::setInfCoeff()
     }
 }
 
-//void geometry::setWakeInfCoeff() //2BW
-//{
-//    // Construct doublet and source influence coefficient matrices for body panels
-//    int nBodyPans = (int)bPanels.size(); //bPanels.size() returns a T something. It is an unsigned long int and putting the (int) turns it into an int.
-//    
-//    C.resize(nBodyPans,wPanels2.size());
-//    
-//    Eigen::VectorXi percentage(9);
-//    std::cout << "Building Wake Coefficient Matrix..." << std::endl;
-//    percentage << 10,20,30,40,50,60,70,80,90;
-//    
-//    for (int j=0; j<wPanels2.size(); j++)
-//    {
-//        for (int i=0; i<nBodyPans; i++)
-//        {
-//            double dummy; // to ignore A matrix
-//            C(i,j) = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
-//        }
-//        for (int i=0; i<percentage.size(); i++)
-//        {
-//            if ((100*j/wPanels2.size()) <= percentage(i) && 100*(j+1)/wPanels2.size() > percentage(i))
-//            {
-//                std::cout << percentage(i) << "%\t" << std::flush;
-//            }
-//        }
-//    }
-//
-//    std::cout << "Complete" << std::endl;
-//    
-//    if (writeCoeffFlag)
-//    {
+void geometry::setWakeInfCoeff() //2BW
+{
+    // Construct doublet influence coefficient matrices for bufferWake panels
+    
+    int nBodyPans = (int)bPanels.size();
+    
+    C.resize(nBodyPans,w2Panels.size());
+    
+    
+    for (int j=0; j<w2Panels.size(); j++)
+    {
+        for (int i=0; i<nBodyPans; i++)
+        {
+            C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
+        }
+    }
+    
+    if (writeCoeffFlag)
+    {
 //        writeInfCoeff();
-//    }
-//}
+    }
+}
 
 Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
 {

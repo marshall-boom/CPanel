@@ -59,12 +59,12 @@ class cpCase
     
     std::vector<bodyPanel*>* bPanels;
     std::vector<wakePanel*>* wPanels;
-//    std::vector<wakePanel*>* wake2panels; //2BW
+    std::vector<wakePanel*>* w2panels; //2BW
     std::vector<particle*> particles;
     std::vector<vortexFil*> filaments;
 
     Eigen::VectorXd sigmas;
-//    Eigen::VectorXd wake2Doublets;
+    Eigen::VectorXd wake2Doublets;
     Eigen::MatrixXd D;
     
     double CL_trefftz;
@@ -96,7 +96,7 @@ class cpCase
     void writeFiles();
     void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
-//    void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat); //2BW
+    void writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat); //2BW
     void writeParticleData(boost::filesystem::path path);
     void writeFilamentData(boost::filesystem::path path);
     void writeSpanwiseData(boost::filesystem::path path);
@@ -122,7 +122,7 @@ class cpCase
     particleOctree partOctree;
     particleFMM FMM;
 
-//    void convectBufferWake(); //VPP
+    void convectBufferWake(); //VPP
 
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
@@ -130,7 +130,7 @@ public:
         Vinf = windToBody(V,alpha,beta); //Will need to incorporate something like this.
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
-//        wake2panels = geom->getWake2Panels(); //2BW
+        w2panels = geom->getBufferWake2Panels(); //2BW
         PG = sqrt(1-pow(mach,2));
         
         vortPartFlag = inParams->vortPartFlag; //VPP

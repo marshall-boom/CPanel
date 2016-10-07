@@ -34,11 +34,12 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
         writeFiles(); // Might take this out to or at least make it an option?
         timeStep++;
         
+        // Do stuff to intitially convect buffer wake
+        convectBufferWake();
+        converged = solveVPmatrixEq();
+        writeFiles();
+        timeStep++;
         
-        
-        
-//        bool breakFlag = false;
-//        std::cout << "time step = " << dt << std::endl;
         for(int i=0; i<numSteps; i++){
             std::cout << "Time step " << timeStep<< "/" << numSteps << ". Flow time = " << timeStep*dt << std::endl;
 
@@ -47,11 +48,14 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
             
             
             if(highAccuracy){
-                collapseWakeForEachEdge();
+                collapseWakeForEachEdge(); // Need to modify this too...
             }else{
                 collapseBufferWake();
+
             }
-            
+    // do write inflCoeffFiles...==============================================================
+            convectBufferWake();
+
             
             if(accelerate){
                 std::cout << "Building particle octree..." << std::endl;
@@ -63,8 +67,6 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
                 partOctree.addData(particles);
                 
                 FMM.build(&partOctree);
-                
-
             }
             
             std::cout << "Setting source strengths..." << std::endl;
@@ -262,7 +264,8 @@ bool cpCase::solveVPmatrixEq()
     
     Eigen::MatrixXd* A = geom->getA();
     Eigen::MatrixXd* B = geom->getB();
-    Eigen::VectorXd RHS = -(*B)*(sigmas); // +/- C*(bw2mu)
+    Eigen::MatrixXd* C = geom->getC();
+    Eigen::VectorXd RHS = -(*B)*(sigmas) - (*C)*(wake2Doublets);
     Eigen::VectorXd doubletStrengths(bPanels->size());
     
     
@@ -273,7 +276,7 @@ bool cpCase::solveVPmatrixEq()
     {
         converged = false;
     }
-    
+
     for (int i=0; i<bPanels->size(); i++)
     {
         (*bPanels)[i]->setMu(doubletStrengths(i));
@@ -284,6 +287,7 @@ bool cpCase::solveVPmatrixEq()
     {
         (*wPanels)[i]->setPrevStrength((*wPanels)[i]->getMu());
         (*wPanels)[i]->setMu();
+        (*w2panels)[i]->setPotential(Vinf);
         (*wPanels)[i]->setPotential(Vinf); // SAME MODS AS ABOVE
     }
     return converged;
@@ -315,7 +319,7 @@ void cpCase::compVelocity()
         CM(2) += moment(2)/(params->Sref*params->bref);
     }
     Fwind = bodyToWind(Fbody);
-//    std::cout << "CL = " << Fbody.z() << std::endl;
+    std::cout << "CL = " << Fbody.z() << std::endl;
     CL.push_back(Fbody.z());
     
 }
@@ -467,7 +471,9 @@ void cpCase::writeFiles()
     
     
     if(vortPartFlag){
-        if(timeStep > 0){
+        if(timeStep > 0)
+        {
+            writeBuffWake2Data(subdir,nodeMat);
             writeParticleData(subdir);
             writeFilamentData(subdir);
         }
@@ -554,6 +560,31 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
     wake.connectivity = con;
     wake.cellData = data;
     std::string fname = path.string()+"/wakeData-"+std::to_string(timeStep)+".vtu";
+    VTUfile wakeFile(fname,wake);
+}
+
+void cpCase::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat)
+{
+    std::vector<cellDataArray> data;
+    cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
+    Eigen::MatrixXi con;
+    con.resize(w2panels->size(),4);
+    mu.data.resize(w2panels->size(),1);
+    pot.data.resize(w2panels->size(),1);
+    for (int i=0; i<w2panels->size(); i++)
+    {
+        mu.data(i,0) = (*w2panels)[i]->getMu();
+        pot.data(i,0) = (*w2panels)[i]->getPotential();
+        con.row(i) = (*w2panels)[i]->getVerts();
+    }
+    data.push_back(mu);
+    data.push_back(pot);
+    
+    piece wake;
+    wake.pnts = nodeMat;
+    wake.connectivity = con;
+    wake.cellData = data;
+    std::string fname = path.string()+"/bufferWake2Data-"+std::to_string(timeStep)+".vtu";
     VTUfile wakeFile(fname,wake);
 }
 
@@ -692,6 +723,18 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
 }
 
 
+void cpCase::convectBufferWake()
+{
+    wake2Doublets.resize((*w2panels).size());
+    for (int i=0; i<(*w2panels).size(); i++)
+    {
+        (*w2panels)[i]->setPrevStrength((*w2panels)[i]->getMu());
+        double parentMu = (*w2panels)[i]->getBufferParent()->getMu();
+        (*w2panels)[i]->setMu(parentMu);
+        wake2Doublets[i] = parentMu;
+    }
+    
+}
 
 
 
@@ -699,9 +742,9 @@ void cpCase::collapseBufferWake(){
     
     std::vector<edge*> usedEdges;
     
-    for(int i=0; i<(*wPanels).size(); i++)
+    for(int i=0; i<(*w2panels).size(); i++)
     {
-        std::vector<edge*> pEdges = (*wPanels)[i]->edgesInOrder();
+        std::vector<edge*> pEdges = (*w2panels)[i]->edgesInOrder();
         
         Eigen::Vector3d strength = Eigen::Vector3d::Zero();
         for (int j=1; j<4; j++)
@@ -709,59 +752,126 @@ void cpCase::collapseBufferWake(){
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-                strength += edgeStrength((*wPanels)[i], pEdges[j], j);
+                strength += edgeStrength((*w2panels)[i], pEdges[j], j);
             }
         }
         
-        Eigen::Vector3d pos = (*wPanels)[i]->partSeedPt(Vinf, dt);
-        double radius = (*wPanels)[i]->getPartRadius(Vinf,dt); // VinfLocal
+        // When collapsing for the 2nd row, position of particle will be convected by freestream since it will be far away?
+//        Eigen::Vector3d pos = (*wPanels)[i]->partSeedPt(Vinf, dt);
         
-        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous pos and strength values used for advanced time stepper.
+        Eigen::Vector3d seedDir = (*w2panels)[i]->getCenter() - (*w2panels)[i]->getBufferParent()->getCenter();
+        seedDir.normalize();
+        
+        Eigen::Vector3d pos = (*w2panels)[i]->getCenter() + seedDir*Vinf.norm()*dt;
+        
+        
+        double radius = (*w2panels)[i]->getPartRadius(Vinf,dt); // VinfLocal
+        
+        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); // Last two are previous pos and strength values used for advanced time stepper.
         particles.push_back(p);
         
         
     }
     
     // Create filament
-    if(timeStep == 1)
+    if(filaments.size() == 0)
     {
-        for(int i=0; i<(*wPanels).size(); i++){
+        for(int i=0; i<(*w2panels).size(); i++){
             vortexFil* fil;
             Eigen::Vector3d p1,p2;
 
-            p1 = (*wPanels)[i]->pointsInOrder()[2]->getPnt();
-            p2 = (*wPanels)[i]->pointsInOrder()[3]->getPnt();
+            p1 = (*w2panels)[i]->pointsInOrder()[2]->getPnt();
+            p2 = (*w2panels)[i]->pointsInOrder()[3]->getPnt();
             
-                fil = new vortexFil(p1, p2,-(*wPanels)[i]->getMu(), (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+                fil = new vortexFil(p1, p2,-(*w2panels)[i]->getMu(), (*w2panels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
 
             filaments.push_back(fil);
-            (*wPanels)[i]->setVortFil(fil);
+            (*w2panels)[i]->setVortFil(fil);
         }
-    }else
+    }
+    else
     {
-        for(int i=0; i<(*wPanels).size(); i++){
-            filaments[i]->setStrength(-(*wPanels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+        for(int i=0; i<(*w2panels).size(); i++){
+            filaments[i]->setStrength(-(*w2panels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
         }
         
     }
 }
 
 
+// FOR SINGLE BUFFER WAKE PANEL
+//void cpCase::collapseBufferWake(){
+//    
+//    std::vector<edge*> usedEdges;
+//    
+//    for(int i=0; i<(*wPanels).size(); i++)
+//    {
+//        std::vector<edge*> pEdges = (*wPanels)[i]->edgesInOrder();
+//        
+//        Eigen::Vector3d strength = Eigen::Vector3d::Zero();
+//        for (int j=1; j<4; j++)
+//        {
+//            if (!edgeIsUsed(pEdges[j],usedEdges))
+//            {
+//                usedEdges.push_back(pEdges[j]);
+//                strength += edgeStrength((*wPanels)[i], pEdges[j], j);
+//            }
+//        }
+//        
+//        Eigen::Vector3d pos = (*wPanels)[i]->partSeedPt(Vinf, dt);
+//        double radius = (*wPanels)[i]->getPartRadius(Vinf,dt); // VinfLocal
+//        
+//        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous pos and strength values used for advanced time stepper.
+//        particles.push_back(p);
+//        
+//        
+//    }
+//    
+//    // Create filament
+//    if(timeStep == 1)
+//    {
+//        for(int i=0; i<(*wPanels).size(); i++){
+//            vortexFil* fil;
+//            Eigen::Vector3d p1,p2;
+//            
+//            p1 = (*wPanels)[i]->pointsInOrder()[2]->getPnt();
+//            p2 = (*wPanels)[i]->pointsInOrder()[3]->getPnt();
+//            
+//            fil = new vortexFil(p1, p2,-(*wPanels)[i]->getMu(), (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+//            
+//            filaments.push_back(fil);
+//            (*wPanels)[i]->setVortFil(fil);
+//        }
+//    }else
+//    {
+//        for(int i=0; i<(*wPanels).size(); i++){
+//            filaments[i]->setStrength(-(*wPanels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+//        }
+//        
+//    }
+//}
+
+
 void cpCase::collapseWakeForEachEdge(){
     // Go through each panel. Ignore the trialing edge as it has no circulation. After creating a particle at each edge, put a pointer to the edge in a vector. Before making any particles, make sure the edge has not yet been used. Edge collapse follows
     
     std::vector<edge*> usedEdges;
-    for(int i=0; i<(*wPanels).size(); i++)
+    for(int i=0; i<(*w2panels).size(); i++)
     {
-        std::vector<edge*> pEdges = (*wPanels)[i]->edgesInOrder();
+        std::vector<edge*> pEdges = (*w2panels)[i]->edgesInOrder();
         for (int j=1; j<4; j++)
         {
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-                Eigen::Vector3d pos = seedPos((*wPanels)[i], j);
-                Eigen::Vector3d strength = edgeStrength((*wPanels)[i], pEdges[j], j);
-                double radius = (*wPanels)[i]->getPartRadius(Vinf,dt); // VinfLocal
+//                Eigen::Vector3d pos = seedPos((*w2panels)[i], j);
+                
+                Eigen::Vector3d seedDir = (*w2panels)[i]->getCenter() - (*w2panels)[i]->getBufferParent()->getCenter();
+                seedDir.normalize();
+                Eigen::Vector3d pos = (*w2panels)[i]->getCenter() + seedDir*Vinf.norm()*dt;
+                
+                Eigen::Vector3d strength = edgeStrength((*w2panels)[i], pEdges[j], j);
+                double radius = (*w2panels)[i]->getPartRadius(Vinf,dt); // VinfLocal
                 
                 particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous pos and strength values used for advanced time stepper.
                 particles.push_back(p);
@@ -770,60 +880,28 @@ void cpCase::collapseWakeForEachEdge(){
     }
 
     // Create filament
-    if(timeStep == 1){
-        for(int i=0; i<(*wPanels).size(); i++){
+    if(filaments.size() == 0 )
+    {
+        for(int i=0; i<(*w2panels).size(); i++)
+        {
             vortexFil* fil;
             Eigen::Vector3d p1,p2;
             
-            //===============================//
-//            Eigen::Vector3d center = (*wPanels)[i]->getCenter();
-//            std::cout << "center=["<<center.x()<<","<<center.y()<<","<<center.z()<<"];"<<std::endl;
-//            for (int j=0; j<4; j++) {
-//                Eigen::Vector3d point = (*wPanels)[i]->getNodes()[j]->getPnt();
-//                std::cout << "point"<<j<<"=["<<point.x()<<","<<point.y()<<","<<point.z()<<"];"<<std::endl;
-//            }
-//            Eigen::Vector3d normal = (*wPanels)[i]->getNormal();
-//            std::cout << "normal=["<<normal.x()<<","<<normal.y()<<","<<normal.z()<<"];"<<std::endl;
-//            
-//            Eigen::Vector3d e0mp = (*wPanels)[i]->edgesInOrder()[0]->getMidPoint();
-//            Eigen::Vector3d e1mp = (*wPanels)[i]->edgesInOrder()[1]->getMidPoint();
-//            Eigen::Vector3d e2mp = (*wPanels)[i]->edgesInOrder()[2]->getMidPoint();
-//            Eigen::Vector3d e3mp = (*wPanels)[i]->edgesInOrder()[3]->getMidPoint();
-//            std::cout << "e0mp=["<<e0mp.x()<<","<<e0mp.y()<<","<<e0mp.z()<<"];"<<std::endl;
-//            std::cout << "e1mp=["<<e1mp.x()<<","<<e1mp.y()<<","<<e1mp.z()<<"];"<<std::endl;
-//            std::cout << "e2mp=["<<e2mp.x()<<","<<e2mp.y()<<","<<e2mp.z()<<"];"<<std::endl;
-//            std::cout << "e3mp=["<<e3mp.x()<<","<<e3mp.y()<<","<<e3mp.z()<<"];"<<std::endl;
-//            
-//            Eigen::Vector3d pnt0 = (*wPanels)[i]->pointsInOrder()[0]->getPnt();
-//            Eigen::Vector3d pnt1 = (*wPanels)[i]->pointsInOrder()[1]->getPnt();
-//            Eigen::Vector3d pnt2 = (*wPanels)[i]->pointsInOrder()[2]->getPnt();
-//            Eigen::Vector3d pnt3 = (*wPanels)[i]->pointsInOrder()[3]->getPnt();
-//            std::cout << "pnt0=["<<pnt0.x()<<","<<pnt0.y()<<","<<pnt0.z()<<"];"<<std::endl;
-//            std::cout << "pnt1=["<<pnt1.x()<<","<<pnt1.y()<<","<<pnt1.z()<<"];"<<std::endl;
-//            std::cout << "pnt2=["<<pnt2.x()<<","<<pnt2.y()<<","<<pnt2.z()<<"];"<<std::endl;
-//            std::cout << "pnt3=["<<pnt3.x()<<","<<pnt3.y()<<","<<pnt3.z()<<"];"<<std::endl;
-//
-
+            p1 = (*w2panels)[i]->pointsInOrder()[2]->getPnt();
+            p2 = (*w2panels)[i]->pointsInOrder()[3]->getPnt();
             
-            
-            
-            
-            
-            
-            
-            //=====================================//
-            p1 = (*wPanels)[i]->pointsInOrder()[2]->getPnt();
-            p2 = (*wPanels)[i]->pointsInOrder()[3]->getPnt();
-            
-            fil = new vortexFil(p1, p2,-(*wPanels)[i]->getMu(), (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+            fil = new vortexFil(p1, p2,-(*w2panels)[i]->getMu(), (*w2panels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
             
             filaments.push_back(fil);
-            (*wPanels)[i]->setVortFil(fil);
+            (*w2panels)[i]->setVortFil(fil);
         }
-    }else{
-        
-        for(int i=0; i<(*wPanels).size(); i++){
-            filaments[i]->setStrength(-(*wPanels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+    }
+    else
+    {
+        for(int i=0; i<(*w2panels).size(); i++)
+        {
+//            filaments[i]->setStrength(-(*w2panels)[i]->getMu() + (*w2panels)[i]->getBufferParent()->getMu());//-(*w2panels)[i]->getMu());
+            filaments[i]->setStrength(-(*w2panels)[i]->getMu() + (*w2panels)[i]->getBufferParent()->getMu());//-(*w2panels)[i]->getMu());
         }
         
     }
@@ -841,45 +919,50 @@ bool cpCase::edgeIsUsed(edge* thisEdge, std::vector<edge*> pEdges){
 }
 
 Eigen::Vector3d cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum){
-
-    Eigen::Vector3d strength;
     
-//    if(edgeNum == 0){
-//        // Equation for part strength comes from Martin eq. 5.25
-//        Eigen::Vector3d Rj = pan->pointsInOrder()[0]->getPnt();
-//        Eigen::Vector3d Ri = pan->pointsInOrder()[1]->getPnt();
-//        strength = (pan->getMu())*(Ri-Rj);
-    //    }
-    if(edgeNum == 2) { // If is far edge, don't need to worry about neighbor panel
+    Eigen::Vector3d strength;
+    std::vector<cpNode*> ptsIO = pan->pointsInOrder();
+    
+    if(edgeNum == 0){
+        std::cout << "Don't try to collapse the upstream edge" << std::endl;
+        std::exit(0);
+        // Equation for part strength comes from Martin eq. 5.25
+        Eigen::Vector3d Rj = pan->pointsInOrder()[0]->getPnt();
+        Eigen::Vector3d Ri = pan->pointsInOrder()[1]->getPnt();
+        strength = (pan->getMu())*(Ri-Rj);
+    }
+    if(edgeNum == 2)
+    {
         Eigen::Vector3d Rj = pan->pointsInOrder()[2]->getPnt();
         Eigen::Vector3d Ri = pan->pointsInOrder()[3]->getPnt();
         strength = (pan->getMu()-pan->getPrevStrength())*(Ri-Rj);
-
-
     }
     else if(edgeNum == 1)
     {
         wakePanel* otherPan = curEdge->getOtherWakePan(pan);
-        Eigen::Vector3d Rj = pan->pointsInOrder()[1]->getPnt();
-        Eigen::Vector3d Ri = pan->pointsInOrder()[2]->getPnt();
-        if(otherPan)
-        { // Panel has neighbor
+        Eigen::Vector3d Rj = ptsIO[1]->getPnt();
+        Eigen::Vector3d Ri = ptsIO[2]->getPnt();
+        
+        if(otherPan) // Panel has neighbor
+        {
             strength = (pan->getMu()-otherPan->getMu())*(Ri-Rj);
-        }
-        else
+        }else{
             strength = pan->getMu()*(Ri-Rj);
         }
-    else{
+    }
+    else // Is edge 3
+    {
         wakePanel* otherPan = curEdge->getOtherWakePan(pan);
-        Eigen::Vector3d Rj = pan->pointsInOrder()[3]->getPnt();
-        Eigen::Vector3d Ri = pan->pointsInOrder()[0]->getPnt();
+        Eigen::Vector3d Rj = ptsIO[3]->getPnt();
+        Eigen::Vector3d Ri = ptsIO[0]->getPnt();
+        
         if(otherPan)
         {
             strength = (pan->getMu()-otherPan->getMu())*(Ri-Rj);
-        }
-        else
+        }else{
             strength = pan->getMu()*(Ri-Rj);
         }
+    }
     return strength;
 }
 

@@ -35,7 +35,7 @@ class geometry
 //    std::vector<surface*> nonLiftingSurfs;
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
-//    std::vector<wakePanel*> wPanels2; //1BW
+    std::vector<wakePanel*> w2Panels; // Buffer wake row two
     double c_w;
     double inputV;
     
@@ -48,6 +48,7 @@ class geometry
     
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
+    
     Eigen::MatrixXd C; // Wake Doublet Influence Coefficient Matrix
     
     bool writeCoeffFlag;
@@ -59,7 +60,6 @@ class geometry
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
     void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool VortPartFlag);
-//    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<int> parentPan, std::vector<bool> isFirstPanel);
     void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<bool> isFirstPanel);
 
     void createOctree();
@@ -126,11 +126,11 @@ public:
     std::vector<panel*> getPanels();
     std::vector<bodyPanel*>* getBodyPanels() {return &bPanels;}
     std::vector<wakePanel*>* getWakePanels() {return &wPanels;}
-//    std::vector<wakePanel*>* getWake2Panels() {return &wPanels2;} //2BW
+    std::vector<wakePanel*>* getBufferWake2Panels() {return &w2Panels;} // bw2
     std::vector<wake*> getWakes();
     Eigen::MatrixXd* getA() {return &A;}
     Eigen::MatrixXd* getB() {return &B;}
-    Eigen::MatrixXd* getC() {return &C;}
+    Eigen::MatrixXd* getC() {return &C;} // bw2
     
     
 };

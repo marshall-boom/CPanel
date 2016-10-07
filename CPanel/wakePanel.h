@@ -29,6 +29,7 @@ class wakePanel : public panel
     wake* parentWake = nullptr;
     double prevStrength = 0;
     vortexFil* vortFil;
+    wakePanel* bufferParent;
         
 public:
     wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
@@ -72,6 +73,8 @@ public:
     void setVortFil(vortexFil* filament){vortFil = filament;};
     
     Eigen::Vector3d partSeedPt(Eigen::Vector3d &Vinf, double &dt);
+    void setBufferParent(wakePanel* pan){bufferParent = pan;};
+    wakePanel* getBufferParent(){return bufferParent;};
 
     
 };

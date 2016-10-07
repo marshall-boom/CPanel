@@ -23,7 +23,7 @@ class cpNode
     int index;
     std::vector<edge*> edges;
     std::vector<bodyPanel*> bodyPans;
-    double c_w = 1; //vpp
+    double c_w = 0.3; //vpp
     
     bool TEnode;
     
