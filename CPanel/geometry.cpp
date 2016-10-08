@@ -553,7 +553,6 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         {
             std::cout << "Building Influence Coefficient Matrix..." << std::endl;
             setInfCoeff();
-            setWakeInfCoeff(); //2BW
         }
     }
     else
@@ -847,6 +846,18 @@ void geometry::setInfCoeff()
         }
         
     }
+    
+    // Construct doublet influence coefficient matrices for bufferWake panels
+    
+    C.resize(nBodyPans,w2Panels.size());
+    
+    for (int i=0; i<nBodyPans; i++)
+    {
+        for (int j=0; j<w2Panels.size(); j++)
+        {
+            C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
+        }
+    }
 
 
     std::cout << "Complete" << std::endl;
@@ -857,28 +868,6 @@ void geometry::setInfCoeff()
     }
 }
 
-void geometry::setWakeInfCoeff() //2BW
-{
-    // Construct doublet influence coefficient matrices for bufferWake panels
-    
-    int nBodyPans = (int)bPanels.size();
-    
-    C.resize(nBodyPans,w2Panels.size());
-    
-    
-    for (int j=0; j<w2Panels.size(); j++)
-    {
-        for (int i=0; i<nBodyPans; i++)
-        {
-            C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
-        }
-    }
-    
-    if (writeCoeffFlag)
-    {
-//        writeInfCoeff();
-    }
-}
 
 Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
 {
@@ -944,7 +933,7 @@ void geometry::readInfCoeff()
     
     std::ifstream fid;
     fid.open(infCoeffFile);
-    int nPans;
+    int nPans, nW2Pans;
     fid >> nPans;
     A.resize(nPans,nPans);
     B.resize(nPans,nPans);
@@ -962,6 +951,22 @@ void geometry::readInfCoeff()
             fid >> B(i,j);
         }
     }
+    
+    if (vortPartFlag)
+    {
+        fid >> nW2Pans;
+        C.resize(nPans, nW2Pans);
+
+        for (int i=0; i<bPanels.size(); i++)
+        {
+            for (int j=0; j<w2Panels.size(); j++)
+            {
+                fid >> C(i,j);
+            }
+        }
+        
+    }
+    
     fid.close();
 }
 
@@ -986,6 +991,19 @@ void geometry::writeInfCoeff()
             fid << B(i,j) << "\t";
         }
         fid << "\n";
+    }
+    
+    if(vortPartFlag)
+    {
+        fid << w2Panels.size() << "\n";
+        for (int i=0; i<bPanels.size(); i++)
+        {
+            for (int j=0; j<w2Panels.size(); j++)
+            {
+                fid << C(i,j) << "\t";
+            }
+            fid << "\n";
+        }
     }
     fid.close();
 }

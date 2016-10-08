@@ -466,6 +466,7 @@ void cpCase::writeFiles()
     if (geom->getWakes().size() > 0)
     {
         writeWakeData(subdir,nodeMat);
+        writeBuffWake2Data(subdir,nodeMat);
         writeSpanwiseData(subdir);
     }
     
@@ -473,7 +474,6 @@ void cpCase::writeFiles()
     if(vortPartFlag){
         if(timeStep > 0)
         {
-            writeBuffWake2Data(subdir,nodeMat);
             writeParticleData(subdir);
             writeFilamentData(subdir);
         }
@@ -756,9 +756,7 @@ void cpCase::collapseBufferWake(){
             }
         }
         
-        // When collapsing for the 2nd row, position of particle will be convected by freestream since it will be far away?
-//        Eigen::Vector3d pos = (*wPanels)[i]->partSeedPt(Vinf, dt);
-        
+        // Convect in the same direction as
         Eigen::Vector3d seedDir = (*w2panels)[i]->getCenter() - (*w2panels)[i]->getBufferParent()->getCenter();
         seedDir.normalize();
         
@@ -783,7 +781,7 @@ void cpCase::collapseBufferWake(){
             p1 = (*w2panels)[i]->pointsInOrder()[2]->getPnt();
             p2 = (*w2panels)[i]->pointsInOrder()[3]->getPnt();
             
-                fil = new vortexFil(p1, p2,-(*w2panels)[i]->getMu(), (*w2panels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
+            fil = new vortexFil(p1, p2,-(*w2panels)[i]->getMu(), (*w2panels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
 
             filaments.push_back(fil);
             (*w2panels)[i]->setVortFil(fil);
@@ -864,11 +862,7 @@ void cpCase::collapseWakeForEachEdge(){
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-//                Eigen::Vector3d pos = seedPos((*w2panels)[i], j);
-                
-                Eigen::Vector3d seedDir = (*w2panels)[i]->getCenter() - (*w2panels)[i]->getBufferParent()->getCenter();
-                seedDir.normalize();
-                Eigen::Vector3d pos = (*w2panels)[i]->getCenter() + seedDir*Vinf.norm()*dt;
+                Eigen::Vector3d pos = seedPos((*w2panels)[i], j);
                 
                 Eigen::Vector3d strength = edgeStrength((*w2panels)[i], pEdges[j], j);
                 double radius = (*w2panels)[i]->getPartRadius(Vinf,dt); // VinfLocal
@@ -900,8 +894,7 @@ void cpCase::collapseWakeForEachEdge(){
     {
         for(int i=0; i<(*w2panels).size(); i++)
         {
-//            filaments[i]->setStrength(-(*w2panels)[i]->getMu() + (*w2panels)[i]->getBufferParent()->getMu());//-(*w2panels)[i]->getMu());
-            filaments[i]->setStrength(-(*w2panels)[i]->getMu() + (*w2panels)[i]->getBufferParent()->getMu());//-(*w2panels)[i]->getMu());
+            filaments[i]->setStrength(-(*w2panels)[i]->getMu());//-(*w2panels)[i]->getMu());
         }
         
     }
@@ -969,23 +962,33 @@ Eigen::Vector3d cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)
 Eigen::Vector3d cpCase::seedPos(wakePanel* pan, int edgeNum){
     // Put this in the wakePanel class...
     
-    std::vector<cpNode*> nodes = pan->pointsInOrder();
+    std::vector<edge*> edgesIO = pan->edgesInOrder();
     
-    if(edgeNum == 0){      // Avg of first proj nodes for pntsIO[0] and pntsIO[1]
-        return (nodes[0]->firstProjNode(dt, Vinf.norm()) + nodes[1]->firstProjNode(dt, Vinf.norm()))/2; //VinfLocal for all
-    }
-    else if(edgeNum == 1){ // Avg of 1st and second proj nodes of pntsIO[1]
-        return (nodes[1]->firstProjNode(dt, Vinf.norm()) + nodes[1]->secProjNode(dt, Vinf.norm()))/2;
-    }
-    else if(edgeNum == 2){ // Avg of second proj nodes for pntsIO[0] and pntsIO[1]
-        return (nodes[0]->secProjNode(dt, Vinf.norm()) + nodes[1]->secProjNode(dt, Vinf.norm()))/2;
-    }
-    else if(edgeNum == 3){ // Avg of 1st and second proj nodes of pntsIO[0]
-        return (nodes[0]->firstProjNode(dt, Vinf.norm()) + nodes[0]->secProjNode(dt, Vinf.norm()))/2;
-    }
+    Eigen::Vector3d partStart = edgesIO[edgeNum]->getMidPoint();
     
-    std::cout << "Error: wrong edge number for particle seed position..." << std::endl;
-    std::exit(0);
+    Eigen::Vector3d seedDir = pan->getCenter() - pan->getBufferParent()->getCenter();
+    seedDir.normalize();
+    
+    return partStart + seedDir*Vinf.norm()*dt; //track at Bisect wake angle
+    
+    
+//    std::vector<cpNode*> nodes = pan->pointsInOrder();
+
+//    if(edgeNum == 0){      // Avg of first proj nodes for pntsIO[0] and pntsIO[1]
+//        return (nodes[0]->firstProjNode(dt, Vinf.norm()) + nodes[1]->firstProjNode(dt, Vinf.norm()))/2; //VinfLocal for all
+//    }
+//    else if(edgeNum == 1){ // Avg of 1st and second proj nodes of pntsIO[1]
+//        return (nodes[1]->firstProjNode(dt, Vinf.norm()) + nodes[1]->secProjNode(dt, Vinf.norm()))/2;
+//    }
+//    else if(edgeNum == 2){ // Avg of second proj nodes for pntsIO[0] and pntsIO[1]
+//        return (nodes[0]->secProjNode(dt, Vinf.norm()) + nodes[1]->secProjNode(dt, Vinf.norm()))/2;
+//    }
+//    else if(edgeNum == 3){ // Avg of 1st and second proj nodes of pntsIO[0]
+//        return (nodes[0]->firstProjNode(dt, Vinf.norm()) + nodes[0]->secProjNode(dt, Vinf.norm()))/2;
+//    }
+//    
+//    std::cout << "Error: wrong edge number for particle seed position..." << std::endl;
+//    std::exit(0);
     
 }
 
@@ -1025,6 +1028,9 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
     // Buffer wake influence
     for(int j=0;j<(*wPanels).size();j++){
         velOnPart += (*wPanels)[j]->panelV(POI);
+    }
+    for(int j=0;j<(*w2panels).size();j++){
+        velOnPart += (*w2panels)[j]->panelV(POI);
     }
 
     // Vortex Filament influence

@@ -75,7 +75,6 @@ class geometry
     liftingSurf* getParentSurf(int wakeID);
     
     void setInfCoeff();
-    void setWakeInfCoeff();
 
     Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
     

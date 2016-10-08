@@ -465,29 +465,22 @@ void bodyPanel::computeCp(double Vinf)
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
     velocity = pntVelocity(center,potential,PG,Vinf);
+    
+//    std::cout << "velocity: " << this->velocity.x() << " , " << this->velocity.y() << " , " << this->velocity.z() << std::endl;
+//    double ndotv = normal.dot(velocity);
+//    std::cout << "n.v: " << ndotv << std::endl;
 }
+
 
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::Vector3d sumPartInfl)
 {
-        // THIS FUNCTION IS STILL USED, BUT NEEDS TO BE LOOKED AT AND UNDERSTOOD BEFORE MODDING CPANEL.
+    // Panel vel should be FS + pertVel + partInflTangent
+    Eigen::Vector3d Upt = sumPartInfl - getNormal()*sumPartInfl.dot(getNormal());
+    Eigen::Vector3d q = pntVelocity(center,potential,PG,Vinf);
     
-    //    Eigen::Vector3d Upart = global2local(sumPartInfl, false);
-    //    Upart.z()=0; //Katz fig. 10.14 shows z is panel normal.
-    //    Eigen::Vector3d Upt = local2global(Upart,false); //tested the direction by dotting with normal and it was correct
-//    velocity = pntVelocity(center,potential,PG,Vinf);
-    
-    Eigen::Vector3d pertVelocity,FSinLocalCoords,pertVelocityLocal,totLocalVelocity;
-    FSinLocalCoords = global2local(Vinf+sumPartInfl, false); //same as g
-
-    pertVelocity = pntVelocity(center,potential,PG,Vinf); //same as q
-    pertVelocityLocal = global2local(pertVelocity,false);
-    totLocalVelocity = pertVelocityLocal + FSinLocalCoords;
-    totLocalVelocity.z() = 0;
-    
-    velocity = local2global(totLocalVelocity, false);
-    
-    
-    //    std::cout << "velocity: " << this->velocity.x() << " , " << this->velocity.y() << " , " << this->velocity.z() << std::endl;
+    velocity = Vinf + q + Upt;
+ 
+//    std::cout << "velocity: " << this->velocity.x() << " , " << this->velocity.y() << " , " << this->velocity.z() << std::endl;
 //    double ndotv = normal.dot(velocity);
 //    std::cout << "n.v: " << ndotv << std::endl;
     
@@ -504,18 +497,19 @@ void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::V
 //    }
 //    std::cout << nodes[0]->getPnt().y();
 //    std::cout << "],[";
-//    for (int i=0; i<nodes.size(); i++) {
+//    for (int i=0; i<nodes.size(); i++){
 //        std::cout << nodes[i]->getPnt().z() << ",";
 //    }
 //    std::cout << nodes[0]->getPnt().z();
 //    std::cout << "]);" << std::endl;
-    
-    //plot normal vector
+//    
+//    //plot normal vector
 //    std::cout << "quiver3(" << center.x() <<","<< center.y() <<","<< center.z() <<","<< normal.x() <<","<<normal.y() <<","<<normal.z() <<",.05);" << std::endl;
-    
-    //plot velocity
+//    
+//    //plot velocity
 //    std::cout << "quiver3(" << center.x() <<","<< center.y() <<","<< center.z() <<","<< velocity.x() <<","<<velocity.y() <<","<<velocity.z() <<",.0005);" << std::endl;
-
+    
+    
 }
 
 
