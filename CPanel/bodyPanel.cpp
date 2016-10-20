@@ -458,9 +458,16 @@ Eigen::Vector3d bodyPanel::velocity3D(const Eigen::Vector3d &pnt,double pntPoten
 
 void bodyPanel::computeCp(double Vinf)
 {
-    Cp = (1-pow(velocity.norm()/Vinf,2)); // + ... change in strength = this->prevStrength
+    
+    Cp = (1-pow(velocity.norm()/Vinf,2)); // Katz 13.168
 }
 
+void bodyPanel::computeCp(double Vinf,double dt)
+{
+    double dPhi_dt = (prevPotential - potential ) / dt;
+    
+    Cp = (1-pow(velocity.norm()/Vinf,2));// - 2/(Vinf*Vinf)*dPhi_dt); // Katz 13.168
+}
 
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
@@ -471,46 +478,6 @@ void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 //    std::cout << "n.v: " << ndotv << std::endl;
 }
 
-
-void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::Vector3d sumPartInfl)
-{
-    // Panel vel should be FS + pertVel + partInflTangent
-    Eigen::Vector3d Upt = sumPartInfl - getNormal()*sumPartInfl.dot(getNormal());
-    Eigen::Vector3d q = pntVelocity(center,potential,PG,Vinf);
-    
-    velocity = Vinf + q + Upt;
- 
-//    std::cout << "velocity: " << this->velocity.x() << " , " << this->velocity.y() << " , " << this->velocity.z() << std::endl;
-//    double ndotv = normal.dot(velocity);
-//    std::cout << "n.v: " << ndotv << std::endl;
-    
-    //plot panel
-//    std::vector<cpNode *> nodes = this->getNodes();
-//    std::cout << "plot3([";
-//    for (int i=0; i<nodes.size(); i++) {
-//        std::cout << nodes[i]->getPnt().x() << ",";
-//    }
-//    std::cout << nodes[0]->getPnt().x();
-//    std::cout << "],[";
-//    for (int i=0; i<nodes.size(); i++) {
-//        std::cout << nodes[i]->getPnt().y() << ",";
-//    }
-//    std::cout << nodes[0]->getPnt().y();
-//    std::cout << "],[";
-//    for (int i=0; i<nodes.size(); i++){
-//        std::cout << nodes[i]->getPnt().z() << ",";
-//    }
-//    std::cout << nodes[0]->getPnt().z();
-//    std::cout << "]);" << std::endl;
-//    
-//    //plot normal vector
-//    std::cout << "quiver3(" << center.x() <<","<< center.y() <<","<< center.z() <<","<< normal.x() <<","<<normal.y() <<","<<normal.z() <<",.05);" << std::endl;
-//    
-//    //plot velocity
-//    std::cout << "quiver3(" << center.x() <<","<< center.y() <<","<< center.z() <<","<< velocity.x() <<","<<velocity.y() <<","<<velocity.z() <<",.0005);" << std::endl;
-    
-    
-}
 
 
 Eigen::Vector3d bodyPanel::computeMoments(const Eigen::Vector3d &cg)

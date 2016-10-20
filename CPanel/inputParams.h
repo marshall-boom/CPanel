@@ -34,6 +34,8 @@ struct inputParams
     double streamSpacing;
     bool accel;
     bool high_accuracy;
+    bool unsteady;
+    std::string bodyKinFileLoc;
     
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;

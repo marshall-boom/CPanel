@@ -60,7 +60,7 @@ public:
     Eigen::Vector3d panToPartStrength();
 
     std::vector<Eigen::Vector3d> vortexRingVectors();
-    double getPartRadius(Eigen::Vector3d &Vinf, double &dt);
+    double getPartRadius(Eigen::Vector3d Vinf, double &dt);
 
     
     std::vector<int> sort_indexes(std::vector<double> &v);

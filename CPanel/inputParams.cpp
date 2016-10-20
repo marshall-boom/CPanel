@@ -132,7 +132,7 @@ bool inputParams::set()
                 {
                     fid >> timeStep;
                 }
-                else if (s1.compare("numSteps") == 0)
+                else if (s1.compare("Number_of_Timesteps") == 0)
                 {
                     fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');                    
                     fid >> numSteps;
@@ -143,6 +143,12 @@ bool inputParams::set()
                 }
                 else if (s1.compare("High_Accuracy") == 0) {
                     fid >> high_accuracy;
+                }
+                else if (s1.compare("Unsteady_Mode") == 0){
+                    fid >> unsteady;
+                    if(unsteady){
+                        fid >> bodyKinFileLoc;
+                    }
                 }
             }
         }
@@ -223,6 +229,23 @@ void inputParams::print(std::ostream &stream)
     else
         stream << "OFF" << std::endl;
 
+    stream << std::setw(nChars) << "Accelerate Code " << "-> ";
+    if (accel)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
+    
+    stream << std::setw(nChars) << "High Accuracy Mode " << "-> ";
+    if (high_accuracy)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
+    
+    stream << std::setw(nChars) << "Unsteady Mode " << "-> ";
+    if (unsteady)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
     
 }
 
@@ -340,14 +363,14 @@ void inputParams::writeInputFile()
     fid << "High_Accuracy" << std::endl;
     fid << high_accuracy << std::endl;
     fid << std::endl;
-    fid << "% Unsteady Particle Wake Options %" << std::endl;
+    fid << "% Vortex Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;
     fid << timeStep << std::endl;
-    fid << "numSteps" << std::endl;
+    fid << "Number_of_Timesteps" << std::endl;
     fid << numSteps << std::endl;
-    //    fid << "C_w (Buffer wake length constant. Recommended 0.3)" << std::endl;
-    //    fid << c_w << std::endl;
-    
+    fid << "Unsteady_Mode" << std::endl;
+    fid << unsteady << std::endl;
+    fid << bodyKinFileLoc << std::endl;
     
     
     fid.close();

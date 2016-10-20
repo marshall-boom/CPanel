@@ -79,8 +79,8 @@ public:
     double dist2Pan(bodyPanel* other);
     
     void computeVelocity(double PG, const Eigen::Vector3d &Vinf);
-    void computeVelocity(double PG, const Eigen::Vector3d &Vinf, Eigen::Vector3d sumPartInfl);
     void computeCp(double Vinf);
+    void computeCp(double Vinf, double dt);
     
     Eigen::Vector3d computeMoments(const Eigen::Vector3d &cg);
     

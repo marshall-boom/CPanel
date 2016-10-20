@@ -40,7 +40,8 @@ protected:
     double longSide;
 
     double doubletStrength;
-    double potential;
+    double potential = 0;
+    double prevPotential = 0;
     Eigen::Vector3d velocity;
     double Cp;
     int ID;

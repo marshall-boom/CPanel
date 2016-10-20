@@ -41,7 +41,7 @@ class cpCase
     double PG; // Prandtl-Glauert Correction - (1-M^2)^(1/2)
     double alpha;
     double beta;
-    int timeStep = 0; //VPP
+    int timeStep = 0;
     bool vortPartFlag; //VPP
     bool manualStepsSet;
     double numSteps = 1000; // Run for a LOT of steps before convergence criteria kills solution
@@ -50,10 +50,10 @@ class cpCase
     
     bool highAccuracy;
     bool accelerate;
+    bool unsteady;
 
-
+    Eigen::MatrixXd bodyKin;
     
-    Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform;
     
     
@@ -82,6 +82,7 @@ class cpCase
     Eigen::Vector3d dM_dBeta;
     
     std::vector<bodyStreamline*> bStreamlines;
+    Eigen::Vector3d Vinf(Eigen::Vector3d POI);
     Eigen::Vector3d windToBody(double V,double alpha,double beta);
     
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
@@ -108,6 +109,7 @@ class cpCase
     Eigen::Vector3d edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum);
     Eigen::Vector3d seedPos(wakePanel* pan, int edgeNum);
 
+
     void convectParticles();
     void vortexStretching();
     void particleStrengthUpdate();
@@ -123,11 +125,14 @@ class cpCase
     particleFMM FMM;
 
     void convectBufferWake(); //VPP
+    void readBodyKinFile();
+    
+    Eigen::Vector3d rungeKuttaStepper(Eigen::Vector3d POI);
 
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
     {
-        Vinf = windToBody(V,alpha,beta); //Will need to incorporate something like this.
+//        Vinf = windToBody(V,alpha,beta); 
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
         w2panels = geom->getBufferWake2Panels(); //2BW
@@ -141,6 +146,8 @@ public:
         }
         accelerate = inParams->accel;
         highAccuracy  = inParams->high_accuracy;
+        
+        unsteady = inParams->unsteady;
         
     }
     

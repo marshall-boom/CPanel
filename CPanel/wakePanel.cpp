@@ -376,7 +376,7 @@ std::vector<Eigen::Vector3d> wakePanel::vortexRingVectors(){
     return ringVecs;
 }
 
-double wakePanel::getPartRadius(Eigen::Vector3d &Vinf, double &dt){
+double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
     //radius will be the average distance between the spanwise particle seed points a la Quackenbush et al. eq. (9)
 
     Eigen::Vector3d currPnt = this->getCenter() + dt*Vinf;

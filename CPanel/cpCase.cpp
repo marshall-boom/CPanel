@@ -18,6 +18,10 @@ cpCase::~cpCase()
 
 void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)
 {
+    if(unsteady){
+        readBodyKinFile();
+    }
+    
     bool converged;
     std::string check = "\u2713";
     setSourceStrengths();
@@ -29,8 +33,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
     if(vortPartFlag){
         std::cout << "Writing timestep " << timeStep << " files..." << std::endl;
         
-        
-        compVelocity(); // This doesn't need to be here unless solving Cl/Cd etc
+//        compVelocity(); // This doesn't need to be here unless solving Cl/Cd etc
         writeFiles(); // Might take this out to or at least make it an option?
         timeStep++;
         
@@ -40,8 +43,10 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
         writeFiles();
         timeStep++;
         
-        for(int i=0; i<numSteps; i++){
-            std::cout << "Time step " << timeStep<< "/" << numSteps << ". Flow time = " << timeStep*dt << std::endl;
+        for(int i=0; i<(numSteps-2); i++){
+            std::cout << "Time step " << timeStep<< "/" << numSteps;
+            std::cout << ".  Flow time = " << timeStep*dt;
+            std::cout << ".  " << particles.size() << " particles" << std::endl;
 
 //            particleStrengthUpdate(); //commenting until big bug is found.
 //            particleStrengthUpdateGaussian();
@@ -53,12 +58,12 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
                 collapseBufferWake();
 
             }
-    // do write inflCoeffFiles...==============================================================
+            
             convectBufferWake();
 
             
             if(accelerate){
-                std::cout << "Building particle octree..." << std::endl;
+//                std::cout << "Building particle octree..." << std::endl;
                 partOctree.removeData();
                 partOctree.setMaxMembers(10); //Barnes Hut
                 if(highAccuracy){
@@ -69,30 +74,32 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
                 FMM.build(&partOctree);
             }
             
-            std::cout << "Setting source strengths..." << std::endl;
+//            std::cout << "Setting source strengths..." << std::endl;
             setSourceStrengths();
             
-            std::cout << "Solving singularity strengths..." << std::endl;
+//            std::cout << "Solving singularity strengths..." << std::endl;
             converged = solveVPmatrixEq();
             
-            std::cout << "Computing forces..." << std::endl;
-            compVelocity();
+//            std::cout << "Computing forces..." << std::endl;
+//            compVelocity();
 
-            std::cout << "Writing files..." << std::endl;
+//            std::cout << "Writing files..." << std::endl;
             writeFiles();
             
-            std::cout << "Convecting " << particles.size() << " particles" << std::endl;
+//            std::cout << "Convecting " << particles.size() << " particles" << std::endl;
             convectParticles();
             
             timeStep++;
 
         }
         
-        std::cout << "CL=[";
-        for(int i=0; i<CL.size(); i++){
-            std::cout << CL[i] << ", ";
-        }
-        std::cout << "];" << std::endl;
+        timeStep--; // Because the last timestep incrementor TAKE OUT WHEN RE-ARRANGE LOOP
+        
+//        std::cout << "CL=[";
+//        for(int i=0; i<CL.size(); i++){
+//            std::cout << CL[i] << ", ";
+//        }
+//        std::cout << "];" << std::endl;
         
 
 //        std::cout << "CD_trefftz_new = " << trefftzPlaneCd(particles) << std::endl;
@@ -170,7 +177,28 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
 }
 
 
+Eigen::Vector3d cpCase::Vinf(Eigen::Vector3d POI)
+{
+    if (!unsteady)
+    {
+        return windToBody( Vmag , alpha , beta );
+    }
+    else
+    {
+        Eigen::Vector3d localVel;
+        
+        // U = U3 + (-q*z + r*y)
+        localVel.x() = bodyKin(timeStep, 0) - bodyKin(timeStep, 4)*POI.z() + bodyKin(timeStep, 5)*POI.y();
 
+        // V = V3 + (-r*x + p*z)
+        localVel.y() = bodyKin(timeStep, 1) - bodyKin(timeStep, 5)*POI.x() + bodyKin(timeStep, 3)*POI.z();
+        
+        // W = W3 + (-p*y + q*x)
+        localVel.z() = bodyKin(timeStep, 2) - bodyKin(timeStep, 3)*POI.y() + bodyKin(timeStep, 4)*POI.x();
+    
+        return localVel;
+    }
+}
 
 
 
@@ -220,7 +248,8 @@ void cpCase::setSourceStrengths()
         {
             sumVelInfl+=filaments[j]->velInfl((*bPanels)[i]->getCenter());
         }
-        (*bPanels)[i]->setSigma((Vinf+sumVelInfl),0); //function called VinfLocal(POI), and this func won't change
+        
+        (*bPanels)[i]->setSigma((Vinf((*bPanels)[i]->getCenter())+sumVelInfl),0); //function called VinfLocal(POI), and this func won't change
         sigmas(i) = (*bPanels)[i]->getSigma();
     }
 }
@@ -246,13 +275,13 @@ bool cpCase::solveMatrixEq()
     for (int i=0; i<bPanels->size(); i++)
     {
         (*bPanels)[i]->setMu(doubletStrengths(i));
-        (*bPanels)[i]->setPotential(Vinf); //VinfLocal(POI)
+        (*bPanels)[i]->setPotential(Vinf((*bPanels)[i]->getCenter())); //VinfLocal(POI)
     }
     
     for (int i=0; i<wPanels->size(); i++)
     {
         (*wPanels)[i]->setMu();
-        (*wPanels)[i]->setPotential(Vinf); //VinfLocal(POI) LOOK IN FUNCTION. IT'S A MESS
+        (*wPanels)[i]->setPotential(Vinf((*wPanels)[i]->getCenter())); //VinfLocal(POI) LOOK IN FUNCTION. IT'S A MESS
     }
     
     return converged;
@@ -280,15 +309,17 @@ bool cpCase::solveVPmatrixEq()
     for (int i=0; i<bPanels->size(); i++)
     {
         (*bPanels)[i]->setMu(doubletStrengths(i));
-        (*bPanels)[i]->setPotential(Vinf); // SAME MODS AS ABOVE
+        (*bPanels)[i]->setPotential(Vinf((*bPanels)[i]->getCenter()));
 
     }
     for (int i=0; i<wPanels->size(); i++)
     {
         (*wPanels)[i]->setPrevStrength((*wPanels)[i]->getMu());
         (*wPanels)[i]->setMu();
-        (*w2panels)[i]->setPotential(Vinf);
-        (*wPanels)[i]->setPotential(Vinf); // SAME MODS AS ABOVE
+        (*wPanels)[i]->setPotential(Vinf((*wPanels)[i]->getCenter())); // SAME MODS AS ABOVE
+        
+        (*w2panels)[i]->setPotential(Vinf((*w2panels)[i]->getCenter())); // Included in this loop because there are the same number of w2pans as w1pans
+
     }
     return converged;
 }
@@ -306,12 +337,12 @@ void cpCase::compVelocity()
     for (int i=0; i<bPanels->size(); i++)
     {
         p = (*bPanels)[i];
-        Eigen::Vector3d sumPartInfl = Eigen::Vector3d::Zero();
-        for(int j=0; j<particles.size(); j++){
-            sumPartInfl += particles[j]->partVelInfl(p->getCenter());
+        p->computeVelocity(PG,Vinf(p->getCenter()));
+        if (unsteady) {
+            p->computeCp(Vmag,dt);
+        }else{
+            p->computeCp(Vmag);
         }
-        p->computeVelocity(PG,(Vinf),sumPartInfl); // THIS FUNCTION IS ALSO A MESS... CLEAN IT UP AND WRITE ABOUT IT BEFORE MODDING CPANEL
-        p->computeCp(Vmag);
         Fbody += -p->getCp()*p->getArea()*p->getBezNormal()/params->Sref;
         moment = p->computeMoments(params->cg);
         CM(0) += moment(0)/(params->Sref*params->bref);
@@ -319,7 +350,7 @@ void cpCase::compVelocity()
         CM(2) += moment(2)/(params->Sref*params->bref);
     }
     Fwind = bodyToWind(Fbody);
-    std::cout << "CL = " << Fbody.z() << std::endl;
+//    std::cout << "CL = " << Fbody.z() << std::endl;
     CL.push_back(Fbody.z());
     
 }
@@ -349,10 +380,10 @@ void cpCase::createStreamlines()
     
     for (int i=0; i<surfs.size(); i++)
     {
-        streamPnts = surfs[i]->getStreamlineStartPnts(Vinf,PG);
+        streamPnts = surfs[i]->getStreamlineStartPnts(Vinf({0,0,0}),PG); // will need to modify this in order to find the stagnation points for a moving body...
         for (int j=0; j<streamPnts.size(); j++)
         {
-            s = new bodyStreamline(std::get<0>(streamPnts[j]),std::get<1>(streamPnts[j]),Vinf,PG,geom,3,false);
+            s = new bodyStreamline(std::get<0>(streamPnts[j]),std::get<1>(streamPnts[j]),Vinf({0,0,0}),PG,geom,3,false);
             bStreamlines.push_back(s);
         }
     }
@@ -756,18 +787,11 @@ void cpCase::collapseBufferWake(){
             }
         }
         
-        // Convect in the same direction as
-        Eigen::Vector3d seedDir = (*w2panels)[i]->getCenter() - (*w2panels)[i]->getBufferParent()->getCenter();
-        seedDir.normalize();
-        
-        Eigen::Vector3d pos = (*w2panels)[i]->getCenter() + seedDir*Vinf.norm()*dt;
-        
-        
-        double radius = (*w2panels)[i]->getPartRadius(Vinf,dt); // VinfLocal
+        Eigen::Vector3d pos = rungeKuttaStepper((*w2panels)[i]->getCenter());
+        double radius = (*w2panels)[i]->getPartRadius(Vinf(pos),dt); // VinfLocal
         
         particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); // Last two are previous pos and strength values used for advanced time stepper.
         particles.push_back(p);
-        
         
     }
     
@@ -796,60 +820,6 @@ void cpCase::collapseBufferWake(){
     }
 }
 
-
-// FOR SINGLE BUFFER WAKE PANEL
-//void cpCase::collapseBufferWake(){
-//    
-//    std::vector<edge*> usedEdges;
-//    
-//    for(int i=0; i<(*wPanels).size(); i++)
-//    {
-//        std::vector<edge*> pEdges = (*wPanels)[i]->edgesInOrder();
-//        
-//        Eigen::Vector3d strength = Eigen::Vector3d::Zero();
-//        for (int j=1; j<4; j++)
-//        {
-//            if (!edgeIsUsed(pEdges[j],usedEdges))
-//            {
-//                usedEdges.push_back(pEdges[j]);
-//                strength += edgeStrength((*wPanels)[i], pEdges[j], j);
-//            }
-//        }
-//        
-//        Eigen::Vector3d pos = (*wPanels)[i]->partSeedPt(Vinf, dt);
-//        double radius = (*wPanels)[i]->getPartRadius(Vinf,dt); // VinfLocal
-//        
-//        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous pos and strength values used for advanced time stepper.
-//        particles.push_back(p);
-//        
-//        
-//    }
-//    
-//    // Create filament
-//    if(timeStep == 1)
-//    {
-//        for(int i=0; i<(*wPanels).size(); i++){
-//            vortexFil* fil;
-//            Eigen::Vector3d p1,p2;
-//            
-//            p1 = (*wPanels)[i]->pointsInOrder()[2]->getPnt();
-//            p2 = (*wPanels)[i]->pointsInOrder()[3]->getPnt();
-//            
-//            fil = new vortexFil(p1, p2,-(*wPanels)[i]->getMu(), (*wPanels)[i]); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
-//            
-//            filaments.push_back(fil);
-//            (*wPanels)[i]->setVortFil(fil);
-//        }
-//    }else
-//    {
-//        for(int i=0; i<(*wPanels).size(); i++){
-//            filaments[i]->setStrength(-(*wPanels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
-//        }
-//        
-//    }
-//}
-
-
 void cpCase::collapseWakeForEachEdge(){
     // Go through each panel. Ignore the trialing edge as it has no circulation. After creating a particle at each edge, put a pointer to the edge in a vector. Before making any particles, make sure the edge has not yet been used. Edge collapse follows
     
@@ -865,7 +835,7 @@ void cpCase::collapseWakeForEachEdge(){
                 Eigen::Vector3d pos = seedPos((*w2panels)[i], j);
                 
                 Eigen::Vector3d strength = edgeStrength((*w2panels)[i], pEdges[j], j);
-                double radius = (*w2panels)[i]->getPartRadius(Vinf,dt); // VinfLocal
+                double radius = (*w2panels)[i]->getPartRadius(Vinf((*w2panels)[i]->getCenter()),dt); // VinfLocal
                 
                 particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous pos and strength values used for advanced time stepper.
                 particles.push_back(p);
@@ -959,43 +929,35 @@ Eigen::Vector3d cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)
     return strength;
 }
 
+Eigen::Vector3d cpCase::rungeKuttaStepper(Eigen::Vector3d POI)
+{
+    // Input a particle and this function will track it through space
+    
+    Eigen::Vector3d k1, k2, k3, k4;
+    
+    k1 = velocityInflFromEverything(POI);
+    k2 = velocityInflFromEverything(POI+k1*dt/2);
+    k3 = velocityInflFromEverything(POI+k2*dt/2);
+    k4 = velocityInflFromEverything(POI+k3*dt);
+    
+    return POI + dt*(k1/6 + k2/3 + k3/3 + k4/6);
+
+}
+
 Eigen::Vector3d cpCase::seedPos(wakePanel* pan, int edgeNum){
-    // Put this in the wakePanel class...
     
     std::vector<edge*> edgesIO = pan->edgesInOrder();
     
     Eigen::Vector3d partStart = edgesIO[edgeNum]->getMidPoint();
-    
-    Eigen::Vector3d seedDir = pan->getCenter() - pan->getBufferParent()->getCenter();
-    seedDir.normalize();
-    
-    return partStart + seedDir*Vinf.norm()*dt; //track at Bisect wake angle
-    
-    
-//    std::vector<cpNode*> nodes = pan->pointsInOrder();
 
-//    if(edgeNum == 0){      // Avg of first proj nodes for pntsIO[0] and pntsIO[1]
-//        return (nodes[0]->firstProjNode(dt, Vinf.norm()) + nodes[1]->firstProjNode(dt, Vinf.norm()))/2; //VinfLocal for all
-//    }
-//    else if(edgeNum == 1){ // Avg of 1st and second proj nodes of pntsIO[1]
-//        return (nodes[1]->firstProjNode(dt, Vinf.norm()) + nodes[1]->secProjNode(dt, Vinf.norm()))/2;
-//    }
-//    else if(edgeNum == 2){ // Avg of second proj nodes for pntsIO[0] and pntsIO[1]
-//        return (nodes[0]->secProjNode(dt, Vinf.norm()) + nodes[1]->secProjNode(dt, Vinf.norm()))/2;
-//    }
-//    else if(edgeNum == 3){ // Avg of 1st and second proj nodes of pntsIO[0]
-//        return (nodes[0]->firstProjNode(dt, Vinf.norm()) + nodes[0]->secProjNode(dt, Vinf.norm()))/2;
-//    }
-//    
-//    std::cout << "Error: wrong edge number for particle seed position..." << std::endl;
-//    std::exit(0);
+    return rungeKuttaStepper(partStart);
     
 }
 
 Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
     
     // Freestream influence
-    Eigen::Vector3d velOnPart = Vinf;
+    Eigen::Vector3d velOnPart = Vinf(POI);
 
     // If particle reaches very far field condition
     if ((POI-Eigen::Vector3d::Zero()).norm() > 20*params->cref)
@@ -1004,7 +966,7 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
     }
     
     // Particle influence
-    if(accelerate){
+    if(accelerate && timeStep > 2){
         velOnPart += FMM.barnesHut(POI);
     }
     else{
@@ -1024,7 +986,7 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
     for(int j=0;j<(*bPanels).size();j++){
         velOnPart += (*bPanels)[j]->panelV(POI);
     }
-
+    
     // Buffer wake influence
     for(int j=0;j<(*wPanels).size();j++){
         velOnPart += (*wPanels)[j]->panelV(POI);
@@ -1032,6 +994,7 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
     for(int j=0;j<(*w2panels).size();j++){
         velOnPart += (*w2panels)[j]->panelV(POI);
     }
+
 
     // Vortex Filament influence
     for(int i=0; i<filaments.size(); i++){
@@ -1042,7 +1005,8 @@ Eigen::Vector3d cpCase::velocityInflFromEverything(Eigen::Vector3d POI){
 }
 
 //Eigen::Vector3d cpCase::velocityInflFromEverything(particle* part){
-//    
+//    // I need this function to implement the gaussian velocity influence function included in the particle class.
+
 //    // if particle is far away, only do velocity from particle.
 //    //   - To find out what 'really far away' is, look at the normalized velocity influence summed from each panel and compare it to the sum of the velocity influence magnitude form every particele. Do for a medium sized mesh with a couple thousand particles and couple thousand panels. Take a survey of points from the trailing edge to the first particle (which should be the furthest particle away). Take the survey at the cetner, half span, and full span. plot each and look at the difference?
 //    // if particle is REALLY far away, convect with freestream velocity
@@ -1090,16 +1054,9 @@ void cpCase::convectParticles(){
         
         Eigen::Vector3d newPos;
         
-        if(highAccuracy){
-            // Runge Kutta
-            Eigen::Vector3d POI = particles[i]->pos;
-            Eigen::Vector3d k1 = velocityInflFromEverything(POI);
-            Eigen::Vector3d k2 = velocityInflFromEverything(POI+k1*dt/2);
-            Eigen::Vector3d k3 = velocityInflFromEverything(POI+k2*dt/2);
-            Eigen::Vector3d k4 = velocityInflFromEverything(POI+k3*dt);
-
-            newPartPositions.push_back(POI + dt*(k1/6 + k2/3 + k3/3 + k4/6));
-            
+        if(highAccuracy)
+        {
+            newPartPositions.push_back(rungeKuttaStepper(particles[i]->pos));
         }
         else
         {
@@ -1356,4 +1313,21 @@ double cpCase::trefftzPlaneCl(std::vector<particle*> particles)
     return v;
 };
 
+void cpCase::readBodyKinFile(){
+    std::ifstream fid;
+    fid.open(params->bodyKinFileLoc);
+    fid >> numSteps;
+
+    bodyKin.resize(numSteps, 6); // U, V, W, p, q, r
+    
+    for (int i=0; i<numSteps; i++)
+    {
+        for(int j=0; j < 6; j++)
+        {
+            fid >> bodyKin(i,j);
+        }
+    }
+        
+    fid.close();
+}
 

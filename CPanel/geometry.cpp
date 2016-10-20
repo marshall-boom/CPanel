@@ -248,9 +248,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     }
                 }
                 
-                Eigen::MatrixXd TEdist;
-                // this should be re-done. If input a large geometry, the results will only be a spacing of 1...
-                TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size());
+                Eigen::MatrixXd TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size())*100000; //initializing with large number so that the minimum distance between panel edges is
                 for(int i=0; i<Tedges.size(); i++)
                 {
                     for(int j=0; j<Tedges.size(); j++)
@@ -264,10 +262,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 double minDist = TEdist.minCoeff();
                 dt = minDist/inputV;
             }
-            std::cout << "dt = " << dt << std::endl;
             
             
             std::cout << "Creating buffer wake..." << std::endl;
+            
+            std::cout << "\tCalculated time step : " << dt << "sec" << std::endl;
+
             // VSP tags wakes with surface ID starting at 1000
             for(int i=0; i<allID.size(); i++)
             {
@@ -417,7 +417,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             nodes[i]->setIndex(i);
         }
         
-        std::cout << "Building Octree..." << std::endl;
+        std::cout << "Building Panel Octree..." << std::endl;
 
         createOctree();
 //        std::string file_name = "/Users/C_Man/Desktop/CPanelCases/OctreeFiles/PanelOctree.txt";
@@ -540,9 +540,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             std::cout << "\nInfluence Coefficients have already been calculated for a geometry with this name, would you like to use these coefficients?" << std::endl;
             std::cout << "\t< Y > - Yes, use coefficients." << std::endl;
             std::cout << "\t< N > - No, recalculate them." << std::endl;
-            std::cin >> in;
+//            std::cin >> in;
             std::cout << std::endl;
-            if (in == "Y" || in == "y")
+//            if (in == "Y" || in == "y")
             {
                 readInfCoeff();
                 read = true;
