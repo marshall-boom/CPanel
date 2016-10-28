@@ -83,7 +83,7 @@ void bodyPanel::setTipFlag()
 
 void bodyPanel::setSigma(Eigen::Vector3d Vinf, double Vnorm)
 {
-    sourceStrength = (-Vinf.dot(normal)+Vnorm); //CS: I think the Vnorm would be something emminating from the panel, not influencing it.
+    sourceStrength = (-Vinf.dot(normal)+Vnorm); // CS: I think the Vnorm would be something emminating from the panel, not influencing it.
 }
 
 void bodyPanel::setMu(double dubStrength)
@@ -458,24 +458,19 @@ Eigen::Vector3d bodyPanel::velocity3D(const Eigen::Vector3d &pnt,double pntPoten
 
 void bodyPanel::computeCp(double Vinf)
 {
-    
-    Cp = (1-pow(velocity.norm()/Vinf,2)); // Katz 13.168
+    Cp = (1-pow(velocity.norm()/Vinf,2));
 }
 
 void bodyPanel::computeCp(double Vinf,double dt)
 {
-    double dPhi_dt = (prevPotential - potential ) / dt;
+    double dPhi_dt = ( prevPotential - potential ) / dt;
     
-    Cp = (1-pow(velocity.norm()/Vinf,2));// - 2/(Vinf*Vinf)*dPhi_dt); // Katz 13.168
+    Cp = 1 - pow( velocity.norm()/Vinf , 2) - 2/(Vinf*Vinf) * dPhi_dt; // Katz 13.168
 }
 
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
     velocity = pntVelocity(center,potential,PG,Vinf);
-    
-//    std::cout << "velocity: " << this->velocity.x() << " , " << this->velocity.y() << " , " << this->velocity.z() << std::endl;
-//    double ndotv = normal.dot(velocity);
-//    std::cout << "n.v: " << ndotv << std::endl;
 }
 
 

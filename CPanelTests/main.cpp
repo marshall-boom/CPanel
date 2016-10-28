@@ -45,19 +45,20 @@ int main(int argc, const char * argv[])
     for (int i=0; i<numFiles; i++) {
         std::cout << "\n\nFile Number " << i+1 << ":" << std::endl;
         
-//        std::string fid = "/Users/C_Man/Desktop/CPanelDevelopment/PanelVInfluenceTest/doubletVelTest" + std::to_string(i+1) + ".txt";
+        std::string fid = "/Users/C_Man/Desktop/CPanelDevelopment/PanelVInfluenceTest/doubletVelTest" + std::to_string(i+1) + ".txt";
 //        std::string fid = "/Users/C_Man/Desktop/CPanelDevelopment/PanelVInfluenceTest/sourceVelTest" + std::to_string(i+1) + ".txt";
-        std::string fid = "/Users/C_Man/Desktop/CPanelDevelopment/PanelVInfluenceTest/sourceOutput.txt";
+//        std::string fid = "/Users/C_Man/Desktop/CPanelDevelopment/PanelVInfluenceTest/sourceOutput.txt";
         
         DoubVelData *dat;
         dat = readDataFile(fid);
         createTestPanel(dat, &geom);
         
         GeomTests *geomTest = new GeomTests(dat->testPan);
-        geomTest->conductTests(dat->testPan, &geom);
+//        geomTest->conductTests(dat->testPan, &geom);
         
         
         influenceTests* test = new influenceTests();
+        test->potentialComparer(dat->testPan);
         
         test->FMMtests();
         test->velocityComparer(dat);

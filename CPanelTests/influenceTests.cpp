@@ -207,7 +207,7 @@ void influenceTests::barnesHutTest(std::vector<particle*> testParts){
     
     std::cout << "Velocity using Barnes-Hut..." << std::endl;
     clock_t bhBegin = clock();
-        Eigen::Vector3d barnesHutVel = FMM.barnesHut(POI);
+        Eigen::Vector3d barnesHutVel = FMM.barnesHutVel(POI);
     clock_t bhEnd = clock();
     std::cout << "Barnes Hut time = " <<  (bhEnd-bhBegin) << " clocks" << std::endl;
 
@@ -257,7 +257,7 @@ void influenceTests::BarnesHutCarpetPlotData(std::vector<particle*> testParts)
             
             particleFMM FMM;
             FMM.build(&partTree);
-            Eigen::Vector3d barnesHutVel = FMM.barnesHut(POI);
+            Eigen::Vector3d barnesHutVel = FMM.barnesHutVel(POI);
             
             Eigen::Vector3d error;
             error.x() = (allPartsVel.x()-barnesHutVel.x())/allPartsVel.x()*100;
@@ -316,7 +316,7 @@ void influenceTests::BarnesHutCarpetPlotData(std::vector<particle*> testParts)
             std::vector<Eigen::Vector3d> velOnVecBH;
             for (int k=0; k<testParts.size(); k++)
             {
-                velOnVecBH.push_back(FMM.barnesHut(testParts[k]->pos));
+                velOnVecBH.push_back(FMM.barnesHutVel(testParts[k]->pos));
             }
             clock_t bhTime = (clock()-barnesHutBegin);
             
@@ -375,7 +375,7 @@ void influenceTests::BarnesHutSpeedTest(std::vector<particle*> testParts){
     for (int i=0; i<testParts.size(); i++)
     {
 //        clock_t oneBH = clock();
-        velOnVecBH.push_back(FMM.barnesHut(testParts[i]->pos));
+        velOnVecBH.push_back(FMM.barnesHutVel(testParts[i]->pos));
 //        clock_t oneBHend = clock();
 //        std::cout << "one BH calc: " << oneBHend-oneBH << std::endl;
     }
@@ -449,6 +449,82 @@ double influenceTests::pick_a_number( double from, double upto )
     return d( global_urng(), parm_t{from, upto} );
 }
 
+void influenceTests::potentialComparer(bodyPanel* pan)
+{
+    // comparing 4 sided panel potential in CPanel to Katz
+    
+    Eigen::Vector3d POI;
+    POI << 1.2, 0.5 , 0.75;
+    
+    double phi = pan->dubPhiInf(POI);
+    
+    std::cout << "CPanel Phi = "  << phi << std::endl;
+    
+    cpNode* n1 = pan->getNodes()[0];
+    cpNode* n2 = pan->getNodes()[1];
+    cpNode* n3 = pan->getNodes()[2];
+    cpNode* n4 = pan->getNodes()[3];
+    
+    double x,y,z;
+    x = POI.x();
+    y = POI.y();
+    z = POI.z();
+    
+    double x1,x2,x3,x4;
+    x1 = n1->getPnt().x();
+    x2 = n2->getPnt().x();
+    x3 = n3->getPnt().x();
+    x4 = n4->getPnt().x();
+    
+    double y1,y2,y3,y4;
+    y1 = n1->getPnt().y();
+    y2 = n2->getPnt().y();
+    y3 = n3->getPnt().y();
+    y4 = n4->getPnt().y();
+    
+    double z1,z2,z3,z4;
+    z1 = n1->getPnt().z();
+    z2 = n2->getPnt().z();
+    z3 = n3->getPnt().z();
+    z4 = n4->getPnt().z();
+    
+    double m12, m23, m34, m41;
+    m12 = (y2 - y1)/(x2 - x1);
+    m23 = (y3 - y2)/(x3 - x2);
+    m34 = (y4 - y3)/(x4 - x3);
+    m41 = (y1 - y4)/(x1 - x4);
+    
+    double r1, r2, r3, r4;
+    r1 = pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z)*(z) , 0.5);
+    r2 = pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + (z)*(z) , 0.5);
+    r3 = pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + (z)*(z) , 0.5);
+    r4 = pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + (z)*(z) , 0.5);
+    
+    double e1, e2, e3, e4;
+    e1 = (x-x1)*(x-x1) + z*z;
+    e2 = (x-x2)*(x-x2) + z*z;
+    e3 = (x-x3)*(x-x3) + z*z;
+    e4 = (x-x4)*(x-x4) + z*z;
+    
+    double h1, h2, h3, h4;
+    h1 = (x-x1)*(y-y1);
+    h2 = (x-x2)*(y-y2);
+    h3 = (x-x3)*(y-y3);
+    h4 = (x-x4)*(y-y4);
+    
+    
+    double KatzPhi = pan->getMu()/4/M_PI * (atan((m12*e1 - h1)/(z*r1)) - atan((m12*e2 - h2)/(z*r2)) +
+                                     atan((m23*e2 - h2)/(z*r2)) - atan((m23*e3 - h3)/(z*r3)) +
+                                     atan((m34*e3 - h3)/(z*r3)) - atan((m34*e4 - h4)/(z*r4)) +
+                                     atan((m41*e4 - h4)/(z*r4)) - atan((m41*e1 - h1)/(z*r1)));
+
+    
+    std::cout << "Katz Phi = "  << KatzPhi << std::endl;
+
+    
+    
+    
+}
 
 
 

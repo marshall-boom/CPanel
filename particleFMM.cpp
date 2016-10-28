@@ -57,10 +57,10 @@ void particleFMM::computeMultExp()
 }
 
 
-Eigen::Vector3d particleFMM::barnesHut(Eigen::Vector3d POI)
+Eigen::Vector3d particleFMM::barnesHutVel(Eigen::Vector3d POI)
 {
-    
     // Ignore the root node. Root node wouldn't be beneficial in implementation since octree is always near POI. Instead, start at level 2
+    
     Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
@@ -71,6 +71,48 @@ Eigen::Vector3d particleFMM::barnesHut(Eigen::Vector3d POI)
 
     return velInfl;
 }
+
+Eigen::Vector3d particleFMM::barnesHutVel(particle* part)
+{
+    // Ignore the root node. Root node wouldn't be beneficial in implementation since octree is always near POI. Instead, start at level 2
+    
+    Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
+    std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
+    
+    for (int i=0; i<rootChildren.size(); i++)
+    {
+        velInfl += rootChildren[i]->calcVel(part);
+    }
+    
+    return velInfl;
+}
+
+Eigen::Vector3d particleFMM::barnesHutStretch(particle* part)
+{
+    Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
+    std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
+    
+    for (int i=0; i<rootChildren.size(); i++)
+    {
+        stretchInfl += rootChildren[i]->calcStretch(part);
+    }
+    
+    return stretchInfl;
+}
+
+Eigen::Vector3d particleFMM::barnesHutDiff(particle* part)
+{
+    Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
+    std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
+    
+    for (int i=0; i<rootChildren.size(); i++)
+    {
+        diffInfl += rootChildren[i]->calcDiff(part);
+    }
+    
+    return diffInfl;
+}
+
 
 
 

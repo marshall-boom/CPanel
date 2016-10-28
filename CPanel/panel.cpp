@@ -95,9 +95,9 @@ void panel::setGeom()
 
 void panel::setPotential(Eigen::Vector3d Vinf)
 {
-    prevPotential = potential; //??
+    prevPotential = potential;
     
-    potential = Vinf.dot(center)-doubletStrength; // Katz 11.74
+    potential = Vinf.dot(center) - doubletStrength; // Katz 11.74, 13.157
 }
 
 bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &projectedPnt)

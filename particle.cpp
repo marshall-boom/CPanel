@@ -73,9 +73,15 @@ Eigen::Vector3d particle::partVelInflGaussian(const Eigen::Vector3d &POI){
 };
 
 
-Eigen::Vector3d particle::vortexStretchingGaussian(particle* part){
+Eigen::Vector3d particle::vortexStretchingGaussian(particle* part)
+{
     Eigen::Vector3d Xi = this->pos;
     Eigen::Vector3d Xj = part->pos;
+    
+    if ((Xi-Xj).norm() > 5*this->radius)
+    {
+        return Eigen::Vector3d::Zero();
+    }
     
     double sigij = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
     
@@ -106,6 +112,7 @@ Eigen::Vector3d particle::vortexStretchingGaussian(particle* part){
     
     return velGradient*this->strength;
 }
+
 
 
 Eigen::Vector3d particle::viscousDiffusionGaussian(particle* part){

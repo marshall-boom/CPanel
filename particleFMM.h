@@ -41,7 +41,10 @@ public:
     particleFMM() {};
     
     void build(particleOctree* tree);
-    Eigen::Vector3d barnesHut(Eigen::Vector3d POI);
+    Eigen::Vector3d barnesHutVel(Eigen::Vector3d POI);
+    Eigen::Vector3d barnesHutVel(particle* part);
+    Eigen::Vector3d barnesHutStretch(particle* part);
+    Eigen::Vector3d barnesHutDiff(particle* part);
 };
 
 

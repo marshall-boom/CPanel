@@ -47,6 +47,7 @@ class cpCase
     double numSteps = 1000; // Run for a LOT of steps before convergence criteria kills solution
     double dt;
     std::vector<double> CL; //VPP
+    std::vector<double> CM_x; //VPP
     
     bool highAccuracy;
     bool accelerate;
@@ -89,6 +90,7 @@ class cpCase
     void setSourceStrengths();
     bool solveMatrixEq();
     bool solveVPmatrixEq(); //VPP
+    Eigen::Vector3d VinfPlusVecPot(Eigen::Vector3d POI);
     void compVelocity();
     void trefftzPlaneAnalysis();
     void createStreamlines();

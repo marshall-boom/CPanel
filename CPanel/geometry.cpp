@@ -228,11 +228,15 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "\tEdges : " << edges.size() << std::endl;
         std::cout << "\tPanels : " << nTris << std::endl;
         
-
+        
         
         // The addition of wake panels begins after the body geometry is already finished...
         if(vortPartFlag)
         {
+            
+            // collect wakes
+                //delete wakes
+            
             // Find time step if one is not provided. Might change this to be the average TEdist///
             
             // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the smallest time wake panel. Should put this in its own function.
@@ -248,7 +252,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     }
                 }
                 
-                Eigen::MatrixXd TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size())*100000; //initializing with large number so that the minimum distance between panel edges is
+                Eigen::MatrixXd TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size())*1e9; //initializing with large number so that the minimum distance between panel edges isn't from initialization
                 for(int i=0; i<Tedges.size(); i++)
                 {
                     for(int j=0; j<Tedges.size(); j++)
@@ -266,14 +270,14 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             
             std::cout << "Creating buffer wake..." << std::endl;
             
-            std::cout << "\tCalculated time step : " << dt << "sec" << std::endl;
+            std::cout << "\tCalculated time step : " << dt << " sec" << std::endl;
 
             // VSP tags wakes with surface ID starting at 1000
             for(int i=0; i<allID.size(); i++)
             {
                 if(allID(i) >= 1000)
                 {
-                    std::cout << "ERROR: Please use input file without wake panels when using the vortex particle wake option. Change this to call wake destructor before proceeding as normal" << std::endl;
+                    std::cout << "ERROR: Please use input file without wake panels when using the vortex particle wake option." << std::endl;
                     std::exit(0);
                 }
             }
@@ -386,17 +390,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             createVPWakeSurfaces(wakeConnectivity,wakeNorms,VPwakeID,isFirstPanel);
             
             nNodes = nodes.size();
-            nTris += wakes[0]->getPanels().size(); // Adjusting to include buffer wake
-            
-            int nBufferPan = 0;
-            for(int i=0; i<wakes.size(); i++)
-            {
-                std::vector<wakePanel*> wpans = wakes[i]->getPanels();
-                for(int j=0; j<wpans.size();j++)
-                {
-                    nBufferPan++;
-                }
-            }
+            nTris += wakes[0]->getPanels().size(); // Include buffer wake
                         
             std::cout << "\tPanels Added : " << wakes[0]->getPanels().size() << std::endl;
 
@@ -721,7 +715,7 @@ void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, con
         else
         {
             wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
-            wPan->setBufferParent(firstPan); //warning can be ignored because there will always be a first panel before the second
+            wPan->setBufferParent(firstPan); // warning can be ignored because there will always be a first panel before the second
             w2Panels.push_back(wPan);
         }
     }
@@ -794,6 +788,7 @@ void geometry::setInfCoeff()
     
     A.resize(nBodyPans,nBodyPans);
     B.resize(nBodyPans,nBodyPans);
+    C.resize(nBodyPans,w2Panels.size());
     
     Eigen::VectorXi percentage(9);
     percentage << 10,20,30,40,50,60,70,80,90;
@@ -848,8 +843,6 @@ void geometry::setInfCoeff()
     }
     
     // Construct doublet influence coefficient matrices for bufferWake panels
-    
-    C.resize(nBodyPans,w2Panels.size());
     
     for (int i=0; i<nBodyPans; i++)
     {

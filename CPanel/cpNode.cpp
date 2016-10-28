@@ -132,18 +132,19 @@ Eigen::Vector3d cpNode::nodeWakeProjAngle(){
 }
 
 
-Eigen::Vector3d cpNode::firstProjNode(double dt, double inputV){
-
+Eigen::Vector3d cpNode::firstProjNode(double dt, double inputV)
+{
     Eigen::Vector3d bisectVec = this->nodeWakeProjAngle();
-//    Eigen::Vector3d xvec = {10,0,0};
-    return this->getPnt() += c_w*dt*inputV*bisectVec; //*xvec // for straight wake
+    
+    return this->getPnt() += c_w*dt*inputV*bisectVec;
 }
 
 
-Eigen::Vector3d cpNode::secProjNode(double dt, double inputV){
-    
+Eigen::Vector3d cpNode::secProjNode(double dt, double inputV)
+{
     Eigen::Vector3d bisectVec = this->nodeWakeProjAngle();
-    return this->getPnt() += (c_w+1)*dt*inputV*bisectVec;//*xvec // for straight wake
+    
+    return this->getPnt() += (c_w+1)*dt*inputV*bisectVec;
 
 }
 

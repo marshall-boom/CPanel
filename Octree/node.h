@@ -219,9 +219,6 @@ public:
         Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
         {
-            // old
-//            velInfl = this->getMembers()[0]->partVelInfl(POI);
-            // new
             std::vector<type*> nParts = this->getMembers();
             for(int i=0; i<nParts.size(); i++)
             {
@@ -246,6 +243,111 @@ public:
         
         return velInfl;
     }
+    
+    Eigen::Vector3d calcVel(type* part)
+    {
+        
+        Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
+        if(this->isLeafNode())
+        {
+            std::vector<type*> nParts = this->getMembers();
+            for(int i=0; i<nParts.size(); i++)
+            {
+                if(part != nParts[i])
+                {
+                    velInfl += nParts[i]->partVelInflGaussian(part);
+                }
+            }
+        }
+        else
+        {
+            if(this->isFarField(part->pos))
+            {
+                velInfl = this->multExp->partVelInflGaussian(part);
+            }
+            else
+            {
+                std::vector<node<type>*> children = this->getChildren();
+                for(int i=0; i<children.size() ; i++)
+                {
+                    velInfl += children[i]->calcVel(part);
+                }
+            }
+        }
+        
+        return velInfl;
+    }
+    
+    Eigen::Vector3d calcStretch(type* part)
+    {
+        
+        Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
+        if(this->isLeafNode())
+        {
+            std::vector<type*> nParts = this->getMembers();
+            for(int i=0; i<nParts.size(); i++)
+            {
+                if(nParts[i] != part) // Kroneger delta func.
+                {
+                    stretchInfl += nParts[i]->vortexStretchingGaussian(part);
+                }
+            }
+        }
+        else
+        {
+            if(this->isFarField(part->pos))
+            {
+                stretchInfl = this->multExp->vortexStretchingGaussian(part);
+            }
+            else
+            {
+                std::vector<node<type>*> children = this->getChildren();
+                for(int i=0; i<children.size() ; i++)
+                {
+                    stretchInfl += children[i]->calcStretch(part);
+                }
+            }
+        }
+        
+        return stretchInfl;
+    }
+
+    
+    Eigen::Vector3d calcDiff(type* part)
+    {
+        
+        Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
+        if(this->isLeafNode())
+        {
+            std::vector<type*> nParts = this->getMembers();
+            for(int i=0; i<nParts.size(); i++)
+            {
+                if(nParts[i] != part) // Kroneger delta func.
+                {
+                    diffInfl += nParts[i]->viscousDiffusionGaussian(part);
+                }
+            }
+        }
+        else
+        {
+            if(this->isFarField(part->pos))
+            {
+                diffInfl = this->multExp->viscousDiffusionGaussian(part);
+            }
+            else
+            {
+                std::vector<node<type>*> children = this->getChildren();
+                for(int i=0; i<children.size() ; i++)
+                {
+                    diffInfl += children[i]->calcDiff(part);
+                }
+            }
+        }
+        
+        return diffInfl;
+    }
+
+    
     
 //    bool isFarField(node<type>* otherNode)
 //    {

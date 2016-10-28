@@ -50,6 +50,7 @@ public:
     void panelVConstTest(Eigen::MatrixXd testingPoints, Eigen::MatrixXd velocityData, bodyPanel* tPan);
     void panelVPntTest(Eigen::MatrixXd testingPoints, Eigen::MatrixXd velocityData, bodyPanel* tPan);
     void velocityComparer(DoubVelData* dat);
+    void potentialComparer(bodyPanel* pan);
     
     void FMMtests();
 };
