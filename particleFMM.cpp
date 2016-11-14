@@ -35,7 +35,7 @@ void particleFMM::computeMultExp()
                 Eigen::Vector3d strength = findExpStrength(nodes[j]);
                 double radius = nodes[j]->getHalfDimension().norm()*2*1.5;
                 
-                particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0});
+                particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}, 0); // dummy timestep.
                 nodes[j]->setMultExp(p);
             }
             else
@@ -47,13 +47,11 @@ void particleFMM::computeMultExp()
                 Eigen::Vector3d strength = findExpStrength(childExpans);
                 double radius = nodes[j]->getHalfDimension().norm()*2*1.5;//findExpRadius(childExpans);
                 
-                particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0});
+                particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}, 0);
                 nodes[j]->setMultExp(p);
-                
             }
         }
     }
-    
 }
 
 

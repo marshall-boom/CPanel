@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iomanip>
 #include <Eigen/Dense>
+#include <vector>
 #include <Eigen/IterativeLinearSolvers>
 #include <boost/filesystem/operations.hpp>
 #include "geometry.h"
@@ -117,9 +118,6 @@ class cpCase
     void particleStrengthUpdate();
     void particleStrengthUpdateGaussian();
     
-    double trefftzPlaneCd(std::vector<particle*> particles);
-    double trefftzPlaneCl(std::vector<particle*> particles);
-    
     Eigen::Vector3d velocityInflFromEverything(Eigen::Vector3d POI);
     Eigen::Vector3d velocityInflFromEverything(particle* part);
     
@@ -129,7 +127,25 @@ class cpCase
     void convectBufferWake(); //VPP
     void readBodyKinFile();
     
+    double trefftzPlaneFromVel();
+    
     Eigen::Vector3d rungeKuttaStepper(Eigen::Vector3d POI);
+    
+    void trefftzPlane();
+    
+    struct meshDat {
+        std::vector<Eigen::Vector3d> velocity;
+        std::vector<double> vorticity;
+        std::vector<double> pressure;
+        std::vector<Eigen::Vector3d> cellCenter;
+    } volMeshDat;
+    
+    std::vector<Eigen::VectorXi> cells;
+    Eigen::MatrixXd pts;
+
+    void createVolMesh();
+    void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
+
 
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)

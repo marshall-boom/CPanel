@@ -440,126 +440,57 @@ Eigen::Vector3d wakePanel::partStretching(particle* part){
 
 
 //
-//std::vector<cpNode*> wakePanel::pointsInOrder(){
-//// will use edges in order to find the correct points
-//    
-//    //           0
-//    //       1------0       --> y
-//    //       |      |      |
-//    //      1|      |3      V
-//    //       |      |
-//    //       2------3      x
-//    //           2
-//    
-//    
-//    std::vector<edge*> pEdges = this->edgesInOrder();
-//    std::vector<cpNode*> ptsIO(4);
-//    
-//    // Look at points on the trailing edge first
-//    cpNode* n1 = pEdges[0]->getN1();
-//    cpNode* n2 = pEdges[0]->getN2();
-//    
-//    // If n1 shares a node with edge3, then it is node0
-//    if(pEdges[3]->containsNode(n1))
-//    {
-//        ptsIO[0] = n1;
-//        ptsIO[1] = n2;
-//    }
-//    else{
-//        ptsIO[0] = n2;
-//        ptsIO[1] = n1;
-//    }
-//    
-//    // Now look at other edge
-//    n1 = pEdges[2]->getN1();
-//    n2 = pEdges[2]->getN2();
-//    
-//    // If n1 shares a node with edge1 then it is node 2
-//    if(pEdges[1]->containsNode(n1))
-//    {
-//        ptsIO[2] = n1;
-//        ptsIO[3] = n2;
-//    }
-//    else
-//    {
-//        ptsIO[2] = n2;
-//        ptsIO[3] = n1;
-//    }
-//    
-//
-//    return ptsIO;
-//}
-
-
-
-
-
-
 std::vector<cpNode*> wakePanel::pointsInOrder(){
-    // will use edges in order to find the correct points
+// will use edges in order to find the correct points
     
     //           0
     //       1------0       --> y
     //       |      |      |
-    //      1|      |3     V
+    //      1|      |3      V
     //       |      |
     //       2------3      x
     //           2
     
     
     std::vector<edge*> pEdges = this->edgesInOrder();
-    std::vector<cpNode*> ptsIO;
+    std::vector<cpNode*> ptsIO(4);
     
-    // Trailing edge panel is built first
-    if (pEdges[0]->getN1()->getPnt().y() > pEdges[0]->getN2()->getPnt().y()) {
-        ptsIO.push_back(pEdges[0]->getN1());
-        ptsIO.push_back(pEdges[0]->getN2());
-    }else{
-        ptsIO.push_back(pEdges[0]->getN2());
-        ptsIO.push_back(pEdges[0]->getN1());
+    // Look at points on the trailing edge first
+    cpNode* n1 = pEdges[0]->getN1();
+    cpNode* n2 = pEdges[0]->getN2();
+    
+    // If n1 shares a node with edge3, then it is node0
+    if(pEdges[3]->containsNode(n1))
+    {
+        ptsIO[0] = n1;
+        ptsIO[1] = n2;
+    }
+    else{
+        ptsIO[0] = n2;
+        ptsIO[1] = n1;
     }
     
-    // Point 2 will be connected to 1, but not zero
-    cpNode* n0 = ptsIO[0];
-    cpNode* n1 = ptsIO[1];
-    for (int i=0; i<pEdges.size(); i++) {
-        // If edge contains n1
-        if(pEdges[i]->getN1() == n1 || pEdges[i]->getN2() == n1){
-            // If edge does not contain n0
-            if(pEdges[i]->getN1() != n0 && pEdges[i]->getN2() != n0){
-                if (pEdges[i]->getN1() == n1) {
-                    ptsIO.push_back(pEdges[i]->getN2());
-                }else{
-                    ptsIO.push_back(pEdges[i]->getN1());
-                }
-            }
-        }
+    // Now look at other edge
+    n1 = pEdges[2]->getN1();
+    n2 = pEdges[2]->getN2();
+    
+    // If n1 shares a node with edge1 then it is node 2
+    if(pEdges[1]->containsNode(n1))
+    {
+        ptsIO[2] = n1;
+        ptsIO[3] = n2;
+    }
+    else
+    {
+        ptsIO[2] = n2;
+        ptsIO[3] = n1;
     }
     
-    // The last node is the only one not used
-    std::vector<cpNode*> pNodes = this->getNodes();
-    for (int i=0; i<pNodes.size(); i++) {
-        if (pNodes[i] != ptsIO[0] && pNodes[i] != ptsIO[1] && pNodes[i] != ptsIO[2]) {
-            ptsIO.push_back(pNodes[i]);
-        }
-    }
-    
-    
+
     return ptsIO;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 std::vector<edge*> wakePanel::edgesInOrder(){
     // Can put in the constructor at a later time
     

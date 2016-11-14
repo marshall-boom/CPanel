@@ -69,6 +69,10 @@ void VTUfile::write()
                 {
                     type(i) = 9;
                 }
+                else if (verts == 8)
+                {
+                    type(i) = 11;
+                }
                 else
                 {
                     std::cout << "ERROR : Unknown cell type for VTU file format" << std::endl;

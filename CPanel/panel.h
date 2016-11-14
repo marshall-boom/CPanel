@@ -39,10 +39,10 @@ protected:
     double area;
     double longSide;
 
-    double doubletStrength;
+    double doubletStrength = 0;
     double potential = 0;
     double prevPotential = 0;
-    Eigen::Vector3d velocity;
+    Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
     double Cp;
     int ID;
     double core = 0.05;

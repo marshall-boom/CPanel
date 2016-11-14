@@ -11,7 +11,7 @@
 #include "math.h"
 
 
-particle::particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate) : pos(pos), strength(strength), radius(radius), previousVelInfl(previousVelInfl), previousStrengthUpdate(previousStrengthUpdate) {};
+particle::particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate, int shedTime) : pos(pos), strength(strength), radius(radius), previousVelInfl(previousVelInfl), previousStrengthUpdate(previousStrengthUpdate), shedTime(shedTime) {};
 
 Eigen::Vector3d particle::partVelInfl(const Eigen::Vector3d &POI){
        

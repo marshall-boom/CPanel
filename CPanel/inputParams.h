@@ -32,9 +32,9 @@ struct inputParams
 //    double c_w;
     double numSteps;
     double streamSpacing;
-    bool accel;
-    bool high_accuracy;
-    bool unsteady;
+    bool accel = false;
+    bool high_accuracy = false;
+    bool unsteady = false;
     std::string bodyKinFileLoc;
     
     Eigen::Vector3d cg;

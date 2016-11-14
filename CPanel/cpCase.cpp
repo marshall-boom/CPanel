@@ -22,33 +22,52 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
         readBodyKinFile();
     }
     
+    
+//    int nNodes = geom->getNodes().size();
+//    std::vector<cpNode*> nodes = geom->getNodes();
+//    double maxPt = 0;
+//    for (int i=0; i<nNodes; i++) {
+//        if(nodes[i]->getPnt().x() > maxPt){
+//            maxPt = nodes[i]->getPnt().x();
+//        }
+//    }
+//    std::cout << "maxPtx = " << maxPt << std::endl;
+    
+    
     bool converged;
     std::string check = "\u2713";
     setSourceStrengths();
     
     converged = solveMatrixEq();
     
+
+    
     if(vortPartFlag){
-        std::cout << "Writing timestep " << timeStep << " files..." << std::endl;
         
-//        compVelocity(); // This doesn't need to be here unless solving Cl/Cd etc
+        if(unsteady){
+            compVelocity(); // This doesn't need to be here unless solving Cl/Cd etc
+        }
         writeFiles(); // Might take this out to or at least make it an option?
-        timeStep++;
+
         
-        // Do stuff to intitially convect buffer wake
+        // Initially convect buffer wake
+        timeStep++;
         convectBufferWake();
         converged = solveVPmatrixEq();
+        
+        if (unsteady) {
+            compVelocity();
+        }
         writeFiles();
-        timeStep++;
+
         
         for(int i=0; i<(numSteps-2); i++){
-            std::cout << "Time step " << timeStep<< "/" << numSteps;
-            std::cout << ".  Flow time = " << timeStep*dt;
+
+            timeStep++;
+            
+            std::cout << "Time step " << timeStep<< "/" << numSteps << ".  Flow time = " << timeStep*dt;
             std::cout << ".  " << particles.size() << " particles" << std::endl;
 
-
-            
-            
             if(highAccuracy){
                 collapseWakeForEachEdge(); // Need to modify this too...
             }else{
@@ -63,6 +82,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
 
             
             if(accelerate){
+                
                 partOctree.removeData();
                 partOctree.setMaxMembers(10); //Barnes Hut
                 
@@ -74,33 +94,45 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
                 FMM.build(&partOctree);
             }
             
+            
+//            if(timeStep == 15){
+//                for (int j=0; j<particles.size(); j++) {
+//                    Eigen::Vector3d ppos = particles[j]->pos;
+//                    std::cout << "plot3("<<ppos.x()<<","<<ppos.y()<<","<<ppos.z()<<",'r*');"<<std::endl;
+//                }
+//                std::string file_name = "/Users/C_Man/Desktop/CPanelCases/testWing/partOct.txt";
+//                octreeFile* oct;
+//                oct = new octreeFile(file_name,&partOctree);
+//                
+//                std::cout << "done" << std::endl;
+//            }
+            
+            
+            
             setSourceStrengths();
             
             converged = solveVPmatrixEq();
             
             if(unsteady){
-                compVelocity();
+//                compVelocity();
             }
-
+            
             writeFiles();
+
             
             convectParticles();
             
-            timeStep++;
 
         }
         
         timeStep--; // Because the last timestep incrementor TAKE OUT WHEN RE-ARRANGE LOOP
-        
 
-//        std::cout << "CD_trefftz_new = " << trefftzPlaneCd(particles) << std::endl;
-//        std::cout << "CL_trefftz_new = " << trefftzPlaneCl(particles) << std::endl;
         
-        
-        
+//        trefftzPlane();
 
         
     }
+    
     
     if (printFlag)
     {
@@ -160,9 +192,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
     }
     
     if (printFlag){
-        if(!vortPartFlag){ // Printed above
-            writeFiles();
-        }
+        writeFiles();
     }
     
 }
@@ -234,10 +264,11 @@ void cpCase::setSourceStrengths()
         if (accelerate && timeStep > 0){
             sumVelInfl += FMM.barnesHutVel((*bPanels)[i]->getCenter());
         }
-        else{
-            for(int i=0; i<particles.size(); i++)
+        else
+        {
+            for(int j=0; j<particles.size(); j++)
             {
-                sumVelInfl += particles[i]->partVelInflGaussian((*bPanels)[i]->getCenter());
+                sumVelInfl += particles[j]->partVelInflGaussian((*bPanels)[i]->getCenter());
             }
         }
         
@@ -356,6 +387,8 @@ void cpCase::compVelocity()
     Fbody = Eigen::Vector3d::Zero();
     bodyPanel* p;
     
+    std::vector<double> panLift;
+    bool liftDist = false;
     
     for (int i=0; i<bPanels->size(); i++)
     {
@@ -364,29 +397,51 @@ void cpCase::compVelocity()
         if (unsteady) {
             p->computeCp( Vinf((*bPanels)[i]->getCenter()).norm() , dt ); // Katz 13.169
         }else{
-            p->computeCp(Vmag);
+            p->computeCp( Vmag );
         }
         Fbody += -p->getCp()*p->getArea()*p->getBezNormal()/params->Sref;
         moment = p->computeMoments(params->cg);
         CM(0) += moment(0)/(params->Sref*params->bref);
         CM(1) += moment(1)/(params->Sref*params->cref);
         CM(2) += moment(2)/(params->Sref*params->bref);
+    
+//        if(liftDist)
+//        {
+//            panLift.push_back( (-p->getCp()*p->getArea()*p->getBezNormal()/params->cref ).z() );
+//        }
+    
     }
     Fwind = bodyToWind(Fbody);
     CL.push_back(Fbody.z());
     CM_x.push_back(CM(1));
+
     
-    std::cout << "CL = [";
-    for (int i=0; i<CL.size(); i++) {
-        std::cout << CL[i] << ", ";
-    }
-    std::cout << "]" << std::endl;
+//    if(liftDist)
+//    {
+//        std::cout << "panY = [";
+//        for (int i = 0; i<(*bPanels).size(); i++) {
+//            std::cout << (*bPanels)[i]->getCenter().y() << ", ";
+//        }
+//        std::cout << "];" << std::endl;
+//        
+//        std::cout << "panLift = [";
+//        for (int i = 0; i<(*bPanels).size(); i++) {
+//            std::cout << panLift[i] << ", ";
+//        }
+//        std::cout << "];" << std::endl;
+//    }
     
-    std::cout << "CM_pitch = [";
-    for (int i=0; i<CM_x.size(); i++) {
-        std::cout << CM_x[i] << ", ";
-    }
-    std::cout << "]" << std::endl;
+//    std::cout << "CL = [";
+//    for (int i=0; i<CL.size(); i++) {
+//        std::cout << CL[i] << ", ";
+//    }
+//    std::cout << "]" << std::endl;
+//    
+//    std::cout << "CM_pitch = [";
+//    for (int i=0; i<CM_x.size(); i++) {
+//        std::cout << CM_x[i] << ", ";
+//    }
+//    std::cout << "]" << std::endl;
     
 }
 
@@ -396,14 +451,18 @@ void cpCase::trefftzPlaneAnalysis()
     CL_trefftz = 0;
     CD_trefftz = 0;
     double CD_trefftzVel = 0;
+
+    
+    
     for (int i=0; i<wakes.size(); i++)
     {
         wakes[i]->trefftzPlane(Vmag,params->Sref);
-        CD_trefftzVel += wakes[i]->trefftzPlaneFromVel(Vmag, params->Sref);
+//        wakes[i]->trefftzPlaneVP(Vmag,params->Sref, particles);
+//        CD_trefftzVel += trefftzPlaneFromVel();
         CL_trefftz += wakes[i]->getCL()/PG;
         CD_trefftz += wakes[i]->getCD()/pow(PG,2);
     }
-    std::cout << "CD from Velocity trefftz plane: " << CD_trefftzVel << std::endl;
+    double CD_T = CD_trefftz;
 }
 
 void cpCase::createStreamlines()
@@ -536,6 +595,10 @@ void cpCase::writeFiles()
         writeSpanwiseData(subdir);
     }
     
+    if (0) {
+        createVolMesh();
+        writeVolMeshData(subdir, pts, cells);
+    }
     
     if(vortPartFlag){
 //        if(timeStep > 0)
@@ -700,16 +763,20 @@ void cpCase::writeParticleData(boost::filesystem::path path)
     }
     
     std::vector<cellDataArray> data;
-    cellDataArray strength("Strength");
+    cellDataArray strength("Strength"), shedTime("Time Step Shed");
     Eigen::MatrixXi con(particles.size(),1);
+    Eigen::MatrixXi shed(particles.size(),1);
     
     strength.data.resize(particles.size(),3);
+    shedTime.data.resize(particles.size(),1);
     for (int i=0; i<particles.size(); i++)
     {
         strength.data.row(i) = particles[i]->strength;
+        shedTime.data(i,0) = particles[i]->shedTime;
         con(i) = i;
     }
     data.push_back(strength);
+    data.push_back(shedTime);
     
     piece parts;
     parts.pnts = partMat;
@@ -789,6 +856,36 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
 }
 
 
+void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells)
+{
+    int nCells = cells.size();
+    
+    std::vector<cellDataArray> data;
+    cellDataArray vel("Velocity"),vortMag("Vorticity Magnitude"), Cp("Cp");
+    Eigen::MatrixXi con;
+    con.resize(nCells,8);
+    vel.data.resize(nCells,3);
+    vortMag.data.resize(nCells,1);
+    Cp.data.resize(nCells,1);
+    for (int i=0; i<nCells; i++)
+    {
+        vel.data.row(i) = volMeshDat.velocity[i];
+        vortMag.data(i,0) = volMeshDat.vorticity[i];
+        Cp.data(i,0) = volMeshDat.pressure[i];
+        con.row(i) = cells[i];
+    }
+    data.push_back(vel);
+    data.push_back(vortMag);
+    data.push_back(Cp);
+    
+    piece volMesh;
+    volMesh.pnts = nodeMat;
+    volMesh.connectivity = con;
+    volMesh.cellData = data;
+    std::string fname = path.string()+"/volumeMesh-"+std::to_string(timeStep)+".vtu";
+    VTUfile wakeFile(fname,volMesh);
+}
+
 void cpCase::convectBufferWake()
 {
     wake2Doublets.resize((*w2panels).size());
@@ -825,7 +922,7 @@ void cpCase::collapseBufferWake(){
         Eigen::Vector3d pos = rungeKuttaStepper((*w2panels)[i]->getCenter());
         double radius = (*w2panels)[i]->getPartRadius(Vinf(pos),dt); // VinfLocal
         
-        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); // Last two are previous pos and strength values used for advanced time stepper.
+        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}, timeStep); // Last two are previous pos and strength values used for advanced time stepper.
         particles.push_back(p);
         
     }
@@ -873,7 +970,7 @@ void cpCase::collapseWakeForEachEdge(){
                 Eigen::Vector3d strength = edgeStrength((*w2panels)[i], pEdges[j], j);
                 double radius = (*w2panels)[i]->getPartRadius(Vinf((*w2panels)[i]->getCenter()),dt); // VinfLocal
                 
-                particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}); //last two are previous pos and strength values used for advanced time stepper.
+                particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}, timeStep); //last two are previous pos and strength values used for advanced time stepper.
                 particles.push_back(p);
             }
         }
@@ -918,6 +1015,8 @@ bool cpCase::edgeIsUsed(edge* thisEdge, std::vector<edge*> pEdges){
 }
 
 Eigen::Vector3d cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum){
+    //wait, why can't this go in the panel class? Ithink it can
+    
     
     Eigen::Vector3d strength;
     std::vector<cpNode*> ptsIO = pan->pointsInOrder();
@@ -1094,7 +1193,9 @@ void cpCase::convectParticles(){
         else
         {
             // Adams bashforth scheme
-            Eigen::Vector3d velOnPart = velocityInflFromEverything(particles[i]);
+            Eigen::Vector3d downwash = Eigen::Vector3d::Zero(); // Used for rotor hover estimation
+//            downwash.z() = -0.1137;
+            Eigen::Vector3d velOnPart = velocityInflFromEverything(particles[i]) + downwash;
             
             if(particles[i]->getPrevVelInfl().isZero())
             {
@@ -1266,141 +1367,11 @@ void cpCase::particleStrengthUpdateGaussian(){
         }
 }
 
-double cpCase::trefftzPlaneCd(std::vector<particle*> particles)
-{
-    int yPnts = 30;
-    int zPnts = 30;
-    double xPartMin=particles[0]->pos.x();
-    double xPartMax=particles[0]->pos.x();
-    double yPartMax=particles[0]->pos.y(); // initializing with first particle so that
-    double yPartMin=particles[0]->pos.y();
-    double zPartMax=particles[0]->pos.z();
-    double zPartMin=particles[0]->pos.z();
-    
-    for(int i=0; i<particles.size(); i++)
-    {
-        if(particles[i]->pos.x() < xPartMax){
-            xPartMin = particles[i]->pos.x();
-        }
-        if(particles[i]->pos.x() > xPartMax){
-            xPartMax = particles[i]->pos.x();
-        }
-        if(particles[i]->pos.y() > yPartMax){
-            yPartMax = particles[i]->pos.y();
-        }
-        if(particles[i]->pos.y() < yPartMin){
-            yPartMin = particles[i]->pos.y();
-        }
-        if(particles[i]->pos.z() > zPartMax){
-            zPartMax = particles[i]->pos.z();
-        }
-        if(particles[i]->pos.z() < zPartMax){
-            zPartMin = particles[i]->pos.z();
-        }
-    }
-    
-    double planeX = (xPartMax - xPartMin)*2/3;
 
-    Eigen::MatrixXd w,v,Cd;
-    Eigen::Vector3d pnt;
-    double yLoc,zLoc;
-    w.resize(zPnts,yPnts);
-    v.resize(zPnts,yPnts);
-    Cd.resize(zPnts,yPnts);
-    double yStep = (yPartMax-yPartMin)/(yPnts);
-    double zStep = (zPartMax-zPartMin)/(zPnts);
-
-    std::cout << "Calculating particle Trefftz Plane" << std::endl;
-    for(int i=0; i<yPnts; i++)
-    {
-        yLoc = yPartMin+i*yStep;
-        for(int j=0; j<zPnts; j++)
-        {
-            zLoc = zPartMin+zStep;
-            pnt << planeX, yLoc, zLoc;
-            for(int k=0; k<particles.size(); k++)
-            {
-                v(i,j) += particles[k]->partVelInfl(pnt).y();
-                w(i,j) += particles[k]->partVelInfl(pnt).z();
-            }
-            Cd(i,j) = (v(i,j)*v(i,j)+w(i,j)*w(i,j));
-        }
-    }
-    
-    return Cd.sum();
-};
-
-double cpCase::trefftzPlaneCl(std::vector<particle*> particles)
-{
-    int yPnts = 50;
-    int zPnts = 50;
-    
-    double xPartMin=particles[0]->pos.x();
-    double xPartMax=particles[0]->pos.x();
-    double yPartMax=particles[0]->pos.y(); // initializing with first particle so that
-    double yPartMin=particles[0]->pos.y();
-    double zPartMax=particles[0]->pos.z();
-    double zPartMin=particles[0]->pos.z();
-    
-    for(int i=0; i<particles.size(); i++)
-    {
-        if(particles[i]->pos.x() < xPartMax){
-            xPartMin = particles[i]->pos.x();
-        }
-        if(particles[i]->pos.x() > xPartMax){
-            xPartMax = particles[i]->pos.x();
-        }
-        if(particles[i]->pos.y() > yPartMax){
-            yPartMax = particles[i]->pos.y();
-        }
-        if(particles[i]->pos.y() < yPartMin){
-            yPartMin = particles[i]->pos.y();
-        }
-        if(particles[i]->pos.z() > zPartMax){
-            zPartMax = particles[i]->pos.z();
-        }
-        if(particles[i]->pos.z() < zPartMax){
-            zPartMin = particles[i]->pos.z();
-        }
-    }
-    
-    yPartMin = -8;
-    yPartMax = 8;
-    zPartMin = -2;
-    zPartMax = 2;
-    
-    
-    double planeX = (xPartMax - xPartMin)*2/3;
-    
-    Eigen::Vector3d pnt;
-    double yLoc,zLoc;
-    double v = 0.0;
-    double yStep = (yPartMax-yPartMin)/(yPnts);
-    double zStep = (zPartMax-zPartMin)/(zPnts);
-    
-    std::cout << "Calculating particle Trefftz Plane" << std::endl;
-    for(int i=0; i<yPnts; i++)
-    {
-        yLoc = 2*yPartMin+i*yStep;
-        for(int j=0; j<zPnts; j++)
-        {
-            zLoc = 2*zPartMin+zStep;
-            pnt << planeX, yLoc, zLoc;
-            for(int k=0; k<particles.size(); k++)
-            {
-                Eigen::Vector3d velI = particles[k]->partVelInfl(pnt);
-                v += particles[k]->partVelInfl(pnt).y();
-            }
-        }
-    }
-    
-    return v;
-};
 
 void cpCase::readBodyKinFile(){
     std::ifstream fid;
     fid.open(params->bodyKinFileLoc);
-    fid >> numSteps;
 
     bodyKin.resize(numSteps, 6); // U, V, W, p, q, r
     
@@ -1414,4 +1385,428 @@ void cpCase::readBodyKinFile(){
         
     fid.close();
 }
+
+
+double cpCase::trefftzPlaneFromVel()
+{
+    double Sref = params->Sref;
+    double Vinf = Vmag;
+    
+    
+    // Use Simpsons rule for 2D integration to integrate (v^w +w^2) around the area of the Trefftz plane
+    int m = 50; // steps in the y direction (MUST be even for simpsons rule)
+    int n = 40; // steps in the z direction
+//    double nPts = (m+1)*(n+1);
+//    
+//    Eigen::VectorXd yLoc(m+1);
+//    Eigen::VectorXd zLoc(n+1);
+    
+    // Finding plane location
+    double xPartMin=particles[0]->pos.x();
+    double xPartMax=particles[0]->pos.x();
+    double yPartMax=particles[0]->pos.y(); // initializing with first particle
+    double yPartMin=particles[0]->pos.y();
+    double zPartMax=particles[0]->pos.z();
+    double zPartMin=particles[0]->pos.z();
+    
+    for(int i=0; i<particles.size(); i++)
+    {
+        if(particles[i]->pos.x() < xPartMax){
+            xPartMin = particles[i]->pos.x();
+        }
+        if(particles[i]->pos.x() > xPartMax){
+            xPartMax = particles[i]->pos.x();
+        }
+        if(particles[i]->pos.y() > yPartMax){
+            yPartMax = particles[i]->pos.y();
+        }
+        if(particles[i]->pos.y() < yPartMin){
+            yPartMin = particles[i]->pos.y();
+        }
+        if(particles[i]->pos.z() > zPartMax){
+            zPartMax = particles[i]->pos.z();
+        }
+        if(particles[i]->pos.z() < zPartMax){
+            zPartMin = particles[i]->pos.z();
+        }
+    }
+    
+    // Limits of integration
+    double a,b,c,d;
+    a = yPartMin-2; // arbitrary for now...
+    b = yPartMax+2;
+    c = zPartMin-2;
+    d = zPartMax+2;
+    
+    // Survey point locations
+    double xTrefftz = xPartMin+2*(xPartMax-xPartMin)/4;
+    Eigen::MatrixXd Y(m+1,n+1);
+    Eigen::MatrixXd Z(m+1,n+1);
+    
+    for(int i=0; i<m+1; i++){
+        for(int j=0; j<n+1; j++){
+            Y(i,j) = a+(i-1)*(b-a)/m;
+            Z(i,j) = c+(j-1)*(d-c)/n;
+        }
+    }
+    
+    // Build row and column vectors to make W matrix
+    Eigen::VectorXd matRow = Eigen::VectorXd::Ones(m+1);
+    for(int i=1; i<m; i++){
+        if(i%2 == 0){
+            matRow(i) = 2;
+        }else{
+            matRow(i) = 4;
+        }
+    }
+    
+    Eigen::VectorXd matCol = Eigen::VectorXd::Ones(n+1);
+    for(int i=1; i<n; i++){
+        if(i%2 == 0){
+            matCol(i) = 2;
+        }else{
+            matCol(i) = 4;
+        }
+    }
+    
+    Eigen::MatrixXd CDmat(m+1,n+1);
+    Eigen::MatrixXd CLmat(m+1,n+1);
+
+    
+//    // Evaluate integral
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            Eigen::Vector3d planePnt;
+//            planePnt << xTrefftz, Y(i,j), Z(i,j);
+//            Eigen::Vector3d vPnt = Eigen::Vector3d::Zero();
+//            
+//            
+//            for (int k=0; k<particles.size(); k++) {
+//                vPnt += particles[k]->partVelInflGaussian(planePnt);
+//            }
+//            
+//            CDmat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2)); // Wmatrix Coeff. * velocity of wake
+//            CLmat(i,j) = matRow(i)*matCol(j)*(vPnt.z());
+//
+//        }
+//    }
+    
+    // Find plane particles
+    int planeTime = 10;
+    std::vector<particle*> planeParts;
+    for (int i=0; i<particles.size(); i++) {
+        if (particles[i]->shedTime == planeTime) {
+            planeParts.push_back(particles[i]);
+        }
+    }
+    
+    // Find plane location. avg of particle x pos.
+    double planeX = 0;
+    for (int i=0; i<planeParts.size(); i++) {
+        planeX += planeParts[i]->pos.x();
+    }
+    planeX /= planeParts.size();
+    
+    // Modify particle x positions to be on the plane.
+    for (int i=0; i<planeParts.size(); i++) {
+        planeParts[i]->setPos( { planeX , planeParts[i]->pos.y() , planeParts[i]->pos.z() } );
+    }
+    
+//    // print to check so far
+//    for (int i=0; i<planeParts.size(); i++) {
+//        std::cout << "part" <<i<< " = ["<< planeParts[i]->pos.x() <<","<< planeParts[i]->pos.y() <<","<<planeParts[i]->pos.z()<<"];" << std::endl;
+//    }
+    
+    
+    // Evaluate integral
+    for(int i=0; i<m+1; i++){
+        for(int j=0; j<n+1; j++){
+            Eigen::Vector3d planePnt;
+            planePnt << planeX, Y(i,j), Z(i,j);
+            Eigen::Vector3d vPnt = Eigen::Vector3d::Zero();
+            
+            for (int k=0; k<planeParts.size(); k++) {
+                vPnt += planeParts[k]->partVelInflGaussian(planePnt);
+            }
+            
+//            for (int k=0; k<particles.size(); k++) {
+//                vPnt += particles[k]->partVelInflGaussian(planePnt);
+//            }
+            
+            CDmat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2)); // Wmatrix Coeff. * velocity of wake
+            CLmat(i,j) = matRow(i)*matCol(j)*(vPnt.z());
+            
+        }
+    }
+    
+    
+    // Simpson's summation
+    double CL_t = (b-a)*(d-c)/(9*m*n)*CLmat.sum()*(-2)/(Vinf*Sref); // The negative is because w is pointing 'down' in the wake and the '2*' was pulled out of the integral
+    double CD_t = (b-a)*(d-c)/(9*m*n)*CDmat.sum()/(Vinf*Vinf*Sref);
+    std::cout << "\nmyTrefftzCL = " << CL_t << std::endl;
+    std::cout << "myTrefftzCD = " << CD_t << std::endl;
+    
+    return CD_t;
+}
+
+void cpCase::trefftzPlane()
+{
+
+    
+    // Finding plane location
+    double xPartMin=particles[0]->pos.x();
+    double xPartMax=particles[0]->pos.x();
+    double yPartMax=particles[0]->pos.y(); // initializing with first particle
+    double yPartMin=particles[0]->pos.y();
+    double zPartMax=particles[0]->pos.z();
+    double zPartMin=particles[0]->pos.z();
+    
+    for(int i=0; i<particles.size(); i++)
+    {
+        if(particles[i]->pos.x() < xPartMax){
+            xPartMin = particles[i]->pos.x();
+        }
+        if(particles[i]->pos.x() > xPartMax){
+            xPartMax = particles[i]->pos.x();
+        }
+        if(particles[i]->pos.y() > yPartMax){
+            yPartMax = particles[i]->pos.y();
+        }
+        if(particles[i]->pos.y() < yPartMin){
+            yPartMin = particles[i]->pos.y();
+        }
+        if(particles[i]->pos.z() > zPartMax){
+            zPartMax = particles[i]->pos.z();
+        }
+        if(particles[i]->pos.z() < zPartMax){
+            zPartMin = particles[i]->pos.z();
+        }
+    }
+    
+    // Find plane particles
+    int planeTime = 10;
+    std::vector<particle*> planePartsRand;
+    for (int i=0; i<particles.size(); i++) {
+        if (particles[i]->shedTime == planeTime) {
+            planePartsRand.push_back(particles[i]);
+        }
+    }
+    
+    std::vector<particle*> planeParts;
+    int numParts = planePartsRand.size(); // Can't do in iterator because vector shrinks in loop
+    while(planeParts.size() < numParts)
+    {
+        particle* smallestPart = planePartsRand[0];
+        int elementPos = 0;
+        for (int i=0; i<planePartsRand.size(); i++) {
+            if (planePartsRand[i]->pos.y() < smallestPart->pos.y()) {
+                smallestPart = planePartsRand[i];
+                elementPos = i;
+            }
+        }
+        planeParts.push_back(smallestPart);
+        planePartsRand.erase(planePartsRand.begin() + elementPos);
+    }
+    
+    
+//    // print to check so far
+//    for (int i=0; i<planeParts.size(); i++)
+//    {
+//        std::cout << "part" <<i<< " = ["<< planeParts[i]->pos.x() <<","<< planeParts[i]->pos.y() <<","<<planeParts[i]->pos.z()<<"];" << std::endl;
+//    }
+//    
+    
+    double step = (planeParts[0]->pos.y() - planeParts[planeParts.size()-1]->pos.y())/planeParts.size();
+    
+    int nPnts = planeParts.size();
+    
+    // Find plane location. avg of particle x pos.
+    double planeX = 0;
+    for (int i=0; i<planeParts.size(); i++) {
+        planeX += planeParts[i]->pos.x();
+    }
+    planeX /= planeParts.size();
+    
+    // Modify particle x positions to be on the plane.
+    for (int i=0; i<planeParts.size(); i++) {
+        planeParts[i]->setPos( { planeX , planeParts[i]->pos.y() , planeParts[i]->pos.z() } );
+    }
+    
+    Eigen::VectorXd w,v,dPhi;
+    Eigen::VectorXi yLoc;
+    yLoc.resize(planeParts.size());
+//    yLoc(0) = yPartMin;
+//    yLoc(nPnts) = yPartMax;
+//    double step = (yMax-yMin)/(nPnts);
+    w = Eigen::VectorXd::Zero(nPnts+1);
+    dPhi = Eigen::VectorXd::Zero(nPnts+1);
+    Cl = Eigen::VectorXd::Zero(nPnts+1);
+    Cd = Eigen::VectorXd::Zero(nPnts+1);
+    Eigen::MatrixXd trefftzPnts = Eigen::MatrixXd::Zero(nPnts,3);
+
+    Eigen::Vector3d pWake;
+    for (int i=1; i<nPnts; i++)
+    {
+        yLoc(i) = planeParts[i]->pos.y();
+        
+        double partGam;
+        Eigen::Vector3d parentEdgeVec = Eigen::Vector3d::Zero();
+    
+        for (int j=0; j<2; j++) {
+            
+            Eigen::Vector3d Rj = planeParts[i]->parentPanel->pointsInOrder()[j]->getPnt();
+            Eigen::Vector3d Ri = planeParts[i]->parentPanel->pointsInOrder()[j+1]->getPnt();
+            parentEdgeVec += (Ri-Rj);
+        }
+        Eigen::Vector3d Rj = planeParts[i]->parentPanel->pointsInOrder()[3]->getPnt();
+        Eigen::Vector3d Ri = planeParts[i]->parentPanel->pointsInOrder()[0]->getPnt();
+        parentEdgeVec += (Ri-Rj);
+        
+        partGam = planeParts[i]->strength.x()/parentEdgeVec.x();
+        
+        
+        // THIS SHOULD ALL BE THE SAME AS JUST MAKING A MARKER IN PARTICLES FOR PARENT PANEL STRENGTH AS IT SHEDS...
+        
+        dPhi(i) = -partGam;
+        
+        
+//        pWake = pntInWake(xTrefftz, yLoc(i));
+//        w(i) = Vradial(pWake);
+//        Cl(i) = -wakeStrength(yLoc(i))
+        Cl(i) = 2*dPhi(i)/(Vmag*params->Sref);
+        Cd(i) = dPhi(i)*w(i)/(Vmag*Vmag*params->Sref);
+    }
+
+    double CL, CD;
+    
+    int i=0;
+    CL = 0;
+    CD = 0;
+    while (i < Cl.rows()-2)
+    {
+        CL += 1.0/3*step*(Cl(i)+4*Cl(i+1)+Cl(i+2));
+        CD += 1.0/3*step*(Cd(i)+4*Cd(i+1)+Cd(i+2));
+        i += 2;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void cpCase::createVolMesh(){
+    
+    // Clear Past Timestep Mesh
+    cells.clear();
+    volMeshDat.cellCenter.clear();
+    volMeshDat.velocity.clear();
+    volMeshDat.vorticity.clear();
+    
+    // limits of mesh
+    double x0, xf, y0, yf, z0, zf;
+    x0 = -0.5;
+    xf = 1.75;
+    y0 = -2;
+    yf = 2;
+    z0 = -0.5;
+    zf = 1.25;
+    
+    // resolution
+    int nX, nY, nZ;
+    nX = 300;
+    nY = 1;
+    nZ = 105;
+    int nCells = nX * nY * nZ;
+    
+    double hx, hy, hz;
+    hx = (xf-x0)/nX;
+    hy = (yf-y0)/nY;
+    hz = (zf-z0)/nZ;
+    
+    // Add one for number of points
+    int nXp = nX+1;
+    int nYp = nY+1;
+    int nZp = nZ+1;
+    int numPts = nXp * nYp * nZp;
+    
+    
+    
+    // creating pnt vector
+    pts.resize(numPts, 3);
+    int count = 0;
+    for (int k=0; k<nZp; k++) {
+        for (int j=0; j<nYp; j++) {
+            for (int i=0; i<nXp; i++) {
+                pts(count,0) = x0 + hx*i;
+                pts(count,1) = y0 + hy*j;
+                pts(count,2) = z0 + hz*k;
+                count++;
+            }
+        }
+    }
+    
+    
+    // Create cells
+    for (int i=0; i<nX; i++) {
+        for (int j=0; j<nY; j++) {
+            for (int k=0; k<nZ; k++) {
+                Eigen::VectorXi cell_pts(8);
+                cell_pts[0] = (k*(nXp*nYp) + j*(nXp) + i);
+                cell_pts[1] = (k*(nXp*nYp) + j*(nXp) + i) + 1;
+                
+                cell_pts[2] = (k*(nXp*nYp) + (j+1)*(nXp) + i);
+                cell_pts[3] = (k*(nXp*nYp) + (j+1)*(nXp) + i) + 1;
+                
+                cell_pts[4] = ((k+1)*(nXp*nYp) + j*(nXp) + i);
+                cell_pts[5] = ((k+1)*(nXp*nYp) + j*(nXp) + i) + 1;
+                
+                cell_pts[6] = ((k+1)*(nXp*nYp) + (j+1)*(nXp) + i);
+                cell_pts[7] = ((k+1)*(nXp*nYp) + (j+1)*(nXp) + i) + 1;
+                
+                cells.push_back(cell_pts);
+                
+                // Find cell center
+                Eigen::MatrixXd cellCorners(8,3);
+                for (int m=0; m<cellCorners.rows(); m++) {
+                    cellCorners.row(m) = pts.row(cell_pts[m]);
+                }
+                
+                Eigen::Vector3d center;
+                for (int m=0; m<cellCorners.cols(); m++) {
+                    center(m) = cellCorners.col(m).mean();
+                }
+                volMeshDat.cellCenter.push_back(center);
+            }
+        }
+    }
+    
+    for (int i=0; i<nCells; i++) {
+        // Find cell center
+        Eigen::Vector3d velInCell = velocityInflFromEverything(volMeshDat.cellCenter[i]);
+        volMeshDat.velocity.push_back(velInCell);
+    }
+    
+    for (int i=0; i<nCells; i++) {
+        // Incompressible Bernoulli equation
+        double Cp = pow( volMeshDat.velocity[i].norm() / Vmag , 2 );
+        volMeshDat.pressure.push_back(Cp);
+    }
+    
+    for (int i=0; i<nCells; i++) {
+        volMeshDat.vorticity.push_back(volMeshDat.cellCenter[i].norm());
+    }
+    
+    
+}
+
+
+
 

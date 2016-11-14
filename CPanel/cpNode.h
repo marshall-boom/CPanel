@@ -24,6 +24,7 @@ class cpNode
     std::vector<edge*> edges;
     std::vector<bodyPanel*> bodyPans;
     double c_w = 1.3; //vpp
+//    double c_w = 1000; //vpp
     
     bool TEnode;
     

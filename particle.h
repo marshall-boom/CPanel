@@ -25,10 +25,11 @@ class particle {
 public:
     double radius;
     Eigen::Vector3d velOn; // Used for FMM.
+    int shedTime;
 
     wakePanel* parentPanel;
     
-    particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate);
+    particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate, int shedTime);
     
     void setPrevVelInfl(Eigen::Vector3d vel) {previousVelInfl = vel;};
     Eigen::Vector3d getPrevVelInfl() {return previousVelInfl;};

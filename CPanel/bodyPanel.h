@@ -26,15 +26,15 @@ class bodyPanel : public panel
     std::vector<bodyPanel*> neighbors;
     std::vector<bodyPanel*> cluster;
     int TSorder;
-    double sourceStrength;
+    double sourceStrength = 0; // Initialize with zero so can print before compVelocity
     bool upper; // Sheds wake panel from lower edge
     bool lower; // Sheds wake panel from upper edge
     bool TEpanel;
     edge* TE;
     bool tipFlag;
     bool streamFlag; // Surface Streamline crosses panel.
-    Eigen::Vector3d velocity;
-    double Cp;
+    Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
+    double Cp = 0;
     
     int index; // Index in panel vector contained in geometry class.  Used for interpolating strength for wake panel influences.
     

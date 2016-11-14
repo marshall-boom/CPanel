@@ -138,7 +138,7 @@ void wake::trefftzPlane(double Vinf,double Sref)
         //Number is odd and needs to be even for simpsons rule integration.
         nPnts++;
     }
-    Eigen::VectorXd w,v,dPhi;
+    Eigen::VectorXd w,dPhi;
     yLoc.resize(nPnts+1);
     yLoc(0) = yMin;
     yLoc(nPnts) = yMax;
@@ -149,6 +149,40 @@ void wake::trefftzPlane(double Vinf,double Sref)
     Cd = Eigen::VectorXd::Zero(nPnts+1);
     Eigen::MatrixXd trefftzPnts = Eigen::MatrixXd::Zero(nPnts+1,3);
     double xTrefftz = x0+2*(xf-x0)/3;
+    std::cout << "xtrefftz  =" << xTrefftz << std::endl; //TPP
+    
+    
+//    // Vel survey for wake...
+//    int nYP = 20;
+//    int nZP = 10;
+//    double yMinP = -3; double yMaxP = 3;
+//    double zMinP = -1; double zMaxP = 1;
+//    double yStepP = (yMaxP - yMinP)/nYP;
+//    double zStepP = (zMaxP - zMinP)/nZP;
+//    
+//    for (int i=0; i<nYP; i++) {
+//        for (int j=0; j<nZP; j++) {
+//            
+//            Eigen::Vector3d survPt;
+//            survPt.x() = xTrefftz;
+//            survPt.y() = yMinP + i*yStepP;
+//            survPt.z() = zMinP + j*zStepP;
+//            
+//            //sumPanInfl
+//            Eigen::Vector3d panV = Eigen::Vector3d::Zero();
+//            for (int k=0; k<wpanels.size(); k++) {
+//                panV += wpanels[k]->panelV(survPt);
+//            }
+//            std::cout << "quiver("<<survPt.y()<<","<<survPt.z()<<","<<panV.y()<<","<<panV.z()<<",'g');"<<std::endl;
+//
+//            //CHTLS
+//            Eigen::Vector3d panCHTLS;
+//            panCHTLS = Vradial2(survPt);
+//            std::cout << "quiver("<<survPt.y()<<","<<survPt.z()<<","<<panCHTLS.y()<<","<<panCHTLS.z()<<",'r');"<<std::endl;
+//            
+//        }
+//    }
+//
     
     Eigen::Vector3d pWake;
     for (int i=1; i<nPnts; i++)
@@ -156,9 +190,13 @@ void wake::trefftzPlane(double Vinf,double Sref)
         yLoc(i) = yMin+i*step;
         pWake = pntInWake(xTrefftz, yLoc(i));
         w(i) = Vradial(pWake);
+        double wprint = w(i);
         dPhi(i) = -wakeStrength(yLoc(i));
+        double dPhiprint = dPhi(i);
         Cl(i) = 2*dPhi(i)/(Vinf*Sref);
+        double Clprint = Cl(i);
         Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
+        double Cdprint = Cd(i);
     }
     
     int i=0;
@@ -172,122 +210,285 @@ void wake::trefftzPlane(double Vinf,double Sref)
     }
 }
 
-double wake::trefftzPlaneFromVel(double Vinf,double Sref)
+
+void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*> particles)
+// if do this, re-write to accept a pointer to the vector.
+
 {
-    // Use Simpsons rule for 2D integration to integrate (v^w +w^2) around the area of the Trefftz plane
-    int m = 4; // steps in the y direction (MUST be even for simpsons rule)
-    int n = 4; // steps in the z direction
-    double nPts = (m+1)*(n+1);
+    // Finding plane location. Initialize with first particle for any coordinate system...
+    double xPartMin=particles[0]->pos.x();
+    double xPartMax=particles[0]->pos.x();
     
-    Eigen::VectorXd yLoc(m+1);
-    Eigen::VectorXd zLoc(n+1);
-    
-    // Limits of integration
-    double a,b,c,d;
-    a = yMin-4; // arbitrary for now...
-    b = yMax+4;
-    c = z0-4;
-    d = zf+4;
-
-    // Survey point locations
-    double xTrefftz = x0+2*(xf-x0)/3;
-    Eigen::MatrixXd Y(m+1,n+1);
-    Eigen::MatrixXd Z(m+1,n+1);
-    
-    for(int i=0; i<m+1; i++){
-        for(int j=0; j<n+1; j++){
-            Y(i,j) = a+(i-1)*(b-a)/m;
-            Z(i,j) = c+(j-1)*(d-c)/n;
+    for(int i=0; i<particles.size(); i++)
+    {
+        if(particles[i]->pos.x() < xPartMax){
+            xPartMin = particles[i]->pos.x();
+        }
+        if(particles[i]->pos.x() > xPartMax){
+            xPartMax = particles[i]->pos.x();
         }
     }
     
-    // Build row and column vectors to make W matrix
-    Eigen::VectorXd matRow = Eigen::VectorXd::Ones(m+1);
-    for(int i=1; i<m; i++){ //
-        if(i%2 == 0){ //isEven
-            matRow(i) = 2;
-        }else{
-            matRow(i) = 4;
+    
+    
+    int nPnts = 60;
+    if (nPnts % 2 != 0)
+    {
+        //Number is odd and needs to be even for simpsons rule integration.
+        nPnts++;
+    }
+    Eigen::VectorXd w,v,dPhi;
+    yLoc.resize(nPnts+1);
+    yLoc(0) = yMin;
+    yLoc(nPnts) = yMax;
+    double step = (yMax-yMin)/(nPnts);
+    w = Eigen::VectorXd::Zero(nPnts+1);
+    Eigen::VectorXd wFil = Eigen::VectorXd::Zero(nPnts+1);
+    dPhi = Eigen::VectorXd::Zero(nPnts+1);
+    Cl = Eigen::VectorXd::Zero(nPnts+1);
+    Cd = Eigen::VectorXd::Zero(nPnts+1);
+    Eigen::MatrixXd trefftzPnts = Eigen::MatrixXd::Zero(nPnts+1,3);
+//    double xTrefftz = x0+2*(xf-x0)/3;
+//    double xTrefftz = xPartMin + (xPartMax - xPartMin)/2;
+    double xTrefftz = 7.56; // same as panel trefftz plane.
+    
+    
+    // Vel survey for wake...
+    int nY = 20;
+    int nZ = 10;
+    double yMin = -3; double yMax = 3;
+    double zMin = -1; double zMax = 1;
+    double yStep = (yMax - yMin)/nY;
+    double zStep = (zMax - zMin)/nZ;
+    
+    for (int i=0; i<nY; i++) {
+        for (int j=0; j<nZ; j++) {
+            
+            Eigen::Vector3d survPt;
+            survPt.x() = xTrefftz;
+            survPt.y() = yMin + i*yStep;
+            survPt.z() = zMin + j*zStep;
+            
+            //sumPanInfl
+            Eigen::Vector3d partV = Eigen::Vector3d::Zero();
+            for (int k=0; k<particles.size(); k++) {
+                partV += particles[k]->partVelInfl(survPt);
+            }
+            std::cout << "quiver("<<survPt.y()<<","<<survPt.z()<<","<<partV.y()<<","<<partV.z()<<",'b');"<<std::endl;
+            
+            //Filaments
+            Eigen::Vector3d filsVel;
+            filsVel = velFromLines(survPt);
+//            std::cout << "quiver("<<survPt.y()<<","<<survPt.z()<<","<<filsVel.y()<<","<<filsVel.z()<<",'m');"<<std::endl;
+            
         }
     }
-
-    Eigen::VectorXd matCol = Eigen::VectorXd::Ones(n+1);
-    for(int i=1; i<n; i++){ // 
-        if(i%2 == 0){
-            matCol(i) = 2;
-        }else{
-            matCol(i) = 4;
-        }
+    
+    
+    
+    
+    
+    
+    
+//    Eigen::Vector3d pWake;
+//    for (int i=1; i<nPnts; i++)
+//    {
+//        yLoc(i) = yMin+i*step;
+//        pWake = pntInWake(xTrefftz, yLoc(i));
+//
+//        wFil(i) = (velFromLines(pWake));
+//        double wF = wFil(i);
+//        std::cout << "quiver("<<pWake.y()<<","<<pWake.z()<<",0,"<<(wF)<<",'r');"<<std::endl;
+//        
+//        w(i) = Vradial(pWake);
+//        double wCHTLS = w(i);
+//        std::cout << "quiver("<<pWake.y()<<","<<pWake.z()<<",0,"<<wCHTLS<<",'b');"<<std::endl;
+//        
+//        double wPart = 0;
+//        for(int i=0; i<particles.size(); i++){
+//            wPart += particles[i]->partVelInflGaussian(pWake).z();
+//        }
+////        std::cout << "quiver("<<pWake.y()<<","<<pWake.z()<<",0,"<<wPart<<",'g');"<<std::endl;
+//
+//
+//        dPhi(i) = -wakeStrength(yLoc(i));
+//        std::cout << "quiver("<<pWake.y()<<","<<pWake.z()<<",0,"<<dPhi(i)<<",'g');"<<std::endl;
+//
+//        Cl(i) = 2*dPhi(i)/(Vinf*Sref);
+//        Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
+//    }
+    
+//    std::cout << "\n\n\n w = " << w << std::endl;
+//    std::cout << "\n\n\n wFil = " << wFil << std::endl;
+    int i=0;
+    CL = 0;
+    CD = 0;
+    while (i < Cl.rows()-2)
+    {
+        CL += 1.0/3*step*(Cl(i)+4*Cl(i+1)+Cl(i+2));
+        CD += 1.0/3*step*(Cd(i)+4*Cd(i+1)+Cd(i+2));
+        i += 2;
     }
-
-    Eigen::MatrixXd CDmat(m+1,n+1);
-    Eigen::MatrixXd CLmat(m+1,n+1);
-    Eigen::MatrixXd ymat(m+1,n+1);
-    Eigen::MatrixXd zmat(m+1,n+1);
-    Eigen::MatrixXd vmat(m+1,n+1);
-    Eigen::MatrixXd wmat(m+1,n+1);
-    
-    // Evaluate integral
-    for(int i=0; i<m+1; i++){
-        for(int j=0; j<n+1; j++){
-            Eigen::Vector3d planePnt;
-            planePnt << xTrefftz, Y(i,j), Z(i,j);
-            Eigen::Vector3d vPnt = pntVel(planePnt);
-//            multMat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2)); // Wmatrix Coeff. * velocity of wake
-            CDmat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2))/(Vinf*Vinf*Sref); // Wmatrix Coeff. * velocity of wake
-            CLmat(i,j) = matRow(i)*matCol(j)*(vPnt.z())/(Vinf*Sref);
-            ymat(i,j) = planePnt.y();
-            zmat(i,j) = planePnt.z();
-            vmat(i,j) = vPnt.y();
-            wmat(i,j) = vPnt.z();
-        }
-    }
-//    Cl(i) = 2*dPhi(i)/(Vinf*Sref);
-//    Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
-
-    //========printing out quiver plot for matlab======//
-//    std::cout << "y = [";
-//    for(int i=0; i<m+1; i++){
-//        for(int j=0; j<n+1; j++){
-//            std::cout << ymat(i,j) << ",";
-//        }
-//        std::cout << ";";
-//    }
-//    std::cout << "];" << std::endl;
-//    
-//    std::cout << "z = [";
-//    for(int i=0; i<m+1; i++){
-//        for(int j=0; j<n+1; j++){
-//            std::cout << zmat(i,j) << ",";
-//        }
-//        std::cout << ";";
-//    }
-//    std::cout << "];" << std::endl;
-//    
-//    std::cout << "v = [";
-//    for(int i=0; i<m+1; i++){
-//        for(int j=0; j<n+1; j++){
-//            std::cout << vmat(i,j) << ",";
-//        }
-//        std::cout << ";";
-//    }
-//    std::cout << "];" << std::endl;
-//    
-//    std::cout << "w = [";
-//    for(int i=0; i<m+1; i++){
-//        for(int j=0; j<n+1; j++){
-//            std::cout << wmat(i,j) << ",";
-//        }
-//        std::cout << ";";
-//    }
-//    std::cout << "];" << std::endl;
-    
-    // Simpson's summation
-    double CL = -2*(b-a)*(d-c)/(9*m*n)*CLmat.sum(); //The negative is because w is pointing 'down' in the wake and the '2*' was pulled out of the integral
-    std::cout << "\nmyTrefftzCL = " << CL << std::endl;
-    
-    return (b-a)*(d-c)/(9*m*n)*CDmat.sum();
 }
+
+Eigen::Vector3d wake::velFromLines(Eigen::Vector3d POI)
+{
+    double v = 0;
+    double w = 0;
+    
+    
+    for(int i=0; i < wakeLines.size(); i++)
+    {
+        double y, y0, z, z0, lStrength;
+        y = POI.y();
+        z = POI.z();
+        y0 = wakeLines[i]->getPMid().y();
+        z0 = wakeLines[i]->getPMid().z();
+        
+//        Eigen::Vector3d p1 = wakeLines[i]->getPMid();
+//        Eigen::Vector3d dum; dum << 200,0,0;
+//        Eigen::Vector3d p2 = p1 + dum;
+//        
+//        Eigen::Vector3d a = POI-p1;
+//        Eigen::Vector3d b = POI-p2;
+//        Eigen::Vector3d s = p2-p1;
+//        
+//        Eigen::Vector3d vortVel = this->getPanels()[0]->vortexV(a,b,s);
+//        
+        lStrength = wakeLines[i]->getStrength();
+//        double vel = - lStrength / (2*M_PI) / (y-y0 + 0.1/(y-y0));
+//        std::cout << "quiver("<<y0<<","<<z0<<",0,"<<vel<<",'g');"<<std::endl;
+        
+//        w += - lStrength / (2*M_PI) * (y-y0) / ( (y-y0)*(y-y0)) + (z-z0)*(z-z0) );
+//        w += - lStrength / (2*M_PI) / (y-y0 + 0.1/(y-y0));
+        
+        v += lStrength / (2*M_PI) * (z-z0) / ( (y-y0)*(y-y0) + (z-z0)*(z-z0) );
+        w += - lStrength / (2*M_PI) * (y-y0) / ( (y-y0)*(y-y0) + (z-z0)*(z-z0) );
+        
+    }
+//    std::cout <<"plot("<<POI.y()<<","<<POI.z()<<",'c*');"<<std::endl;
+    
+    return {0,v/2,w/2}; // half because line is only supposed to hit one side of plane
+    
+}
+
+
+//double wake::trefftzPlaneFromVel(double Vinf,double Sref)
+//{
+//    // Use Simpsons rule for 2D integration to integrate (v^w +w^2) around the area of the Trefftz plane
+//    int m = 20; // steps in the y direction (MUST be even for simpsons rule)
+//    int n = 20; // steps in the z direction
+//    double nPts = (m+1)*(n+1);
+//    
+//    Eigen::VectorXd yLoc(m+1);
+//    Eigen::VectorXd zLoc(n+1);
+//    
+//    // Limits of integration
+//    double a,b,c,d;
+//    a = yMin-4; // arbitrary for now...
+//    b = yMax+4;
+//    c = z0-4;
+//    d = zf+4;
+//
+//    // Survey point locations
+//    double xTrefftz = x0+2*(xf-x0)/3;
+//    Eigen::MatrixXd Y(m+1,n+1);
+//    Eigen::MatrixXd Z(m+1,n+1);
+//    
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            Y(i,j) = a+(i-1)*(b-a)/m;
+//            Z(i,j) = c+(j-1)*(d-c)/n;
+//        }
+//    }
+//    
+//    // Build row and column vectors to make W matrix
+//    Eigen::VectorXd matRow = Eigen::VectorXd::Ones(m+1);
+//    for(int i=1; i<m; i++){ //
+//        if(i%2 == 0){ //isEven
+//            matRow(i) = 2;
+//        }else{
+//            matRow(i) = 4;
+//        }
+//    }
+//
+//    Eigen::VectorXd matCol = Eigen::VectorXd::Ones(n+1);
+//    for(int i=1; i<n; i++){ // 
+//        if(i%2 == 0){
+//            matCol(i) = 2;
+//        }else{
+//            matCol(i) = 4;
+//        }
+//    }
+//
+//    Eigen::MatrixXd CDmat(m+1,n+1);
+//    Eigen::MatrixXd CLmat(m+1,n+1);
+//    Eigen::MatrixXd ymat(m+1,n+1);
+//    Eigen::MatrixXd zmat(m+1,n+1);
+//    Eigen::MatrixXd vmat(m+1,n+1);
+//    Eigen::MatrixXd wmat(m+1,n+1);
+//    
+//    // Evaluate integral
+//    for(int i=0; i<m+1; i++){
+//        for(int j=0; j<n+1; j++){
+//            Eigen::Vector3d planePnt;
+//            planePnt << xTrefftz, Y(i,j), Z(i,j);
+//            Eigen::Vector3d vPnt = pntVel(planePnt);
+////            multMat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2)); // Wmatrix Coeff. * velocity of wake
+//            CDmat(i,j) = matRow(i)*matCol(j)*(pow(vPnt.y(),2) + pow(vPnt.z(),2))/(Vinf*Vinf*Sref); // Wmatrix Coeff. * velocity of wake
+//            CLmat(i,j) = matRow(i)*matCol(j)*(vPnt.z())/(Vinf*Sref);
+//            ymat(i,j) = planePnt.y();
+//            zmat(i,j) = planePnt.z();
+//            vmat(i,j) = vPnt.y();
+//            wmat(i,j) = vPnt.z();
+//        }
+//    }
+////    Cl(i) = 2*dPhi(i)/(Vinf*Sref);
+////    Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
+//
+//    //========printing out quiver plot for matlab======//
+////    std::cout << "y = [";
+////    for(int i=0; i<m+1; i++){
+////        for(int j=0; j<n+1; j++){
+////            std::cout << ymat(i,j) << ",";
+////        }
+////        std::cout << ";";
+////    }
+////    std::cout << "];" << std::endl;
+////    
+////    std::cout << "z = [";
+////    for(int i=0; i<m+1; i++){
+////        for(int j=0; j<n+1; j++){
+////            std::cout << zmat(i,j) << ",";
+////        }
+////        std::cout << ";";
+////    }
+////    std::cout << "];" << std::endl;
+////    
+////    std::cout << "v = [";
+////    for(int i=0; i<m+1; i++){
+////        for(int j=0; j<n+1; j++){
+////            std::cout << vmat(i,j) << ",";
+////        }
+////        std::cout << ";";
+////    }
+////    std::cout << "];" << std::endl;
+////    
+////    std::cout << "w = [";
+////    for(int i=0; i<m+1; i++){
+////        for(int j=0; j<n+1; j++){
+////            std::cout << wmat(i,j) << ",";
+////        }
+////        std::cout << ";";
+////    }
+////    std::cout << "];" << std::endl;
+//    
+//    // Simpson's summation
+//    double CL = -2*(b-a)*(d-c)/(9*m*n)*CLmat.sum(); //The negative is because w is pointing 'down' in the wake and the '2*' was pulled out of the integral
+//    std::cout << "\nmyTrefftzCL from wake class = " << CL << std::endl;
+//    
+//    return (b-a)*(d-c)/(9*m*n)*CDmat.sum();
+//}
 
 Eigen::Vector3d wake::lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc)
 {
@@ -412,7 +613,7 @@ double wake::Vradial(Eigen::Vector3d pWake)
     int nPnts = 6;
     if (nPnts % 2 != 0)
     {
-        nPnts++; //Make even if odd
+        nPnts++;
     }
     double dz = 0.5*delZ;
     double step = 2*dz/(nPnts-1);
@@ -465,6 +666,98 @@ double wake::Vradial(Eigen::Vector3d pWake)
     return w;
 }
 
+Eigen::Vector3d wake::Vradial2(Eigen::Vector3d pWake)
+{
+    double r;
+    double theta = M_PI/4;
+    double dZmax = 0.3;
+    double delZ;
+    Eigen::Vector3d POI;
+    POI(0) = pWake(0);
+    if (pWake(1) >= 0)
+    {
+        r = yMax-pWake(1);
+    }
+    else
+    {
+        r = pWake(1)-yMin;
+    }
+    delZ = r*sin(theta);
+    if (delZ > dZmax)
+    {
+        delZ = dZmax;
+        theta = asin(dZmax/r);
+    }
+    if (pWake(1) >= 0)
+    {
+        POI(1) = yMax-r*cos(theta);
+    }
+    else
+    {
+        POI(1) = yMin+r*cos(theta);
+    }
+    
+    POI(2) = pWake(2)+r*sin(theta);
+    
+    
+    double Vr;
+    int nPnts = 6;
+    if (nPnts % 2 != 0)
+    {
+        nPnts++;
+    }
+    double dz = 0.5*delZ;
+    double step = 2*dz/(nPnts-1);
+    double phiPOI = 0;
+    Eigen::VectorXd dPhiy(nPnts);
+    Eigen::VectorXd dPhiz(nPnts);
+    Eigen::MatrixXd dY(nPnts,1);
+    Eigen::MatrixXd dZ(nPnts,1);
+    //    for (int i=0; i<wpanels.size(); i++)
+    //    {
+    //        phiPOI += wpanels[i]->panelPhi(POI);
+    //    }
+    phiPOI = geom->wakePotential(POI);
+    
+    int i=0;
+    while (i < nPnts)
+    {
+        double phiPnt1 = 0;
+        double phiPnt2 = 0;
+        double delta = -dz+i*step;
+        Eigen::Vector3d ydir,zdir;
+        ydir << 0,1,0;
+        zdir << 0,0,1;
+        Eigen::Vector3d pnt1 = POI+delta*ydir;
+        Eigen::Vector3d pnt2 = POI+delta*zdir;
+        //        for (int j=0; j<wpanels.size(); j++)
+        //        {
+        //            phiPnt1 += wpanels[j]->panelPhi(pnt1);
+        //            phiPnt2 += wpanels[j]->panelPhi(pnt2);
+        //        }
+        phiPnt1 = geom->wakePotential(pnt1);
+        phiPnt2 = geom->wakePotential(pnt2);
+        
+        dPhiy(i) = phiPnt1-phiPOI;
+        dPhiz(i) = phiPnt2-phiPOI;
+        dY(i) = pnt1(1) - POI(1);
+        dZ(i) = pnt2(2) - POI(2);
+        i = i+1;
+    }
+    
+    Eigen::MatrixXd Xb(0,3),Vb(0,3);
+    Eigen::Vector3d V0 = Eigen::Vector3d::Zero();
+    Eigen::Matrix<double,1,1> x0;
+    x0.setZero();
+    chtlsnd weightsY(x0,dY,3,Xb,Vb,V0);
+    double v = weightsY.getF().row(0)*dPhiy;
+    chtlsnd weightsZ(x0,dZ,3,Xb,Vb,V0);
+    double w = weightsZ.getF().row(0)*dPhiz;
+    Vr = sqrt(pow(v,2)+pow(w,2));
+    return {0,v,w};
+}
+
+
 Eigen::Vector3d wake::pntInWake(double x, double y)
 {   //Connor's note: function finds the TE that projects out to the input point and then finds where the point lies on the trailing edge. Some testing (with a flat wake) showed that it doesn't change the x or y inputs, maybe it just finds the 'z' value??
     
@@ -506,13 +799,14 @@ Eigen::Vector3d wake::pntInWake(double x, double y)
     return pntInWake;
 }
 
-Eigen::Vector3d wake::pntVel(Eigen::Vector3d POI){
-    
+Eigen::Vector3d wake::pntVel(Eigen::Vector3d POI)
+{    
     Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
     std::vector<wakePanel*> wPans = this->wpanels;
     
-    for(int i=1; i<this->wpanels.size(); i++){
-        velInfl+=wPans[i]->panelV(POI);
+    for(int i=0; i<this->wpanels.size(); i++)
+    {
+        velInfl += wPans[i]->panelV(POI);
     }
     
     return velInfl;
