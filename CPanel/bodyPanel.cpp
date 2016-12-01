@@ -334,9 +334,12 @@ void bodyPanel::setCluster()
                 
                 nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder)) + buffer; // Binomial Coefficient
                 nPanels = ceil(nObs/2);
+                
             }
             
-            cluster.erase(cluster.begin()+nPanels+1,cluster.end());
+            if (cluster.size() > 0) {
+                cluster.erase(cluster.begin()+nPanels+1,cluster.end());
+            }
             break;
         }
         else

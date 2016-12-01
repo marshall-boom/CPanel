@@ -69,8 +69,8 @@ class cpCase
     Eigen::VectorXd wake2Doublets;
     Eigen::MatrixXd D;
     
-    double CL_trefftz;
-    double CD_trefftz;
+    double CL_trefftz = 0;
+    double CD_trefftz = 0;
     Eigen::Vector3d Fbody;
     Eigen::Vector3d Fwind;
     Eigen::Vector3d CM; //[roll,pitch,yaw]
@@ -91,6 +91,7 @@ class cpCase
     void setSourceStrengths();
     bool solveMatrixEq();
     bool solveVPmatrixEq(); //VPP
+    bool solutionConvergence();
     Eigen::Vector3d VinfPlusVecPot(Eigen::Vector3d POI);
     void compVelocity();
     void trefftzPlaneAnalysis();
@@ -127,11 +128,9 @@ class cpCase
     void convectBufferWake(); //VPP
     void readBodyKinFile();
     
-    double trefftzPlaneFromVel();
     
     Eigen::Vector3d rungeKuttaStepper(Eigen::Vector3d POI);
     
-    void trefftzPlane();
     
     struct meshDat {
         std::vector<Eigen::Vector3d> velocity;
@@ -146,6 +145,8 @@ class cpCase
     void createVolMesh();
     void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
 
+    double changeCDnm1, changeCLnm1;
+    
 
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)

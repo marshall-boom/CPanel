@@ -81,7 +81,8 @@ void edge::checkTE()
         {
             // Check for sharp edge without wake shed (i.e. vertical tail).  Used to start streamline tracing
             double angle = acos(bodyPans[0]->getNormal().dot(bodyPans[1]->getNormal()));
-            if (angle > 5*M_PI/6 && bodyPans[0]->getID() == bodyPans[1]->getID())
+            if (angle > 4.7*M_PI/6 && bodyPans[0]->getID() == bodyPans[1]->getID())
+//            if (angle > 5*M_PI/6 && bodyPans[0]->getID() == bodyPans[1]->getID())
             {
                 TE = true;
                 n1->setTE();

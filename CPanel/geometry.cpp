@@ -218,7 +218,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 fid >> norms(i,0) >> norms(i,1) >> norms(i,2);
             }
         }
-        
+                
         std::cout << "Generating Panel Geometry..." << std::endl;
         
         createSurfaces(connectivity,norms,allID,wakeIDs,vortPartFlag);
@@ -327,12 +327,13 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     { // If it's used, don't change the n1 index and then get the first and sec. node indices.
                         usedTENodesIndex.push_back(n1index);
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, inputV);
+                        double VinfLocal = Vinf(nodes[n1index]->getPnt()).norm();
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, VinfLocal);
                         newNodesIndex.push_back(nodeCounter);
                         n1firstIndex = nodeCounter+nNodes;
                         nodeCounter++;
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(dt, inputV);
+                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(dt, VinfLocal);
                         newNodesIndex.push_back(nodeCounter);
                         n1secIndex = nodeCounter+nNodes;
                         nodeCounter++;
@@ -352,12 +353,13 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     {
                         usedTENodesIndex.push_back(n2index);
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, inputV);
+                        double VinfLocal = Vinf(nodes[n2index]->getPnt()).norm();
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, VinfLocal);
                         newNodesIndex.push_back(nodeCounter);
                         n2firstIndex = nodeCounter+nNodes;
                         nodeCounter++;
                         
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(dt, inputV);
+                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(dt, VinfLocal);
                         newNodesIndex.push_back(nodeCounter);
                         n2secIndex = nodeCounter+nNodes;
                         nodeCounter++;
@@ -1073,25 +1075,32 @@ void geometry::clusterCheck()
     fid.close();
 }
 
-
-void geometry::vortRingVecTest(){
-    // Outputs a MATLAB script that plots the wake panels with each vector
+void geometry::readBodyKinFile(){
+    std::ifstream fid;
+    fid.open(bodyKinFile);
     
-    std::cout << "clear all; close all; clc;" << std::endl;
-    for(int i=0; i<wPanels.size(); i++){
-        std::vector<edge*> edges = wPanels[i]->getEdges();
-        std::vector<Eigen::Vector3d> vortRings = wPanels[i]->vortexRingVectors();
-        
-        
-        
+    bodyKin.resize(6); //Just big enough to get the first time step.
+    
+    for(int j=0; j < 6; j++)
+    {
+        fid >> bodyKin(j);
     }
     
+    fid.close();
+}
+
+Eigen::Vector3d geometry::Vinf(Eigen::Vector3d POI)
+{
+    Eigen::Vector3d localVel;
     
+    // U = U3 + (-q*z + r*y)
+    localVel.x() = bodyKin(0) - bodyKin(4)*POI.z() + bodyKin(5)*POI.y();
     
+    // V = V3 + (-r*x + p*z)
+    localVel.y() = bodyKin(1) - bodyKin(5)*POI.x() + bodyKin(3)*POI.z();
     
+    // W = W3 + (-p*y + q*x)
+    localVel.z() = bodyKin(2) - bodyKin(3)*POI.y() + bodyKin(4)*POI.x();
     
-    
-    
-    
-    
+    return localVel;
 }

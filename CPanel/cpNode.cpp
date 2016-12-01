@@ -75,8 +75,8 @@ edge* cpNode::getOtherTrailEdge(edge* current)
 }
 
 
-std::vector<edge*> cpNode::getTrailingEdges()
-{
+std::vector<edge*> cpNode::getTrailingEdges(){
+    
     std::vector<edge*> trailingEdges;
     for (int i=0; i<edges.size(); i++)
     {
@@ -112,6 +112,7 @@ std::vector<edge*> cpNode::getTrailingEdges()
 //}
 
 Eigen::Vector3d cpNode::nodeWakeProjAngle(){
+    
     std::vector<edge*> tedges = this->getTrailingEdges();
     Eigen::Vector3d avgNorm = Eigen::Vector3d::Zero();
 
@@ -132,18 +133,19 @@ Eigen::Vector3d cpNode::nodeWakeProjAngle(){
 }
 
 
-Eigen::Vector3d cpNode::firstProjNode(double dt, double inputV)
-{
+Eigen::Vector3d cpNode::firstProjNode(double dt, double inputV){
+    
     Eigen::Vector3d bisectVec = this->nodeWakeProjAngle();
     
     return this->getPnt() += c_w*dt*inputV*bisectVec;
+
 }
 
 
-Eigen::Vector3d cpNode::secProjNode(double dt, double inputV)
-{
-    Eigen::Vector3d bisectVec = this->nodeWakeProjAngle();
+Eigen::Vector3d cpNode::secProjNode(double dt, double inputV){
     
+    Eigen::Vector3d bisectVec = this->nodeWakeProjAngle();
+
     return this->getPnt() += (c_w+1)*dt*inputV*bisectVec;
 
 }

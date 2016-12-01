@@ -82,7 +82,14 @@ class geometry
     void readInfCoeff();
     void writeInfCoeff();
     
-    void vortRingVecTest();
+    bool unsteadySim;
+    
+    std::string bodyKinFile;
+    Eigen::VectorXd bodyKin;
+    
+    void readBodyKinFile();
+    Eigen::Vector3d Vinf(Eigen::Vector3d POI);
+
     
 public:
     double dt; //making public so cpCase can access it
@@ -94,8 +101,13 @@ public:
         infCoeffFile = temp.str();
         writeCoeffFlag = p->writeCoeffFlag;
         vortPartFlag = p->vortPartFlag;
-        inputV = p->velocities(0); // Connor didn't change this. Just noting that velocity doesn't change for geometries.
+        inputV = p->velocities(0);
         dt = p->timeStep;
+        unsteadySim = p->unsteady;
+        if(unsteadySim){
+            bodyKinFile = p->bodyKinFileLoc;
+            readBodyKinFile();
+        }
         readTri(p->geomFile->file, p->normFlag);
     }
     

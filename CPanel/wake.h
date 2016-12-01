@@ -47,9 +47,12 @@ class wake
     Eigen::Vector3d Vradial2(Eigen::Vector3d pWake);
     Eigen::Vector3d pntInWake(double x, double y);
 //    Eigen::Vector3d pntVel(Eigen::Matrix<double,1,3> POI, Eigen::MatrixXd pntCloud,Eigen::Matrix<bool,Eigen::Dynamic,1> upperFlag, Eigen::Vector3d Vinf);
-    Eigen::Vector3d pntVel(Eigen::Vector3d POI);
     
-    Eigen::Vector3d velFromLines(Eigen::Vector3d POI);
+    double particlePntInWakeY(Eigen::Vector3d Spts , particle* SptsP1 , particle* SptsP2);
+    double dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2);
+    double stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2);
+
+
     
 public:
     wake(int wakeID, geometry* geom) : ID(wakeID), geom(geom), yMin(0) {}
@@ -67,8 +70,7 @@ public:
     std::vector<wakePanel*> getPanels() const {return wpanels;}
     
     void trefftzPlane(double Vinf,double Sref);
-    void trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*> particles);
-//    double trefftzPlaneFromVel(double Vinf,double Sref);
+    void trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* particles, int numSimSteps);
     Eigen::Vector3d lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc);
     
     
