@@ -20,8 +20,6 @@ class octree
     node<type> *root_node;
     short maxMembersPerNode;
     std::vector<member<type>> members;
-    short numLevels;
-    double maxTheta = 0.5;
     
     void boundingBox(Eigen::Vector3d &boxMin, Eigen::Vector3d &boxMax)
     {
@@ -119,21 +117,7 @@ public:
     {
         maxMembersPerNode = maxMembers;
     }
-    
-    void setMaxTheta(double theta)
-    {
-        maxTheta = theta;
-    }
 
-    void removeData(){
-        
-        if(root_node){
-            members.clear();
-            root_node->getSubNodes().clear();
-            root_node = nullptr;
-        }
-        
-    }
     
     void addData(const std::vector<type*> &newData)
     {
@@ -154,7 +138,7 @@ public:
             Eigen::Vector3d halfDimension;
             setDimensions(center,halfDimension);
             
-            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
+            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode);
             
             for (int i=0; i<members.size(); i++)
             {
@@ -191,7 +175,7 @@ public:
             Eigen::Vector3d halfDimension;
             setDimensions(center,halfDimension);
             
-            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
+            root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode);
             
             root_node->addMember(newMember);
         }
@@ -222,33 +206,6 @@ public:
         return current_node;
     }
     
-    node<type>* findNodeContainingPnt(const Eigen::Vector3d pnt, short level)
-    {
-        node<type>* current_node = root_node;
-        int treeLevel = 1;
-        
-        while(treeLevel < level){
-            current_node = current_node->getChild(current_node->getChildContainingPnt(pnt));
-            treeLevel++;
-        }
-        
-        return current_node;
-    }
-    
-    short numTreeLevels()
-    {
-        short levels = 0;
-        std::vector<node<type>*> nodes = getNodes();
-        for(int i=0; i<nodes.size(); i++)
-        {
-            if(nodes[i]->getLevel()>levels)
-            {
-                levels++;
-            }
-        }
-        return levels;
-    }
-    
     node<type>* findNodeContainingMember(type* obj)
     {
         member<type> temp = createMember(obj);
@@ -274,30 +231,6 @@ public:
         }
         return true;
     }
-    
-    std::vector<node<type>*> getLevelNodes(short level){
-        std::vector<node<type>*> nodes = this->getNodes();
-        std::vector<node<type>*> levelNodes;
-        
-        for(int i=0; i<nodes.size(); i++){
-            if(nodes[i]->getLevel() == level){
-                levelNodes.push_back(nodes[i]);
-            }
-        }
-        
-        return levelNodes;
-    }
-    
-    void deleteExpansions(){
-        if(root_node){
-        std::vector<node<type>*> nodes = root_node->getSubNodes();
-        for(int i=0; i<nodes.size(); i++)
-        {
-            nodes[i]->setMultExp(nullptr);
-        }
-        }
-    }
-    
     
     std::vector<node<type>*> getNodes()
     {

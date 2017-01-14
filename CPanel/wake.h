@@ -13,15 +13,12 @@
 #include <vector>
 #include <cmath>
 #include <Eigen/Dense>
-#include "particle.h"
-
 //#include "wakePanel.h"
 //#include "wakeLine.h"
 
 class wakePanel;
 class wakeLine;
 class geometry;
-class particle;
 
 class wake
 {
@@ -41,18 +38,13 @@ class wake
     Eigen::VectorXd Cd;
     
     
+    
+    
     void setWakeDimensions();
     wakeLine* findWakeLine(double y);
     double Vradial(Eigen::Vector3d pWake);
-    Eigen::Vector3d Vradial2(Eigen::Vector3d pWake);
     Eigen::Vector3d pntInWake(double x, double y);
-//    Eigen::Vector3d pntVel(Eigen::Matrix<double,1,3> POI, Eigen::MatrixXd pntCloud,Eigen::Matrix<bool,Eigen::Dynamic,1> upperFlag, Eigen::Vector3d Vinf);
-    
-    double particlePntInWakeY(Eigen::Vector3d Spts , particle* SptsP1 , particle* SptsP2);
-    double dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2);
-    double stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2);
-
-
+    Eigen::Vector3d pntVel(Eigen::Matrix<double,1,3> POI, Eigen::MatrixXd pntCloud,Eigen::Matrix<bool,Eigen::Dynamic,1> upperFlag, Eigen::Vector3d Vinf);
     
 public:
     wake(int wakeID, geometry* geom) : ID(wakeID), geom(geom), yMin(0) {}
@@ -70,7 +62,7 @@ public:
     std::vector<wakePanel*> getPanels() const {return wpanels;}
     
     void trefftzPlane(double Vinf,double Sref);
-    void trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* particles, int numSimSteps);
+    
     Eigen::Vector3d lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc);
     
     
@@ -94,7 +86,6 @@ public:
     Eigen::VectorXd getSpanwiseCl() {return Cl;}
     Eigen::VectorXd getSpanwiseCd() {return Cd;}
     Eigen::VectorXd getSpanwisePnts() {return yLoc;}
-    
 };
 
 #endif /* defined(__CPanel__wake__) */

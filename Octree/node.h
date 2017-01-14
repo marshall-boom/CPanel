@@ -27,8 +27,7 @@ class node
     std::vector<member<type>> members;
     short level;
     short maxMembers;
-    double maxTheta;
-
+    
     void createChild(int childNumber)
     {
         // Child    0 1 2 3 4 5 6 7
@@ -44,7 +43,7 @@ class node
             {
                 tempHalfDimension[i] = 0.5*halfDimension[i];
             }
-            children[childNumber] = new node<type>(this,tempOrigin,tempHalfDimension,level,maxMembers,maxTheta);
+            children[childNumber] = new node<type>(this,tempOrigin,tempHalfDimension,level,maxMembers);
     }
     
     void pushMember(const member<type> &member)
@@ -75,9 +74,7 @@ class node
         {
             for (int i=0; i<8; i++)
             {
-                if(children[i]){
-                    children[i]->addLevel();
-                }
+                children[i]->addLevel();
             }
         }
     }
@@ -94,7 +91,7 @@ class node
     }
     
 public:
-    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers, double maxTheta) : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers),maxTheta(maxTheta)
+    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers) : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers)
     {
         for (int i=0; i<8; i++)
         {
@@ -162,7 +159,7 @@ public:
         {
             tempHalfDimension[i] = 2*halfDimension[i];
         }
-        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers,maxTheta);
+        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers);
         
         int child = 0;
         for (int i=0; i<3; i++)
@@ -207,212 +204,13 @@ public:
         return flag;
     }
     
-    bool isSameLevel(node<type>* otherNode)
-    {
-        bool isSame = this->getLevel()==otherNode->getLevel()?true:false;
-        return isSame;
-    }
-    
-    Eigen::Vector3d calcVel(Eigen::Vector3d POI)
-    {
-        
-        Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
-        if(this->isLeafNode())
-        {
-            std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
-            {
-                velInfl+=nParts[i]->partVelInfl(POI);
-            }
-        }
-        else
-        {
-            if(this->isFarField(POI))
-            {
-                velInfl = this->multExp->partVelInfl(POI);
-            }
-            else
-            {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
-                {
-                    velInfl += children[i]->calcVel(POI);
-                }
-            }
-        }
-        
-        return velInfl;
-    }
-    
-    Eigen::Vector3d calcVel(type* part)
-    {
-        
-        Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
-        if(this->isLeafNode())
-        {
-            std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
-            {
-                if(part != nParts[i])
-                {
-                    velInfl += nParts[i]->partVelInflGaussian(part);
-                }
-            }
-        }
-        else
-        {
-            if(this->isFarField(part->pos))
-            {
-                velInfl = this->multExp->partVelInflGaussian(part);
-            }
-            else
-            {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
-                {
-                    velInfl += children[i]->calcVel(part);
-                }
-            }
-        }
-        
-        return velInfl;
-    }
-    
-    Eigen::Vector3d calcStretch(type* part)
-    {
-        
-        Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
-        if(this->isLeafNode())
-        {
-            std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
-            {
-                if(nParts[i] != part) // Kroneger delta func.
-                {
-                    stretchInfl += nParts[i]->vortexStretchingGaussian(part);
-                }
-            }
-        }
-        else
-        {
-            if(this->isFarField(part->pos))
-            {
-                stretchInfl = this->multExp->vortexStretchingGaussian(part);
-            }
-            else
-            {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
-                {
-                    stretchInfl += children[i]->calcStretch(part);
-                }
-            }
-        }
-        
-        return stretchInfl;
-    }
-
-    
-    Eigen::Vector3d calcDiff(type* part)
-    {
-        
-        Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
-        if(this->isLeafNode())
-        {
-            std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
-            {
-                if(nParts[i] != part) // Kroneger delta func.
-                {
-                    diffInfl += nParts[i]->viscousDiffusionGaussian(part);
-                }
-            }
-        }
-        else
-        {
-            if(this->isFarField(part->pos))
-            {
-                diffInfl = this->multExp->viscousDiffusionGaussian(part);
-            }
-            else
-            {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
-                {
-                    diffInfl += children[i]->calcDiff(part);
-                }
-            }
-        }
-        
-        return diffInfl;
-    }
-
-    
-    
-//    bool isFarField(node<type>* otherNode)
-//    {
-//        if(otherNode->getLevel() == 2){
-//            return false;
-//        }
-//        double centerToCenterDist = (this->getOrigin()-otherNode->getOrigin()).norm();
-//        bool sameLevel = isSameLevel(otherNode);
-//        
-//        if(std::abs(centerToCenterDist) > 2*(this->getHalfDimension()).norm() && sameLevel){
-//            return true;
-//        }else{
-//            return false;
-//        }
-//    };
-    
-    bool isFarField(node<type>* otherNode)
-    {
-
-        // Width of Node
-        double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
-        
-        // Particle distance
-        double d = (this->multExp->pos - otherNode->multExp->pos).norm();
-        
-        // theta = s/d;
-        if(s/d < maxTheta)
-            // maxTheta was put in the particle class to allow for different values for panels if BH is implemented in the future
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    };
-    
-    bool isFarField(Eigen::Vector3d POI)
-    {
-        
-        // Width of Node
-        double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
-        
-        // Particle distance
-        double d = (this->multExp->pos - POI).norm();
-        
-        // theta = s/d;
-        if(s/d < maxTheta)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    };
-    
-    
     int getChildContainingMember(const member<type> &member)
     {
         return getChildContainingPnt(member.getRefPoint());
     }
     
     int getChildContainingPnt(const Eigen::Vector3d &pnt)
-    { // Finds child quadrant
+    {
         int child = 0;
         if (pnt(0) > origin[0])
         {
@@ -511,49 +309,7 @@ public:
             return recursiveMembers;
         }
     }
-    
-    bool hasChildren()
-    {
-        for(int i=0; i<8; i++)
-        {
-            node<type>* subNode = this->getChild(i);
-            if(subNode)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    std::vector<node<type>*> getChildren()
-    {
-        std::vector<node<type>*> children;
-        for(int i=0; i<8; i++)
-        {
-            node<type>* subNode = this->getChild(i);
-            if(subNode)
-            {
-                children.push_back(subNode);
-            }
-        }
-        return children;
-    }
-    
-    std::vector<type*> getChildExpans()
-    {
-        std::vector<node<type>*> children = this->getChildren();
-        std::vector<type*> childExps;
-        
-        for(int i=0; i<children.size(); i++)
-        {
-            childExps.push_back(children[i]->multExp);
-        }
-        
-        return childExps;
-    }
-    
-    type* multExp; // Public because will access a lot
-    void setMultExp(type* exp) {multExp = exp;};
+
     
     Eigen::Vector3d getOrigin() {return origin;}
     Eigen::Vector3d getHalfDimension() {return halfDimension;}
@@ -563,7 +319,3 @@ public:
 };
 
 #endif /* defined(__CPanel__node__) */
-
-
-
-

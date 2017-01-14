@@ -28,22 +28,13 @@ struct inputParams
     double Sref;
     double bref;
     double cref;
-    double timeStep; //VPP
-//    double c_w;
-    double numSteps;
     double streamSpacing;
-    bool accel = false;
-    bool high_accuracy = false;
-    bool unsteady = false;
-    std::string bodyKinFileLoc;
-    
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
-        
+    
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;
-    bool vortPartFlag;
     
     inputParams(cpFile* inFile) : inputFile(inFile) {}
     

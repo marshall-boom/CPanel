@@ -19,7 +19,6 @@ class caseMgr
     inputParams* p;
     geometry* geom;
     Eigen::VectorXi outSpacing;
-    bool vortPartFlag; //VPP
  
     std::vector<cpCase*> cases;
     
@@ -33,9 +32,7 @@ public:
         setCases();
         runCases();
         writeSummary();
-//        vortPartFlag = p->vortPartFlag; //VPP
     }
-    
 };
 
 

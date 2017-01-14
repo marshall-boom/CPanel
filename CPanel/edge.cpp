@@ -12,7 +12,6 @@
 #include "cpNode.h"
 #include "geometry.h"
 
-
 edge::edge(cpNode* n1,cpNode* n2,geometry* geom) : n1(n1), n2(n2), TE(false), geom(geom)
 {
     n1->addEdge(this);
@@ -31,7 +30,6 @@ void edge::addWakePan(wakePanel* w)
     wakePans.push_back(w);
     checkTE();
 }
-
 
 void edge::checkTE()
 {
@@ -81,8 +79,7 @@ void edge::checkTE()
         {
             // Check for sharp edge without wake shed (i.e. vertical tail).  Used to start streamline tracing
             double angle = acos(bodyPans[0]->getNormal().dot(bodyPans[1]->getNormal()));
-            if (angle > 4.7*M_PI/6 && bodyPans[0]->getID() == bodyPans[1]->getID())
-//            if (angle > 5*M_PI/6 && bodyPans[0]->getID() == bodyPans[1]->getID())
+            if (angle > 5*M_PI/6 && bodyPans[0]->getID() == bodyPans[1]->getID())
             {
                 TE = true;
                 n1->setTE();
@@ -107,25 +104,11 @@ bool edge::sameEdge(cpNode* node1, cpNode* node2)
 
 bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
 {
-    
     for (int i=0; i<2; i++)
     {
         if (bodyPans[i] != currentPan)
         {
             return bodyPans[i];
-        }
-    }
-    return nullptr;
-}
-
-wakePanel* edge::getOtherWakePan(wakePanel* currentPan)
-{
-
-    for (int i=0; i<wakePans.size(); i++)
-    {
-        if (wakePans[i] != currentPan)
-        {
-            return wakePans[i];
         }
     }
     return nullptr;
@@ -230,30 +213,3 @@ Eigen::Vector3d edge::TEgamma()
     }
     return gamma;
 }
-
-//double edge::neighbPanMu(wakePanel* currentPan){
-//    
-//    for (int i=0; i<wakePans.size(); i++)
-//    {
-//        if (wakePans[i] != currentPan)
-//        {
-//            return wakePans[i]->getMu();
-//        }
-//    }
-//    return 0;
-//}
-
-bool edge::containsNode(cpNode* node)
-{
-    if(node == this->getN1() || node == this->getN2())
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-

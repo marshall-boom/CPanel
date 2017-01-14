@@ -211,198 +211,20 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         Eigen::MatrixXd norms = Eigen::MatrixXd::Zero(nTris,3);
         if (normFlag)
         {
-            
             std::cout << "Reading Bezier Normals from Geometry File..." << std::endl;
             for (int i=0; i<nTris; i++)
             {
                 fid >> norms(i,0) >> norms(i,1) >> norms(i,2);
             }
         }
-                
+        
         std::cout << "Generating Panel Geometry..." << std::endl;
         
-        createSurfaces(connectivity,norms,allID,wakeIDs,vortPartFlag);
-        
+        createSurfaces(connectivity,norms,allID,wakeIDs);
         
         std::cout << "\tNodes : " << nodes.size() << std::endl;
         std::cout << "\tEdges : " << edges.size() << std::endl;
         std::cout << "\tPanels : " << nTris << std::endl;
-        
-        
-        
-        // The addition of wake panels begins after the body geometry is already finished...
-        if(vortPartFlag)
-        {
-            
-            // collect wakes
-                //delete wakes
-            
-            // Find time step if one is not provided. Might change this to be the average TEdist///
-            
-            // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the smallest time wake panel. Should put this in its own function.
-            if(dt == 0)
-            {
-                // Collect trailing edges
-                std::vector<edge*> Tedges;
-                for(int i=0; i<edges.size(); i++)
-                {
-                    if(edges[i]->isTE())
-                    {
-                        Tedges.push_back(edges[i]);
-                    }
-                }
-                
-                Eigen::MatrixXd TEdist = Eigen::MatrixXd::Ones(Tedges.size(),Tedges.size())*1e9; //initializing with large number so that the minimum distance between panel edges isn't from initialization
-                for(int i=0; i<Tedges.size(); i++)
-                {
-                    for(int j=0; j<Tedges.size(); j++)
-                    {
-                        if(i!=j)
-                        {
-                            TEdist(i,j) = std::abs((Tedges[i]->getMidPoint()-Tedges[j]->getMidPoint()).norm());
-                        }
-                    }
-                }
-                double minDist = TEdist.minCoeff();
-                dt = minDist/inputV;
-            }
-            
-            
-            std::cout << "Creating buffer wake..." << std::endl;
-            
-            std::cout << "\tCalculated time step : " << dt << " sec" << std::endl;
-
-            // VSP tags wakes with surface ID starting at 1000
-            for(int i=0; i<allID.size(); i++)
-            {
-                if(allID(i) >= 1000)
-                {
-                    std::cout << "ERROR: Please use input file without wake panels when using the vortex particle wake option." << std::endl;
-                    std::exit(0);
-                }
-            }
-            
-            // Finding the number of nodes and edges.
-            int numTEedges=0;
-            for(int i=0; i<edges.size();i++){
-                if(edges[i]->isTE()){
-                    numTEedges++;
-                }
-            }
-            int numTEnodes = 0;
-            for(int i=0; i<nodes.size();i++){
-                if(nodes[i]->isTE()){
-                    numTEnodes++;
-                }
-            }
-            
-            Eigen::MatrixXd VPwakeNodes(2*numTEnodes,3); // Is a matrix bc that's what CPanel already uses
-            Eigen::MatrixXi wakeConnectivity(2*numTEedges,4);
-            std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
-            int nodeCounter=0, panelCounter=0;
-            
-            for(int i=0;i<edges.size();i++)
-            {
-                if(edges[i]->isTE())
-                {
-                    // For all the trailing edges
-                    
-                    // Find the trialing nodes (by index?)
-                    int n1index = edges[i]->getN1()->getIndex();
-                    int n2index = edges[i]->getN2()->getIndex();
-                    int n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
-                    
-                    bool isUsed = false;
-                    for(int j=0; j<usedTENodesIndex.size(); j++)
-                    {
-                        if(n1index == usedTENodesIndex[j])
-                        {
-                            isUsed = true;
-                            n1firstIndex = newNodesIndex[2*j]+nNodes;
-                            n1secIndex = newNodesIndex[2*j+1]+nNodes;
-                        }
-                    }
-                    
-                    if(isUsed == false)
-                    { // If it's used, don't change the n1 index and then get the first and sec. node indices.
-                        usedTENodesIndex.push_back(n1index);
-                        
-                        double VinfLocal = Vinf(nodes[n1index]->getPnt()).norm();
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, VinfLocal);
-                        newNodesIndex.push_back(nodeCounter);
-                        n1firstIndex = nodeCounter+nNodes;
-                        nodeCounter++;
-                        
-                        VPwakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(dt, VinfLocal);
-                        newNodesIndex.push_back(nodeCounter);
-                        n1secIndex = nodeCounter+nNodes;
-                        nodeCounter++;
-                    }
-                    //N2
-                    isUsed = false;
-                    for(int j=0; j<usedTENodesIndex.size();j++)
-                    {
-                        if(n2index == usedTENodesIndex[j]){
-                            isUsed = true;
-                            n2firstIndex = newNodesIndex[2*j]+nNodes;
-                            n2secIndex = newNodesIndex[2*j+1]+nNodes;
-                        }
-                    }
-                     
-                    if(isUsed == false)
-                    {
-                        usedTENodesIndex.push_back(n2index);
-                        
-                        double VinfLocal = Vinf(nodes[n2index]->getPnt()).norm();
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, VinfLocal);
-                        newNodesIndex.push_back(nodeCounter);
-                        n2firstIndex = nodeCounter+nNodes;
-                        nodeCounter++;
-                        
-                        VPwakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(dt, VinfLocal);
-                        newNodesIndex.push_back(nodeCounter);
-                        n2secIndex = nodeCounter+nNodes;
-                        nodeCounter++;
-                    }
-                    
-                    wakeConnectivity.row(panelCounter) << n1index, n2index, n2firstIndex, n1firstIndex; //built TE first
-
-                    panelCounter++;
-                    //getTEiD?
-                    VPwakeID.push_back(1001); // First row of wake panels
-                    isFirstPanel.push_back(true);
-                    
-                    wakeConnectivity.row(panelCounter) << n1firstIndex, n2firstIndex, n2secIndex, n1secIndex;
-                    panelCounter++;
-                    VPwakeID.push_back(1001); // Second row
-                    isFirstPanel.push_back(false);
-
-                }
-            }
-            
-            
-            
-            // Append nodes and adjust connectivity
-            for (int i=0; i<VPwakeNodes.rows(); i++)
-            {
-                n = new cpNode(VPwakeNodes.row(i),i+nNodes);
-                nodes.push_back(n);
-            }
-            Eigen::MatrixXd wakeNorms = Eigen::MatrixXd::Zero(wakeConnectivity.rows(),3);
-            createVPWakeSurfaces(wakeConnectivity,wakeNorms,VPwakeID,isFirstPanel);
-            
-            nNodes = nodes.size();
-            nTris += wakes[0]->getPanels().size(); // Include buffer wake
-                        
-            std::cout << "\tPanels Added : " << wakes[0]->getPanels().size() << std::endl;
-
-            
-        }
-
-        ///*************************************************///
-        
-        
-    
         
         // Erase duplicate node pointers
         std::sort( nodes.begin(), nodes.end() );
@@ -413,12 +235,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             nodes[i]->setIndex(i);
         }
         
-        std::cout << "Building Panel Octree..." << std::endl;
+        std::cout << "Building Octree..." << std::endl;
 
         createOctree();
-//        std::string file_name = "/Users/C_Man/Desktop/CPanelCases/OctreeFiles/PanelOctree.txt";
-//        octreeFile* oct;
-//        oct = new octreeFile(file_name,&pOctree);
         
         // Set neighbors
         std::cout << "Finding Panel Neighbors..." << std::endl;
@@ -464,17 +283,8 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
         for (int i=0; i<wakes.size(); i++)
         {
-//            if(vortPartFlag){ //2BW
-//                if(i == 0){
-//                    tempW = wakes[i]->getPanels();
-//                    wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
-//                }else{
-//                    std::cout << "Per vortex particle method, " << i << " wakes are ignored..." << std::endl;
-//                }
-//            }else{
-                tempW = wakes[i]->getPanels();
-                wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
-//            }
+            tempW = wakes[i]->getPanels();
+            wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
         }
         
         
@@ -536,9 +346,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             std::cout << "\nInfluence Coefficients have already been calculated for a geometry with this name, would you like to use these coefficients?" << std::endl;
             std::cout << "\t< Y > - Yes, use coefficients." << std::endl;
             std::cout << "\t< N > - No, recalculate them." << std::endl;
-//            std::cin >> in;
+            std::cin >> in;
             std::cout << std::endl;
-//            if (in == "Y" || in == "y")
+            if (in == "Y")
             {
                 readInfCoeff();
                 read = true;
@@ -596,13 +406,6 @@ void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen:
     }
 }
 
-//geometry* geometry::buildWakePanels(&geom){
-//    pass in geom and pass out a new 
-//    get the global geom and add the buffer geom (which will only change for every case.)
-//    use and recollect geom
-//    
-//}
-
 double geometry::shortestEdge(const Eigen::MatrixXi &connectivity)
 {
     int nrows,ncols;
@@ -646,8 +449,7 @@ bool geometry::isLiftingSurf(int currentID, std::vector<int> wakeIDs)
     return false;
 }
 
-
-void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs, bool vortPartFlag)
+void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs)
 {
     surface* s = nullptr;
     wake* w = nullptr;
@@ -657,9 +459,9 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
     for (int i=0; i<nTris; i++)
     {
         std::vector<cpNode*> pNodes;
-        for(int j=0; j<connectivity.row(i).size(); j++){
-            pNodes.push_back(nodes[connectivity(i,j)]);
-        }
+        pNodes.push_back(nodes[connectivity(i,0)]);
+        pNodes.push_back(nodes[connectivity(i,1)]);
+        pNodes.push_back(nodes[connectivity(i,2)]);
         pEdges = panEdges(pNodes); //Create edge or find edge that already exists
         if (allID(i) <= 1000)
         {
@@ -673,55 +475,15 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
         }
         else
         {
-            if(vortPartFlag == false){
-                if (i==0 || allID(i)!=allID(i-1))
-                {
-                    w = new wake(allID(i),this);
-                    wakes.push_back(w);
-                }
-                
-                wPan = new wakePanel(pNodes,pEdges,norms.row(i),w,allID(i));
-                w->addPanel(wPan);
+            if (i==0 || allID(i)!=allID(i-1))
+            {
+                w = new wake(allID(i),this);
+                wakes.push_back(w);
             }
+            wPan = new wakePanel(pNodes,pEdges,norms.row(i),w,allID(i));
+            w->addPanel(wPan);
         }
     }
-}
-
-void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> isFirstPanel){ //rename to create first buffer wake?
-    
-    wake* w1 = nullptr;
-    wakePanel* wPan;
-    wakePanel* firstPan; // Used only to keep track of panel for setting bw2's parent
-    std::vector<edge*> pEdges;
-    
-    
-    for (int i=0; i<wakeConnectivity.rows(); i++)
-    {
-        std::vector<cpNode*> pNodes;
-        for(int j=0; j<wakeConnectivity.row(i).size(); j++)
-        {
-            pNodes.push_back(nodes[wakeConnectivity(i,j)]);
-        }
-        pEdges = panEdges(pNodes); // Create edges or find edges that already exists
-        
-        if(isFirstPanel[i])
-        {
-            if (i==0){ // CAN TAKE THIS OUT OF hERE AND PUT ABOVE THE LOOP
-                w1 = new wake(VPwakeID[i],this);
-                wakes.push_back(w1);
-            }
-            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
-            w1->addPanel(wPan);
-            firstPan = wPan;
-        }
-        else
-        {
-            wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w1,VPwakeID[i]);
-            wPan->setBufferParent(firstPan); // warning can be ignored because there will always be a first panel before the second
-            w2Panels.push_back(wPan);
-        }
-    }
-    
 }
 
 std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
@@ -790,7 +552,6 @@ void geometry::setInfCoeff()
     
     A.resize(nBodyPans,nBodyPans);
     B.resize(nBodyPans,nBodyPans);
-    C.resize(nBodyPans,w2Panels.size());
     
     Eigen::VectorXi percentage(9);
     percentage << 10,20,30,40,50,60,70,80,90;
@@ -799,8 +560,7 @@ void geometry::setInfCoeff()
     {
         for (int i=0; i<nBodyPans; i++)
         {
-        
-            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(i,j),A(i,j)); //influence of j on i
+            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(i,j),A(i,j));
         }
         for (int i=0; i<percentage.size(); i++)
         {
@@ -823,7 +583,6 @@ void geometry::setInfCoeff()
     
     for (int j=0; j<nWakePans; j++)
     {
-        
         wPanels[j]->interpPanels(interpPans,interpCoeff);
         indices = interpIndices(interpPans);
         for (int i=0; i<nBodyPans; i++)
@@ -843,18 +602,6 @@ void geometry::setInfCoeff()
         }
         
     }
-    
-    // Construct doublet influence coefficient matrices for bufferWake panels
-    
-    for (int i=0; i<nBodyPans; i++)
-    {
-        for (int j=0; j<w2Panels.size(); j++)
-        {
-            C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
-        }
-    }
-
-
     std::cout << "Complete" << std::endl;
 
     if (writeCoeffFlag)
@@ -862,7 +609,6 @@ void geometry::setInfCoeff()
         writeInfCoeff();
     }
 }
-
 
 Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
 {
@@ -928,7 +674,7 @@ void geometry::readInfCoeff()
     
     std::ifstream fid;
     fid.open(infCoeffFile);
-    int nPans, nW2Pans;
+    int nPans;
     fid >> nPans;
     A.resize(nPans,nPans);
     B.resize(nPans,nPans);
@@ -946,22 +692,6 @@ void geometry::readInfCoeff()
             fid >> B(i,j);
         }
     }
-    
-    if (vortPartFlag)
-    {
-        fid >> nW2Pans;
-        C.resize(nPans, nW2Pans);
-
-        for (int i=0; i<bPanels.size(); i++)
-        {
-            for (int j=0; j<w2Panels.size(); j++)
-            {
-                fid >> C(i,j);
-            }
-        }
-        
-    }
-    
     fid.close();
 }
 
@@ -986,19 +716,6 @@ void geometry::writeInfCoeff()
             fid << B(i,j) << "\t";
         }
         fid << "\n";
-    }
-    
-    if(vortPartFlag)
-    {
-        fid << w2Panels.size() << "\n";
-        for (int i=0; i<bPanels.size(); i++)
-        {
-            for (int j=0; j<w2Panels.size(); j++)
-            {
-                fid << C(i,j) << "\t";
-            }
-            fid << "\n";
-        }
     }
     fid.close();
 }
@@ -1073,39 +790,4 @@ void geometry::clusterCheck()
         fid << "\n";
     }
     fid.close();
-}
-
-void geometry::readBodyKinFile(){
-    std::ifstream fid;
-    fid.open(bodyKinFile);
-    
-    bodyKin.resize(6); //Just big enough to get the first time step.
-    
-    for(int j=0; j < 6; j++)
-    {
-        fid >> bodyKin(j);
-    }
-    
-    fid.close();
-}
-
-Eigen::Vector3d geometry::Vinf(Eigen::Vector3d POI)
-{
-    
-    if(!unsteadySim){
-        return {inputV,0,0};
-    }
-    
-    Eigen::Vector3d localVel;
-    
-    // U = U3 + (-q*z + r*y)
-    localVel.x() = bodyKin(0) - bodyKin(4)*POI.z() + bodyKin(5)*POI.y();
-    
-    // V = V3 + (-r*x + p*z)
-    localVel.y() = bodyKin(1) - bodyKin(5)*POI.x() + bodyKin(3)*POI.z();
-    
-    // W = W3 + (-p*y + q*x)
-    localVel.z() = bodyKin(2) - bodyKin(3)*POI.y() + bodyKin(4)*POI.x();
-    
-    return localVel;
 }

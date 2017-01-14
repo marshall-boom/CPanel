@@ -12,7 +12,6 @@
 #include "inputParams.h"
 #include "geometry.h"
 #include "cpFile.h"
-#include "cpNode.h"
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
