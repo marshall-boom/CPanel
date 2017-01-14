@@ -114,7 +114,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool v
             }
             
             if(unsteady){
-//                compVelocity();
+                compVelocity();
             }
             
             writeFiles();
@@ -377,7 +377,7 @@ bool cpCase::solutionConvergence(){
         trefftzPlaneAnalysis();
     }
     
-    std::cout << timeStep << " " << CL_trefftz << "  " << CD_trefftz << std::endl;
+//    std::cout << timeStep << " " << CL_trefftz << "  " << CD_trefftz << std::endl;
     
     double changeCD = std::abs((CD_trefftz - CDnm1)/CDnm1);
     double changeCL = std::abs((CL_trefftz - CLnm1)/CLnm1);
@@ -457,7 +457,8 @@ void cpCase::compVelocity()
     CL.push_back(Fbody.z());
     CM_x.push_back(CM(1));
 
-    
+    std::cout << Fbody.z() << "   " << CM(1) << std::endl;
+
 //    if(liftDist)
 //    {
 //        std::cout << "panY = [";

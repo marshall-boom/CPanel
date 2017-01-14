@@ -1091,6 +1091,11 @@ void geometry::readBodyKinFile(){
 
 Eigen::Vector3d geometry::Vinf(Eigen::Vector3d POI)
 {
+    
+    if(!unsteadySim){
+        return {inputV,0,0};
+    }
+    
     Eigen::Vector3d localVel;
     
     // U = U3 + (-q*z + r*y)
