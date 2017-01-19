@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:CPanel_Base.xcodeproj">
+      location = "self:CPanel_BEM.xcodeproj">
    </FileRef>
 </Workspace>

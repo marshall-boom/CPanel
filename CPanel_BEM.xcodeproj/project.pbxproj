@@ -16,9 +16,9 @@
 		01C0DD6D1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
 		01C0DD6E1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
 		01C0DD6F1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
-		01C0DD701E3179F400F32ECC /* particleOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* particleOctree.cpp */; };
-		01C0DD711E3179F400F32ECC /* particleOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* particleOctree.cpp */; };
-		01C0DD721E3179F400F32ECC /* particleOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* particleOctree.cpp */; };
+		01C0DD701E3179F400F32ECC /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
+		01C0DD711E3179F400F32ECC /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
+		01C0DD721E3179F400F32ECC /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
 		01C0DD731E3179F400F32ECC /* vortexFil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD681E3179F400F32ECC /* vortexFil.cpp */; };
 		01C0DD741E3179F400F32ECC /* vortexFil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD681E3179F400F32ECC /* vortexFil.cpp */; };
 		01C0DD751E3179F400F32ECC /* vortexFil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD681E3179F400F32ECC /* vortexFil.cpp */; };
@@ -158,14 +158,14 @@
 /* Begin PBXFileReference section */
 		01B5A1EA1DDA6F6700DCB351 /* streamline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = streamline.cpp; path = CPanel/streamline.cpp; sourceTree = SOURCE_ROOT; };
 		01B5A1EB1DDA6F6700DCB351 /* streamline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = streamline.h; path = CPanel/streamline.h; sourceTree = SOURCE_ROOT; };
-		01C0DD621E3179F400F32ECC /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particle.cpp; path = ../CPanel/particle.cpp; sourceTree = "<group>"; };
-		01C0DD631E3179F400F32ECC /* particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particle.h; path = ../CPanel/particle.h; sourceTree = "<group>"; };
-		01C0DD641E3179F400F32ECC /* particleFMM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particleFMM.cpp; path = ../CPanel/particleFMM.cpp; sourceTree = "<group>"; };
-		01C0DD651E3179F400F32ECC /* particleFMM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleFMM.h; path = ../CPanel/particleFMM.h; sourceTree = "<group>"; };
-		01C0DD661E3179F400F32ECC /* particleOctree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particleOctree.cpp; path = ../CPanel/particleOctree.cpp; sourceTree = "<group>"; };
-		01C0DD671E3179F400F32ECC /* particleOctree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleOctree.h; path = ../CPanel/particleOctree.h; sourceTree = "<group>"; };
-		01C0DD681E3179F400F32ECC /* vortexFil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vortexFil.cpp; path = ../CPanel/vortexFil.cpp; sourceTree = "<group>"; };
-		01C0DD691E3179F400F32ECC /* vortexFil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vortexFil.h; path = ../CPanel/vortexFil.h; sourceTree = "<group>"; };
+		01C0DD621E3179F400F32ECC /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particle.cpp; path = CPanel/particle.cpp; sourceTree = "<group>"; };
+		01C0DD631E3179F400F32ECC /* particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particle.h; path = CPanel/particle.h; sourceTree = "<group>"; };
+		01C0DD641E3179F400F32ECC /* particleFMM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particleFMM.cpp; path = CPanel/particleFMM.cpp; sourceTree = "<group>"; };
+		01C0DD651E3179F400F32ECC /* particleFMM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleFMM.h; path = CPanel/particleFMM.h; sourceTree = "<group>"; };
+		01C0DD661E3179F400F32ECC /* panelOctree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = panelOctree.cpp; path = CPanel/panelOctree.cpp; sourceTree = SOURCE_ROOT; };
+		01C0DD671E3179F400F32ECC /* particleOctree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleOctree.h; path = CPanel/particleOctree.h; sourceTree = "<group>"; };
+		01C0DD681E3179F400F32ECC /* vortexFil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vortexFil.cpp; path = CPanel/vortexFil.cpp; sourceTree = "<group>"; };
+		01C0DD691E3179F400F32ECC /* vortexFil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vortexFil.h; path = CPanel/vortexFil.h; sourceTree = "<group>"; };
 		83039DFB191152A300271526 /* CPanel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPanel; sourceTree = BUILT_PRODUCTS_DIR; };
 		83039DFD191152A300271526 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = CPanel/main.cpp; sourceTree = SOURCE_ROOT; };
 		83039DFF191152A300271526 /* Solver.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; name = Solver.1; path = CPanel/Solver.1; sourceTree = SOURCE_ROOT; };
@@ -302,7 +302,7 @@
 				01C0DD631E3179F400F32ECC /* particle.h */,
 				01C0DD641E3179F400F32ECC /* particleFMM.cpp */,
 				01C0DD651E3179F400F32ECC /* particleFMM.h */,
-				01C0DD661E3179F400F32ECC /* particleOctree.cpp */,
+				01C0DD661E3179F400F32ECC /* panelOctree.cpp */,
 				01C0DD671E3179F400F32ECC /* particleOctree.h */,
 				01C0DD681E3179F400F32ECC /* vortexFil.cpp */,
 				01C0DD691E3179F400F32ECC /* vortexFil.h */,
@@ -561,7 +561,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83B4B8BB18F0A90200EEBC34 /* Build configuration list for PBXProject "CPanel" */;
+			buildConfigurationList = 83B4B8BB18F0A90200EEBC34 /* Build configuration list for PBXProject "CPanel_BEM" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -590,7 +590,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				83039E1619129DA600271526 /* panel.cpp in Sources */,
-				01C0DD711E3179F400F32ECC /* particleOctree.cpp in Sources */,
+				01C0DD711E3179F400F32ECC /* panelOctree.cpp in Sources */,
 				83039DFE191152A300271526 /* main.cpp in Sources */,
 				834098721A7991E8005B71C5 /* cpFile.cpp in Sources */,
 				8358C3E81A0C2767004E94E0 /* wake.cpp in Sources */,
@@ -636,7 +636,7 @@
 				834845EB1A74647500975384 /* panelOctree.cpp in Sources */,
 				01C0DD6F1E3179F400F32ECC /* particleFMM.cpp in Sources */,
 				834845E71A74646200975384 /* surface.cpp in Sources */,
-				01C0DD721E3179F400F32ECC /* particleOctree.cpp in Sources */,
+				01C0DD721E3179F400F32ECC /* panelOctree.cpp in Sources */,
 				834845ED1A74648000975384 /* bodyPanel.cpp in Sources */,
 				01C0DD6C1E3179F400F32ECC /* particle.cpp in Sources */,
 				834845E91A74646E00975384 /* wake.cpp in Sources */,
@@ -680,7 +680,7 @@
 			files = (
 				01B5A1ED1DDA6F6700DCB351 /* streamline.cpp in Sources */,
 				01C0DD731E3179F400F32ECC /* vortexFil.cpp in Sources */,
-				01C0DD701E3179F400F32ECC /* particleOctree.cpp in Sources */,
+				01C0DD701E3179F400F32ECC /* panelOctree.cpp in Sources */,
 				01C0DD6A1E3179F400F32ECC /* particle.cpp in Sources */,
 				01C0DD6D1E3179F400F32ECC /* particleFMM.cpp in Sources */,
 			);
@@ -1331,7 +1331,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83B4B8BB18F0A90200EEBC34 /* Build configuration list for PBXProject "CPanel" */ = {
+		83B4B8BB18F0A90200EEBC34 /* Build configuration list for PBXProject "CPanel_BEM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83B4B8C718F0A90200EEBC34 /* Debug */,
