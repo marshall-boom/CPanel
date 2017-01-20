@@ -1067,7 +1067,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "244"
             endingLineNumber = "244"
-            landmarkName = "wake::wakeStrength(double y)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1083,7 +1083,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "555"
             endingLineNumber = "555"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1099,7 +1099,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "578"
             endingLineNumber = "578"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1199,7 +1199,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "365"
             endingLineNumber = "365"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1215,7 +1215,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "343"
             endingLineNumber = "343"
-            landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
+            landmarkName = "wake::particlePntInWakeY(Eigen::Vector3d pt , particle* P1 , particle* P2)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1231,7 +1231,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "374"
             endingLineNumber = "374"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1247,7 +1247,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "257"
             endingLineNumber = "257"
-            landmarkName = "wake::wakeStrength(double y)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1262,7 +1262,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "351"
-            endingLineNumber = "351">
+            endingLineNumber = "351"
+            landmarkName = "wake::particlePntInWakeY(Eigen::Vector3d pt , particle* P1 , particle* P2)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1277,7 +1279,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "369"
             endingLineNumber = "369"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1309,7 +1311,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "194"
             endingLineNumber = "194"
-            landmarkName = "wake::lambVectorInt(const Eigen::Vector3d &amp;Vinf,Eigen::VectorXd &amp;yLoc)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1357,7 +1359,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "290"
             endingLineNumber = "290"
-            landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1453,7 +1455,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "204"
             endingLineNumber = "204"
-            landmarkName = "wake::lambVectorInt(const Eigen::Vector3d &amp;Vinf,Eigen::VectorXd &amp;yLoc)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1469,7 +1471,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "203"
             endingLineNumber = "203"
-            landmarkName = "wake::lambVectorInt(const Eigen::Vector3d &amp;Vinf,Eigen::VectorXd &amp;yLoc)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1485,7 +1487,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "195"
             endingLineNumber = "195"
-            landmarkName = "wake::lambVectorInt(const Eigen::Vector3d &amp;Vinf,Eigen::VectorXd &amp;yLoc)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1517,7 +1519,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "376"
             endingLineNumber = "376"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1533,7 +1535,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "385"
             endingLineNumber = "385"
-            landmarkName = "wake::pntInWake(double x, double y)"
+            landmarkName = "wake::dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1565,7 +1567,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "269"
             endingLineNumber = "269"
-            landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
+            landmarkName = "wake::trefftzPlaneVP(double Vinf,double Sref, std::vector&lt;particle*&gt;* particles, int numSimSteps)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

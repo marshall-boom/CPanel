@@ -9,19 +9,19 @@
 /* Begin PBXBuildFile section */
 		012A35081D90A16700DDE256 /* octreeFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E347D61A17F2790054842E /* octreeFile.cpp */; };
 		016D1BCA1D6B6C3F00B2C992 /* inputParams.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8346AFD91A69B861007745C4 /* inputParams.cpp */; };
-		01B5A1ED1DDA6F6700DCB351 /* streamline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01B5A1EA1DDA6F6700DCB351 /* streamline.cpp */; };
-		01C0DD6A1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
 		01C0DD6B1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
 		01C0DD6C1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
-		01C0DD6D1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
 		01C0DD6E1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
 		01C0DD6F1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
-		01C0DD701E3179F400F32ECC /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
 		01C0DD711E3179F400F32ECC /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
 		01C0DD721E3179F400F32ECC /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
-		01C0DD731E3179F400F32ECC /* vortexFil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD681E3179F400F32ECC /* vortexFil.cpp */; };
 		01C0DD741E3179F400F32ECC /* vortexFil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD681E3179F400F32ECC /* vortexFil.cpp */; };
 		01C0DD751E3179F400F32ECC /* vortexFil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD681E3179F400F32ECC /* vortexFil.cpp */; };
+		01D856FD1E3182E800BB737F /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
+		01D856FF1E31852500BB737F /* particleOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01D856FE1E31852500BB737F /* particleOctree.cpp */; };
+		01D857001E31853700BB737F /* particleOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01D856FE1E31852500BB737F /* particleOctree.cpp */; };
+		01D857011E31853800BB737F /* particleOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01D856FE1E31852500BB737F /* particleOctree.cpp */; };
+		01D857021E31871100BB737F /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD661E3179F400F32ECC /* panelOctree.cpp */; };
 		83039DFE191152A300271526 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039DFD191152A300271526 /* main.cpp */; };
 		83039E00191152A300271526 /* Solver.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 83039DFF191152A300271526 /* Solver.1 */; };
 		83039E07191152C300271526 /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039E05191152C300271526 /* geometry.cpp */; };
@@ -41,7 +41,6 @@
 		834845E81A74646800975384 /* liftingSurf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83EF7A2519EF004700E54C6E /* liftingSurf.cpp */; };
 		834845E91A74646E00975384 /* wake.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8358C3E51A0C2767004E94E0 /* wake.cpp */; };
 		834845EA1A74647200975384 /* wakeLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83BB320B19FD508C005EE19C /* wakeLine.cpp */; };
-		834845EB1A74647500975384 /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83AEFF721918068000A697F5 /* panelOctree.cpp */; };
 		834845EC1A74647900975384 /* panel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039E1419129DA600271526 /* panel.cpp */; };
 		834845ED1A74648000975384 /* bodyPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039E0E19129C7F00271526 /* bodyPanel.cpp */; };
 		834845EE1A74648700975384 /* wakePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039E1119129C9100271526 /* wakePanel.cpp */; };
@@ -68,14 +67,12 @@
 		83A81036191BD7140077AD86 /* testObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83A81034191BD7140077AD86 /* testObj.cpp */; };
 		83A88CA9190F58F9006A8CB2 /* libcpptest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 83B4B8F418F0AAC900EEBC34 /* libcpptest.a */; };
 		83AE7F511918637200CEC299 /* surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83AE7F501918637200CEC299 /* surface.cpp */; };
-		83AEFF741918068000A697F5 /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83AEFF721918068000A697F5 /* panelOctree.cpp */; };
 		83B4B8FF18F0AF4F00EEBC34 /* Octree.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 83B4B8FE18F0AF4F00EEBC34 /* Octree.1 */; };
 		83B5BDAE19D310B100506A12 /* convexHull.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83B5BDAC19D310B100506A12 /* convexHull.cpp */; };
 		83BB320D19FD508C005EE19C /* wakeLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83BB320B19FD508C005EE19C /* wakeLine.cpp */; };
 		83E347D81A17F2790054842E /* octreeFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E347D61A17F2790054842E /* octreeFile.cpp */; };
 		83E347D91A17F2790054842E /* octreeFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E347D61A17F2790054842E /* octreeFile.cpp */; };
 		83E347DA1A1806A20054842E /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039E05191152C300271526 /* geometry.cpp */; };
-		83E347DB1A1806CD0054842E /* panelOctree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83AEFF721918068000A697F5 /* panelOctree.cpp */; };
 		83E347DC1A1806E10054842E /* liftingSurf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83EF7A2519EF004700E54C6E /* liftingSurf.cpp */; };
 		83E347DD1A1806E60054842E /* surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83AE7F501918637200CEC299 /* surface.cpp */; };
 		83E347DE1A1806EE0054842E /* panel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83039E1419129DA600271526 /* panel.cpp */; };
@@ -158,14 +155,15 @@
 /* Begin PBXFileReference section */
 		01B5A1EA1DDA6F6700DCB351 /* streamline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = streamline.cpp; path = CPanel/streamline.cpp; sourceTree = SOURCE_ROOT; };
 		01B5A1EB1DDA6F6700DCB351 /* streamline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = streamline.h; path = CPanel/streamline.h; sourceTree = SOURCE_ROOT; };
-		01C0DD621E3179F400F32ECC /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particle.cpp; path = CPanel/particle.cpp; sourceTree = "<group>"; };
-		01C0DD631E3179F400F32ECC /* particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particle.h; path = CPanel/particle.h; sourceTree = "<group>"; };
-		01C0DD641E3179F400F32ECC /* particleFMM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particleFMM.cpp; path = CPanel/particleFMM.cpp; sourceTree = "<group>"; };
-		01C0DD651E3179F400F32ECC /* particleFMM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleFMM.h; path = CPanel/particleFMM.h; sourceTree = "<group>"; };
+		01C0DD621E3179F400F32ECC /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particle.cpp; path = CPanel/particle.cpp; sourceTree = SOURCE_ROOT; };
+		01C0DD631E3179F400F32ECC /* particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particle.h; path = CPanel/particle.h; sourceTree = SOURCE_ROOT; };
+		01C0DD641E3179F400F32ECC /* particleFMM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particleFMM.cpp; path = CPanel/particleFMM.cpp; sourceTree = SOURCE_ROOT; };
+		01C0DD651E3179F400F32ECC /* particleFMM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleFMM.h; path = CPanel/particleFMM.h; sourceTree = SOURCE_ROOT; };
 		01C0DD661E3179F400F32ECC /* panelOctree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = panelOctree.cpp; path = CPanel/panelOctree.cpp; sourceTree = SOURCE_ROOT; };
-		01C0DD671E3179F400F32ECC /* particleOctree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleOctree.h; path = CPanel/particleOctree.h; sourceTree = "<group>"; };
-		01C0DD681E3179F400F32ECC /* vortexFil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vortexFil.cpp; path = CPanel/vortexFil.cpp; sourceTree = "<group>"; };
-		01C0DD691E3179F400F32ECC /* vortexFil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vortexFil.h; path = CPanel/vortexFil.h; sourceTree = "<group>"; };
+		01C0DD671E3179F400F32ECC /* particleOctree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleOctree.h; path = CPanel/particleOctree.h; sourceTree = SOURCE_ROOT; };
+		01C0DD681E3179F400F32ECC /* vortexFil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vortexFil.cpp; path = CPanel/vortexFil.cpp; sourceTree = SOURCE_ROOT; };
+		01C0DD691E3179F400F32ECC /* vortexFil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vortexFil.h; path = CPanel/vortexFil.h; sourceTree = SOURCE_ROOT; };
+		01D856FE1E31852500BB737F /* particleOctree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particleOctree.cpp; path = CPanel/particleOctree.cpp; sourceTree = SOURCE_ROOT; };
 		83039DFB191152A300271526 /* CPanel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPanel; sourceTree = BUILT_PRODUCTS_DIR; };
 		83039DFD191152A300271526 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = CPanel/main.cpp; sourceTree = SOURCE_ROOT; };
 		83039DFF191152A300271526 /* Solver.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; name = Solver.1; path = CPanel/Solver.1; sourceTree = SOURCE_ROOT; };
@@ -219,7 +217,6 @@
 		83A88C9719099FA2006A8CB2 /* member.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = member.h; sourceTree = "<group>"; };
 		83A88C9C190F56F7006A8CB2 /* ReadTriFileTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ReadTriFileTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		83AE7F501918637200CEC299 /* surface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = surface.cpp; path = CPanel/surface.cpp; sourceTree = SOURCE_ROOT; };
-		83AEFF721918068000A697F5 /* panelOctree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = panelOctree.cpp; path = CPanel/panelOctree.cpp; sourceTree = SOURCE_ROOT; };
 		83AEFF731918068000A697F5 /* panelOctree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = panelOctree.h; path = CPanel/panelOctree.h; sourceTree = SOURCE_ROOT; };
 		83B4B8F418F0AAC900EEBC34 /* libcpptest.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcpptest.a; path = ../../../../../../../usr/local/lib/libcpptest.a; sourceTree = "<group>"; };
 		83B4B8FA18F0AF4F00EEBC34 /* Octree */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Octree; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -298,14 +295,6 @@
 		83039DFC191152A300271526 /* CPanel */ = {
 			isa = PBXGroup;
 			children = (
-				01C0DD621E3179F400F32ECC /* particle.cpp */,
-				01C0DD631E3179F400F32ECC /* particle.h */,
-				01C0DD641E3179F400F32ECC /* particleFMM.cpp */,
-				01C0DD651E3179F400F32ECC /* particleFMM.h */,
-				01C0DD661E3179F400F32ECC /* panelOctree.cpp */,
-				01C0DD671E3179F400F32ECC /* particleOctree.h */,
-				01C0DD681E3179F400F32ECC /* vortexFil.cpp */,
-				01C0DD691E3179F400F32ECC /* vortexFil.h */,
 				83039E0E19129C7F00271526 /* bodyPanel.cpp */,
 				83039E0F19129C7F00271526 /* bodyPanel.h */,
 				839E4E911A77F01700E24949 /* bodyStreamline.cpp */,
@@ -335,13 +324,21 @@
 				83E347D71A17F2790054842E /* octreeFile.h */,
 				83039E1419129DA600271526 /* panel.cpp */,
 				83039E1519129DA600271526 /* panel.h */,
-				83AEFF721918068000A697F5 /* panelOctree.cpp */,
+				01C0DD661E3179F400F32ECC /* panelOctree.cpp */,
 				83AEFF731918068000A697F5 /* panelOctree.h */,
+				01C0DD621E3179F400F32ECC /* particle.cpp */,
+				01C0DD631E3179F400F32ECC /* particle.h */,
+				01C0DD641E3179F400F32ECC /* particleFMM.cpp */,
+				01C0DD651E3179F400F32ECC /* particleFMM.h */,
+				01D856FE1E31852500BB737F /* particleOctree.cpp */,
+				01C0DD671E3179F400F32ECC /* particleOctree.h */,
 				83039DFF191152A300271526 /* Solver.1 */,
 				01B5A1EA1DDA6F6700DCB351 /* streamline.cpp */,
 				01B5A1EB1DDA6F6700DCB351 /* streamline.h */,
 				83AE7F501918637200CEC299 /* surface.cpp */,
 				83039E0919129C4D00271526 /* surface.h */,
+				01C0DD681E3179F400F32ECC /* vortexFil.cpp */,
+				01C0DD691E3179F400F32ECC /* vortexFil.h */,
 				8348F5871A253542003FDE1B /* VTUfile.cpp */,
 				8348F5881A253542003FDE1B /* VTUfile.h */,
 				8358C3E51A0C2767004E94E0 /* wake.cpp */,
@@ -590,11 +587,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				83039E1619129DA600271526 /* panel.cpp in Sources */,
+				01D857001E31853700BB737F /* particleOctree.cpp in Sources */,
 				01C0DD711E3179F400F32ECC /* panelOctree.cpp in Sources */,
 				83039DFE191152A300271526 /* main.cpp in Sources */,
 				834098721A7991E8005B71C5 /* cpFile.cpp in Sources */,
 				8358C3E81A0C2767004E94E0 /* wake.cpp in Sources */,
-				83AEFF741918068000A697F5 /* panelOctree.cpp in Sources */,
 				83039E1319129C9100271526 /* wakePanel.cpp in Sources */,
 				839E4E931A77F01800E24949 /* bodyStreamline.cpp in Sources */,
 				01C0DD6E1E3179F400F32ECC /* particleFMM.cpp in Sources */,
@@ -633,7 +630,7 @@
 				834845F01A74649000975384 /* convexHull.cpp in Sources */,
 				834845E61A74645B00975384 /* geometry.cpp in Sources */,
 				834845EE1A74648700975384 /* wakePanel.cpp in Sources */,
-				834845EB1A74647500975384 /* panelOctree.cpp in Sources */,
+				01D857011E31853800BB737F /* particleOctree.cpp in Sources */,
 				01C0DD6F1E3179F400F32ECC /* particleFMM.cpp in Sources */,
 				834845E71A74646200975384 /* surface.cpp in Sources */,
 				01C0DD721E3179F400F32ECC /* panelOctree.cpp in Sources */,
@@ -678,11 +675,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				01B5A1ED1DDA6F6700DCB351 /* streamline.cpp in Sources */,
-				01C0DD731E3179F400F32ECC /* vortexFil.cpp in Sources */,
-				01C0DD701E3179F400F32ECC /* panelOctree.cpp in Sources */,
-				01C0DD6A1E3179F400F32ECC /* particle.cpp in Sources */,
-				01C0DD6D1E3179F400F32ECC /* particleFMM.cpp in Sources */,
+				01D856FD1E3182E800BB737F /* particleFMM.cpp in Sources */,
+				01D856FF1E31852500BB737F /* particleOctree.cpp in Sources */,
+				01D857021E31871100BB737F /* panelOctree.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -695,7 +690,6 @@
 				8348F58A1A253543003FDE1B /* VTUfile.cpp in Sources */,
 				83E347D91A17F2790054842E /* octreeFile.cpp in Sources */,
 				83E347DC1A1806E10054842E /* liftingSurf.cpp in Sources */,
-				83E347DB1A1806CD0054842E /* panelOctree.cpp in Sources */,
 				83E347DA1A1806A20054842E /* geometry.cpp in Sources */,
 				83E347E01A1807130054842E /* convexHull.cpp in Sources */,
 				83E347E21A18071A0054842E /* wakePanel.cpp in Sources */,
