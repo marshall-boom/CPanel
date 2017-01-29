@@ -25,6 +25,10 @@ class wakePanel : public panel
     bool TEpanel;
     wake* parentWake;
     
+    // VP mods
+    wakePanel* bufferParent = nullptr;
+
+    
 public:
     wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
     
@@ -46,6 +50,9 @@ public:
     bodyPanel* getLower() {return lowerPan;}
     edge* getTE();
     bool isTEpanel() {return TEpanel;}
+    
+    void setBufferParent( wakePanel* wPan ){ bufferParent = wPan;};
+    bool isSecondRow = false;
 };
 
 #endif /* defined(__CPanel__wakePanel__) */

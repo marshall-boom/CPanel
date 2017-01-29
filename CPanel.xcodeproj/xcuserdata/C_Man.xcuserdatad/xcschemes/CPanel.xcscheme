@@ -20,6 +20,20 @@
                ReferencedContainer = "container:CPanel_Base.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "83039DFA191152A300271526"
+               BuildableName = "CPanel"
+               BlueprintName = "CPanel"
+               ReferencedContainer = "container:CPanel.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -44,6 +58,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
+      customWorkingDirectory = "/Users/C_Man/code/CPanel/CPanel"
       buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
@@ -54,12 +69,12 @@
             BlueprintIdentifier = "83039DFA191152A300271526"
             BuildableName = "CPanel"
             BlueprintName = "CPanel"
-            ReferencedContainer = "container:CPanel_Base.xcodeproj">
+            ReferencedContainer = "container:CPanel.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/C_Man/Desktop/CPanelCases/baseCPanelTest/4412UltraCoarse/4412UltraCoarse.CPin"
+            argument = "/Users/C_Man/Desktop/CPanelCases/testWing2/testWing2.CPin"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

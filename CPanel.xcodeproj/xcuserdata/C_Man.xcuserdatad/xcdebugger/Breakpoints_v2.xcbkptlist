@@ -14,9 +14,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "936"
-            endingLineNumber = "936"
-            landmarkName = "cpCase::collapseBufferWake()"
-            landmarkType = "5">
+            endingLineNumber = "936">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -31,7 +29,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "117"
             endingLineNumber = "117"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::bodyToWind(const Eigen::Vector3d &amp;vec)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -46,9 +44,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "704"
-            endingLineNumber = "704"
-            landmarkName = "cpCase::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &amp;nodeMat)"
-            landmarkType = "5">
+            endingLineNumber = "704">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -63,7 +59,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "115"
             endingLineNumber = "115"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::bodyToWind(const Eigen::Vector3d &amp;vec)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -78,9 +74,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1102"
-            endingLineNumber = "1102"
-            landmarkName = "cpCase::velocityInflFromEverything(Eigen::Vector3d POI)"
-            landmarkType = "5">
+            endingLineNumber = "1102">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -94,9 +88,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1109"
-            endingLineNumber = "1109"
-            landmarkName = "cpCase::velocityInflFromEverything(Eigen::Vector3d POI)"
-            landmarkType = "5">
+            endingLineNumber = "1109">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -110,9 +102,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "944"
-            endingLineNumber = "944"
-            landmarkName = "cpCase::collapseBufferWake()"
-            landmarkType = "5">
+            endingLineNumber = "944">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -126,9 +116,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "891"
-            endingLineNumber = "891"
-            landmarkName = "cpCase::convectBufferWake()"
-            landmarkType = "5">
+            endingLineNumber = "891">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -142,9 +130,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1042"
-            endingLineNumber = "1042"
-            landmarkName = "cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)"
-            landmarkType = "5">
+            endingLineNumber = "1042">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -158,9 +144,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1038"
-            endingLineNumber = "1038"
-            landmarkName = "cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)"
-            landmarkType = "5">
+            endingLineNumber = "1038">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -174,9 +158,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1037"
-            endingLineNumber = "1037"
-            landmarkName = "cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)"
-            landmarkType = "5">
+            endingLineNumber = "1037">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -190,9 +172,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1191"
-            endingLineNumber = "1191"
-            landmarkName = "cpCase::convectParticles()"
-            landmarkType = "5">
+            endingLineNumber = "1191">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -206,9 +186,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "591"
-            endingLineNumber = "591"
-            landmarkName = "cpCase::writeFiles()"
-            landmarkType = "5">
+            endingLineNumber = "591">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -222,9 +200,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "590"
-            endingLineNumber = "590"
-            landmarkName = "cpCase::writeFiles()"
-            landmarkType = "5">
+            endingLineNumber = "590">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -238,9 +214,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "587"
-            endingLineNumber = "587"
-            landmarkName = "cpCase::writeFiles()"
-            landmarkType = "5">
+            endingLineNumber = "587">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -255,7 +229,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "207"
             endingLineNumber = "207"
-            landmarkName = "cpCase::Vinf(Eigen::Vector3d POI)"
+            landmarkName = "cpCase::createStreamlines()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -271,7 +245,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "213"
             endingLineNumber = "213"
-            landmarkName = "cpCase::Vinf(Eigen::Vector3d POI)"
+            landmarkName = "cpCase::createStreamlines()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -286,7 +260,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "223"
-            endingLineNumber = "223">
+            endingLineNumber = "223"
+            landmarkName = "cpCase::createStreamlines()"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -317,7 +293,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "152"
             endingLineNumber = "152"
-            landmarkName = "inputParams::set()"
+            landmarkName = "inputParams::checkGeomFile()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -333,7 +309,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "150"
             endingLineNumber = "150"
-            landmarkName = "inputParams::set()"
+            landmarkName = "inputParams::checkGeomFile()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -363,7 +339,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "209"
             endingLineNumber = "209"
-            landmarkName = "cpCase::Vinf(Eigen::Vector3d POI)"
+            landmarkName = "cpCase::createStreamlines()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -379,7 +355,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "217"
             endingLineNumber = "217"
-            landmarkName = "cpCase::Vinf(Eigen::Vector3d POI)"
+            landmarkName = "cpCase::createStreamlines()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -394,9 +370,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1188"
-            endingLineNumber = "1188"
-            landmarkName = "cpCase::convectParticles()"
-            landmarkType = "5">
+            endingLineNumber = "1188">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -410,9 +384,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1203"
-            endingLineNumber = "1203"
-            landmarkName = "cpCase::convectParticles()"
-            landmarkType = "5">
+            endingLineNumber = "1203">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -436,11 +408,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CPanel/geometry.cpp"
-            timestampString = "498632469.698477"
+            timestampString = "507355677.710191"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "236"
-            endingLineNumber = "236"
+            startingLineNumber = "268"
+            endingLineNumber = "268"
             landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
             landmarkType = "5">
          </BreakpointContent>
@@ -456,9 +428,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1292"
-            endingLineNumber = "1292"
-            landmarkName = "cpCase::particleStrengthUpdateGaussian()"
-            landmarkType = "5">
+            endingLineNumber = "1292">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -472,9 +442,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1336"
-            endingLineNumber = "1336"
-            landmarkName = "cpCase::particleStrengthUpdateGaussian()"
-            landmarkType = "5">
+            endingLineNumber = "1336">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -488,9 +456,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1342"
-            endingLineNumber = "1342"
-            landmarkName = "cpCase::particleStrengthUpdateGaussian()"
-            landmarkType = "5">
+            endingLineNumber = "1342">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -504,9 +470,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1348"
-            endingLineNumber = "1348"
-            landmarkName = "cpCase::particleStrengthUpdateGaussian()"
-            landmarkType = "5">
+            endingLineNumber = "1348">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -520,9 +484,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1363"
-            endingLineNumber = "1363"
-            landmarkName = "cpCase::particleStrengthUpdateGaussian()"
-            landmarkType = "5">
+            endingLineNumber = "1363">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -536,9 +498,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1290"
-            endingLineNumber = "1290"
-            landmarkName = "cpCase::particleStrengthUpdateGaussian()"
-            landmarkType = "5">
+            endingLineNumber = "1290">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -552,9 +512,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1035"
-            endingLineNumber = "1035"
-            landmarkName = "cpCase::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum)"
-            landmarkType = "5">
+            endingLineNumber = "1035">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -569,7 +527,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "92"
             endingLineNumber = "92"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::windToBody(double V, double alpha, double beta)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -585,7 +543,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "86"
             endingLineNumber = "86"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -601,7 +559,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "122"
             endingLineNumber = "122"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::setSourceStrengths()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -644,9 +602,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1194"
-            endingLineNumber = "1194"
-            landmarkName = "cpCase::convectParticles()"
-            landmarkType = "5">
+            endingLineNumber = "1194">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -660,9 +616,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1193"
-            endingLineNumber = "1193"
-            landmarkName = "cpCase::convectParticles()"
-            landmarkType = "5">
+            endingLineNumber = "1193">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -676,9 +630,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1143"
-            endingLineNumber = "1143"
-            landmarkName = "cpCase::velocityInflFromEverything(particle* part)"
-            landmarkType = "5">
+            endingLineNumber = "1143">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -692,9 +644,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "330"
-            endingLineNumber = "330"
-            landmarkName = "cpCase::solveVPmatrixEq()"
-            landmarkType = "5">
+            endingLineNumber = "330">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -708,8 +658,22 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "329"
-            endingLineNumber = "329"
-            landmarkName = "cpCase::solveVPmatrixEq()"
+            endingLineNumber = "329">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/cpCase.cpp"
+            timestampString = "500852317.786597"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "399"
+            endingLineNumber = "399"
+            landmarkName = "cpCase::writeSpanwiseData(boost::filesystem::path path)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -725,23 +689,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "399"
             endingLineNumber = "399"
-            landmarkName = "cpCase::compVelocity()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "CPanel/cpCase.cpp"
-            timestampString = "500852317.786597"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "399"
-            endingLineNumber = "399"
-            landmarkName = "cpCase::compVelocity()"
+            landmarkName = "cpCase::writeSpanwiseData(boost::filesystem::path path)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -784,12 +732,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CPanel/geometry.cpp"
-            timestampString = "499210420.956425"
+            timestampString = "507355677.710191"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "275"
-            endingLineNumber = "275"
-            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            startingLineNumber = "755"
+            endingLineNumber = "755"
+            landmarkName = "geometry::setInfCoeff()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -800,44 +748,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CPanel/geometry.cpp"
-            timestampString = "499210718.804408"
+            timestampString = "507355677.710191"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "676"
-            endingLineNumber = "676"
-            landmarkName = "geometry::createSurfaces(const Eigen::MatrixXi &amp;connectivity, const Eigen::MatrixXd &amp;norms, const Eigen::VectorXi &amp;allID, std::vector&lt;int&gt; wakeIDs, bool vortPartFlag)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "CPanel/geometry.cpp"
-            timestampString = "499210724.731535"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "674"
-            endingLineNumber = "674"
-            landmarkName = "geometry::createSurfaces(const Eigen::MatrixXi &amp;connectivity, const Eigen::MatrixXd &amp;norms, const Eigen::VectorXi &amp;allID, std::vector&lt;int&gt; wakeIDs, bool vortPartFlag)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "CPanel/geometry.cpp"
-            timestampString = "499210756.827562"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "282"
-            endingLineNumber = "282"
-            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            startingLineNumber = "753"
+            endingLineNumber = "753"
+            landmarkName = "geometry::setInfCoeff()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -852,9 +768,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1443"
-            endingLineNumber = "1443"
-            landmarkName = "cpCase::trefftzPlaneFromVel()"
-            landmarkType = "5">
+            endingLineNumber = "1443">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -868,9 +782,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1546"
-            endingLineNumber = "1546"
-            landmarkName = "cpCase::trefftzPlaneFromVel()"
-            landmarkType = "5">
+            endingLineNumber = "1546">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -884,9 +796,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1548"
-            endingLineNumber = "1548"
-            landmarkName = "cpCase::trefftzPlaneFromVel()"
-            landmarkType = "5">
+            endingLineNumber = "1548">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -900,9 +810,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "776"
-            endingLineNumber = "776"
-            landmarkName = "cpCase::writeParticleData(boost::filesystem::path path)"
-            landmarkType = "5">
+            endingLineNumber = "776">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -916,9 +824,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "780"
-            endingLineNumber = "780"
-            landmarkName = "cpCase::writeParticleData(boost::filesystem::path path)"
-            landmarkType = "5">
+            endingLineNumber = "780">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -932,9 +838,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1519"
-            endingLineNumber = "1519"
-            landmarkName = "cpCase::trefftzPlaneFromVel()"
-            landmarkType = "5">
+            endingLineNumber = "1519">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1041,7 +945,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "271"
             endingLineNumber = "271"
-            landmarkName = "cpCase::setSourceStrengths()"
+            landmarkName = "cpCase::createStreamlines()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1056,9 +960,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "925"
-            endingLineNumber = "925"
-            landmarkName = "cpCase::collapseBufferWake()"
-            landmarkType = "5">
+            endingLineNumber = "925">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1120,9 +1022,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1779"
-            endingLineNumber = "1779"
-            landmarkName = "cpCase::createVolMesh()"
-            landmarkType = "5">
+            endingLineNumber = "1779">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1136,9 +1036,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1790"
-            endingLineNumber = "1790"
-            landmarkName = "cpCase::createVolMesh()"
-            landmarkType = "5">
+            endingLineNumber = "1790">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1152,9 +1050,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1756"
-            endingLineNumber = "1756"
-            landmarkName = "cpCase::createVolMesh()"
-            landmarkType = "5">
+            endingLineNumber = "1756">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1168,9 +1064,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1762"
-            endingLineNumber = "1762"
-            landmarkName = "cpCase::createVolMesh()"
-            landmarkType = "5">
+            endingLineNumber = "1762">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1184,9 +1078,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1765"
-            endingLineNumber = "1765"
-            landmarkName = "cpCase::createVolMesh()"
-            landmarkType = "5">
+            endingLineNumber = "1765">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1200,9 +1092,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1773"
-            endingLineNumber = "1773"
-            landmarkName = "cpCase::createVolMesh()"
-            landmarkType = "5">
+            endingLineNumber = "1773">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1280,9 +1170,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "351"
-            endingLineNumber = "351"
-            landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
-            landmarkType = "5">
+            endingLineNumber = "351">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1344,9 +1232,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1378"
-            endingLineNumber = "1378"
-            landmarkName = "cpCase::readBodyKinFile()"
-            landmarkType = "5">
+            endingLineNumber = "1378">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1361,7 +1247,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "36"
             endingLineNumber = "36"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1392,9 +1278,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "464"
-            endingLineNumber = "464"
-            landmarkName = "cpCase::trefftzPlaneAnalysis()"
-            landmarkType = "5">
+            endingLineNumber = "464">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1408,9 +1292,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "465"
-            endingLineNumber = "465"
-            landmarkName = "cpCase::trefftzPlaneAnalysis()"
-            landmarkType = "5">
+            endingLineNumber = "465">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1425,7 +1307,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "21"
             endingLineNumber = "21"
-            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag, bool vortPartFlag)"
+            landmarkName = "cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1586,6 +1468,742 @@
             startingLineNumber = "269"
             endingLineNumber = "269"
             landmarkName = "wake::Vradial(Eigen::Vector3d pWake)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "251"
+            endingLineNumber = "251"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "257"
+            endingLineNumber = "257"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../eigen/Eigen/src/Core/Block.h"
+            timestampString = "506927812.382342"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "124"
+            endingLineNumber = "124">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, 2, 0, -1, 2&gt;, -1, -1, false&gt;::Block(Eigen::Matrix&lt;double, -1, 2, 0, -1, 2&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.206752"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, 2, 0, -1, 2&gt;, -1, -1, false&gt;::Block(Eigen::Matrix&lt;double, -1, 2, 0, -1, 2&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.207131"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.207407"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.20769"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, 3, 1, 0, 3, 1&gt;, -1, 1, false&gt;::Block(Eigen::Matrix&lt;double, 3, 1, 0, 3, 1&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.207962"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt; const, -1, -1, false&gt;::Block(Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.208225"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt; const, -1, -1, false&gt;::Block(Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.208487"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, 1, true&gt;, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, 1, true&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.20875"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, -1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.210029"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, -1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.210331"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, 1, false&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.21059"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, 1, false&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.210843"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Map&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, 0, Eigen::OuterStride&lt;-1&gt; &gt; const, -1, 1, true&gt; const, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Map&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, 0, Eigen::OuterStride&lt;-1&gt; &gt; const, -1, 1, true&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.211103"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Map&lt;Eigen::Matrix&lt;double, -1, 1, 0, -1, 1&gt;, 0, Eigen::Stride&lt;0, 0&gt; &gt;, -1, 1, false&gt;::Block(Eigen::Map&lt;Eigen::Matrix&lt;double, -1, 1, 0, -1, 1&gt;, 0, Eigen::Stride&lt;0, 0&gt; &gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.21137"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt; const, -1, 1, true&gt; const, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt; const, -1, 1, true&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.211632"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt; const, -1, -1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.211892"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt; const, -1, -1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.212143"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, -1, false&gt;, -1, -1, false&gt;::Block(Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, -1, false&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.212401"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, -1, false&gt;, -1, -1, false&gt;::Block(Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, -1, false&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.212653"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, 1, true&gt;, -1, 1, false&gt; const, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, 1, true&gt;, -1, 1, false&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.212917"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, 1, true&gt;, -1, 1, false&gt;, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, 1, true&gt;, -1, 1, false&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.213177"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, 1, true&gt;, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;, -1, 1, true&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.213433"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, 1, 0, -1, 1&gt;, -1, 1, false&gt;::Block(Eigen::Matrix&lt;double, -1, 1, 0, -1, 1&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.213697"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, false&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.213959"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, false&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.214215"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, 1, 0, -1, 1&gt; const, -1, 1, false&gt;::Block(Eigen::Matrix&lt;double, -1, 1, 0, -1, 1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.214472"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, true&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.21473"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, true&gt;::Block(Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.214997"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, true&gt; const, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, true&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.215249"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, true&gt; const, -1, 1, false&gt;::Block(Eigen::Block&lt;Eigen::Matrix&lt;double, -1, -1, 0, -1, -1&gt; const, -1, -1, true&gt; const&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.215499"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;::Block(Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.215855"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "142"
+                  endingLineNumber = "142"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Eigen::Block&lt;Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt;, -1, -1, false&gt;::Block(Eigen::Matrix&lt;int, -1, -1, 0, -1, -1&gt;&amp;, long, long, long, long)"
+                  moduleName = "CPanel"
+                  urlString = "file:///Users/C_Man/code/eigen/Eigen/src/Core/Block.h"
+                  timestampString = "506927813.216109"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137"
+                  offsetFromSymbolStart = "36">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "369"
+            endingLineNumber = "369"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "341"
+            endingLineNumber = "341"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "354"
+            endingLineNumber = "354"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "329"
+            endingLineNumber = "329"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/cpNode.cpp"
+            timestampString = "507187687.579785"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "114"
+            endingLineNumber = "114"
+            landmarkName = "cpNode::firstProjNode(double dt, double inputV)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/cpNode.cpp"
+            timestampString = "507187913.641291"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "84"
+            endingLineNumber = "84"
+            landmarkName = "cpNode::getTrailingEdges()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "302"
+            endingLineNumber = "302"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507188423.262779"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "231"
+            endingLineNumber = "231"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "233"
+            endingLineNumber = "233"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507239352.890797"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "230"
+            endingLineNumber = "230"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/wakePanel.cpp"
+            timestampString = "507239547.742206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
+            landmarkName = "wakePanel::interpPanels(std::vector&lt;bodyPanel*&gt; &amp;interpPans, double &amp;interpCoeff)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "396"
+            endingLineNumber = "396"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "397"
+            endingLineNumber = "397"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "395"
+            endingLineNumber = "395"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CPanel/geometry.cpp"
+            timestampString = "507355677.710191"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "394"
+            endingLineNumber = "394"
+            landmarkName = "geometry::readTri(std::string tri_file, bool normFlag)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

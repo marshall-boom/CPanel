@@ -222,6 +222,150 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
         createSurfaces(connectivity,norms,allID,wakeIDs);
         
+        /* Addition of buffer wake
+            - Calculate time step (for panel length) (only if not included)
+            - Find and delete any included wake surfaces
+            - Create buffer wake
+        */
+        
+        if(vortPartFlag)
+        {
+            // VSP tags wakes with surface ID starting at 1000
+            for(int i=0; i<allID.size(); i++)
+            {
+                if(allID(i) >= 1000)
+                {
+                    std::cout << "ERROR: Please use input file without wake panels when using the vortex particle wake option." << std::endl;
+                    std::exit(0);
+                }
+            }
+            
+            // Calculate timestep
+            calcTimeStep();
+            
+            // Find existing wake surfaces and delete
+            while ( wakes.size() > 0 ) {
+                wakes.erase(wakes.begin(), wakes.end());
+            }
+            
+            // Create buffer wake
+            
+            // Finding trailing edges and nodes
+            std::vector< edge* > TEedges;
+            std::vector< cpNode* > TEnodes;
+            
+            for( int i=0; i<edges.size(); i++ ){
+                if( edges[i]->isTE() ){
+                    TEedges.push_back(edges[i]);
+                }
+            }
+            for( int i=0; i<nodes.size(); i++ ){
+                if( nodes[i]->isTE() ){
+                    TEnodes.push_back(nodes[i]);
+                }
+            }
+            
+            Eigen::MatrixXd wakeNodes(2*TEnodes.size(),3);
+            Eigen::MatrixXi wakeConnectivity(2*TEedges.size(),4);
+            std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
+            int nodeCounter=0, panelCounter=0;
+            
+            for(int i=0;i<TEedges.size();i++)
+            {
+                
+                // For all the trailing edges
+                
+                // Find the trialing nodes (by index?)
+                int n1index = TEedges[i]->getN1()->getIndex();
+                int n2index = TEedges[i]->getN2()->getIndex();
+                int n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
+                
+                bool isUsed = false;
+                for(int j=0; j<usedTENodesIndex.size(); j++)
+                {
+                    if(n1index == usedTENodesIndex[j])
+                    {
+                        isUsed = true;
+                        n1firstIndex = newNodesIndex[2*j]+nNodes;
+                        n1secIndex = newNodesIndex[2*j+1]+nNodes;
+                    }
+                }
+                
+                if(isUsed == false)
+                { // If it's used, don't change the n1 index and then get the first and sec. node indices.
+                    usedTENodesIndex.push_back(n1index);
+                    
+                    //                        double VinfLocal = Vinf(nodes[n1index]->getPnt()).norm();
+                    double VinfLocal = inputV;
+                    
+                    wakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, VinfLocal);
+                    newNodesIndex.push_back(nodeCounter);
+                    n1firstIndex = nodeCounter+nNodes;
+                    nodeCounter++;
+                    
+                    wakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(dt, VinfLocal);
+                    newNodesIndex.push_back(nodeCounter);
+                    n1secIndex = nodeCounter+nNodes;
+                    nodeCounter++;
+                }
+                //N2
+                isUsed = false;
+                for(int j=0; j<usedTENodesIndex.size();j++)
+                {
+                    if(n2index == usedTENodesIndex[j]){
+                        isUsed = true;
+                        n2firstIndex = newNodesIndex[2*j]+nNodes;
+                        n2secIndex = newNodesIndex[2*j+1]+nNodes;
+                    }
+                }
+                
+                if(isUsed == false)
+                {
+                    usedTENodesIndex.push_back(n2index);
+                    
+                    //                        double VinfLocal = Vinf(nodes[n2index]->getPnt()).norm();
+                    double VinfLocal = inputV;
+                    wakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, VinfLocal);
+                    newNodesIndex.push_back(nodeCounter);
+                    n2firstIndex = nodeCounter+nNodes;
+                    nodeCounter++;
+                    
+                    wakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(dt, VinfLocal);
+                    newNodesIndex.push_back(nodeCounter);
+                    n2secIndex = nodeCounter+nNodes;
+                    nodeCounter++;
+                }
+                
+                
+                wakeConnectivity.row(panelCounter) << n1index, n2index, n2firstIndex, n1firstIndex; //built TE first
+                
+                panelCounter++;
+                //getTEiD?
+                VPwakeID.push_back(1001); // First row of wake panels
+                isFirstPanel.push_back(true);
+                
+                wakeConnectivity.row(panelCounter) << n1firstIndex, n2firstIndex, n2secIndex, n1secIndex;
+                panelCounter++;
+                VPwakeID.push_back(1001); // Second row
+                isFirstPanel.push_back(false);
+            }
+        
+
+        // Append nodes and adjust connectivity
+        for (int i=0; i<wakeNodes.rows(); i++)
+        {
+            n = new cpNode(wakeNodes.row(i),i+nNodes);
+            nodes.push_back(n);
+        }
+        Eigen::MatrixXd wakeNorms = Eigen::MatrixXd::Zero(wakeConnectivity.rows(),3);
+        createVPWakeSurfaces(wakeConnectivity,wakeNorms,VPwakeID,isFirstPanel);
+        
+        nNodes = nodes.size();
+        nTris += wakes[0]->getPanels().size(); // Include buffer wake
+        
+        }
+        
+        
         std::cout << "\tNodes : " << nodes.size() << std::endl;
         std::cout << "\tEdges : " << edges.size() << std::endl;
         std::cout << "\tPanels : " << nTris << std::endl;
@@ -284,8 +428,54 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         for (int i=0; i<wakes.size(); i++)
         {
             tempW = wakes[i]->getPanels();
-            wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
+            for ( int i=0; i<tempW.size(); i++)
+            {
+                if (tempW[i]->isSecondRow == false)
+                {
+                    wPanels.push_back(tempW[i]);
+                }
+            }
+//            wPanels.insert(wPanels.begin(),tempW.begin(),tempW.end());
         }
+        
+//        // Print panels
+//        // body panels
+//        for ( int i=0; i<bPanels.size(); i++ ) {
+//            Eigen::Vector3d n1 = bPanels[i]->getNodes()[0]->getPnt();
+//            Eigen::Vector3d n2 = bPanels[i]->getNodes()[1]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//            
+//            n1 = bPanels[i]->getNodes()[1]->getPnt();
+//            n2 = bPanels[i]->getNodes()[2]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//            
+//            n1 = bPanels[i]->getNodes()[2]->getPnt();
+//            n2 = bPanels[i]->getNodes()[0]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//        }
+//        
+//        std::cout << "\n\n\n\n\n\n\n" << std::endl;
+//        
+//        // wake panels
+//        for ( int i=0; i<wPanels.size(); i++ ) {
+//            Eigen::Vector3d n1 = wPanels[i]->getNodes()[0]->getPnt();
+//            Eigen::Vector3d n2 = wPanels[i]->getNodes()[1]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//            
+//            n1 = wPanels[i]->getNodes()[1]->getPnt();
+//            n2 = wPanels[i]->getNodes()[2]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//            
+//            n1 = wPanels[i]->getNodes()[2]->getPnt();
+//            n2 = wPanels[i]->getNodes()[3]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//            
+//            n1 = wPanels[i]->getNodes()[3]->getPnt();
+//            n2 = wPanels[i]->getNodes()[1]->getPnt();
+//            std::cout << "plot3([" << n1.x() << ", "<<n2.x()<<"],[" << n1.y()<<", "<< n2.y()<<"],[" << n1.z()<<", "<< n2.z()<<"]);" << std::endl;
+//        }
+        
+        
         
         
         // Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
@@ -298,43 +488,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             bPanels[i]->setCluster();
         }
         
-//        std::cout << std::endl;
-//        for (int i=0; i<bPanels.size(); i++)
-//        {
-//            if (bPanels[i]->isUpper())
-//            {
-//                std::cout << bPanels[i]->getCenter()(0) << "," << bPanels[i]->getCenter()(1) << "," << bPanels[i]->getCenter()(2) << ";" << std::endl;
-//            }
-//        }
-//        std::cout << std::endl;
-//        for (int i=0; i<bPanels.size(); i++)
-//        {
-//            if (bPanels[i]->isLower())
-//            {
-//                std::cout << bPanels[i]->getCenter()(0) << "," << bPanels[i]->getCenter()(1) << "," << bPanels[i]->getCenter()(2) << ";" << std::endl;
-//            }
-//        }
-        
-//        Eigen::Vector3d center;
-//        std::vector<edge*> bodyPanEdges;
-//        std::vector<edge*> wakePanEdges;
-//        for (int i=0; i<bPanels.size(); i++)
-//        {
-//            center = bPanels[i]->getCenter();
-//            if (center(0) > 5.45 && center(0) < 5.74 && center(1) > -0.77 && center(1) < -0.65 && center(2) > -0.59 && center(2) < -0.42)
-//            {
-//                bodyPanEdges = bPanels[i]->getEdges();
-//            }
-//        }
-//        
-//        for (int i=0; i<wPanels.size(); i++)
-//        {
-//            center = wPanels[i]->getCenter();
-//            if (center(0) > 5.45 && center(0) < 5.74 && center(1) > -0.92 && center(1) < -0.65 && center(2) > -0.59 && center(2) < -0.58)
-//            {
-//                wakePanEdges = wPanels[i]->getEdges();
-//            }
-//        }
+
         
         // Calculate influence coefficient matrices
         
@@ -348,7 +502,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             std::cout << "\t< N > - No, recalculate them." << std::endl;
             std::cin >> in;
             std::cout << std::endl;
-            if (in == "Y")
+            if (in == "Y" || in == "y")
             {
                 readInfCoeff();
                 read = true;
@@ -790,4 +944,74 @@ void geometry::clusterCheck()
         fid << "\n";
     }
     fid.close();
+}
+
+void geometry::calcTimeStep(){
+    
+    // Timestep will be set so that the step in the streamwise direction results in the same distance as the particles are spaced apart to allow for equal particle spacing and thus sufficient overlap. Sized for the average wake panel width becuase panel clustering at geometry tips doesn't represent average spacing.
+    
+    
+    if(dt == 0) // If timestep is set in input file, it will not be zero and won't be modified
+    {
+        std::vector<edge*> Tedges;
+        for(int i=0; i<edges.size(); i++)
+        {
+            if(edges[i]->isTE())
+            {
+                Tedges.push_back(edges[i]);
+            }
+        }
+        
+        double sum = 0;
+        for(int i=0; i < Tedges.size(); i++)
+        {
+            sum += Tedges[i]->length();
+        }
+        double avgLength = sum/Tedges.size();
+        
+        dt = avgLength/inputV;
+        
+        std::cout << "\tCalculated time step : " << dt << " sec" << std::endl;
+    }
+    
+}
+
+
+
+void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> isFirstPanel){ //rename to create first buffer wake?
+    
+    wake* w = nullptr;
+    wakePanel* wPan;
+    wakePanel* firstPan; // Used only to keep track of panel for setting bw2's parent
+    std::vector<edge*> pEdges;
+    
+    w = new wake(VPwakeID[0],this);
+    wakes.push_back(w);
+    
+    for (int i=0; i<wakeConnectivity.rows(); i++)
+    {
+        std::vector<cpNode*> pNodes;
+        for(int j=0; j<wakeConnectivity.row(i).size(); j++)
+        {
+            pNodes.push_back(nodes[wakeConnectivity(i,j)]);
+        }
+        pEdges = panEdges(pNodes); // Create edges or find edges that already exists
+        
+        
+        wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w,VPwakeID[i]);
+        w->addPanel(wPan);
+
+        if( isFirstPanel[i] )
+        {
+            firstPan = wPan;
+            wPan->isSecondRow = false;
+        }
+        else
+        {
+            wPan->setBufferParent(firstPan);
+            wPan->isSecondRow = true;
+            w2Panels.push_back(wPan);
+        }
+    }
+    
 }

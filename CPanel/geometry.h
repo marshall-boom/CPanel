@@ -34,6 +34,9 @@ class geometry
 //    std::vector<surface*> nonLiftingSurfs;
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
+    std::vector<wakePanel*> w2Panels; // Buffer wake row two
+    
+    std::vector<bool> isFirstPanel;
     
     panelOctree pOctree;
     std::vector<cpNode*> nodes;
@@ -47,7 +50,10 @@ class geometry
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     
     bool writeCoeffFlag;
+    bool vortPartFlag;
     std::string infCoeffFile;
+    double dt;
+    double inputV;
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -72,6 +78,8 @@ class geometry
     void readInfCoeff();
     void writeInfCoeff();
     
+    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<bool> isFirstPanel);
+    void calcTimeStep();
     
 public:
     geometry(inputParams* p)
@@ -80,6 +88,10 @@ public:
         temp << p->geomFile->name << ".infCoeff";
         infCoeffFile = temp.str();
         writeCoeffFlag = p->writeCoeffFlag;
+        vortPartFlag = p->vortexParticles;
+        dt = p->timeStep;
+        inputV = p->velocities(0);
+
         readTri(p->geomFile->file, p->normFlag);
         
     }

@@ -25,6 +25,11 @@ class cpNode
     
     bool TEnode;
     
+    double c_w = 1.3;
+    std::vector<edge*> getTrailingEdges();
+    Eigen::Vector3d nodeWakeProjAngle();
+
+    
 public:
     cpNode(Eigen::Vector3d pnt,int index);
     
@@ -53,6 +58,9 @@ public:
     edge* getOtherTrailEdge(edge* current);
     
     bool isTE() {return TEnode;}
+    
+    Eigen::Vector3d firstProjNode(double dt, double inputV);
+    Eigen::Vector3d secProjNode(double dt, double inputV);
     
 };
 
