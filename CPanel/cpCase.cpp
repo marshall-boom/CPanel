@@ -330,9 +330,10 @@ void cpCase::writeFiles()
 void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat)
 {
     std::vector<cellDataArray> data;
-    cellDataArray mu("Doublet Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals");
+    cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals");
     Eigen::MatrixXi con(bPanels->size(),3);
     mu.data.resize(bPanels->size(),1);
+    sigma.data.resize(bPanels->size(),1);
     pot.data.resize(bPanels->size(),1);
     V.data.resize(bPanels->size(),3);
     Cp.data.resize(bPanels->size(),1);
@@ -348,6 +349,7 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
     }
     
     data.push_back(mu);
+    data.push_back(sigma);
     data.push_back(pot);
     data.push_back(V);
     data.push_back(Cp);
@@ -366,7 +368,7 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
 {
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con(wPanels->size(),(*wPanels)[0]->getVerts().size());
+    Eigen::MatrixXi con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
     mu.data.resize(wPanels->size(),1);
     pot.data.resize(wPanels->size(),1);
     for (int i=0; i<wPanels->size(); i++)

@@ -124,6 +124,29 @@ bool inputParams::set()
                 {
                     fid >> writeCoeffFlag;
                 }
+                else if (s1.compare("Vortex_Particle_Wake") == 0)
+                {
+                    fid >> vortexParticles;
+                }
+                else if (s1.compare("Time_Step") == 0)
+                {
+                    fid >> timeStep;
+                }
+                else if (s1.compare("Number_of_Timesteps") == 0)
+                {
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+                    fid >> numSteps;
+                }
+                else if (s1.compare("Accelerate_Code") == 0)
+                {
+                    fid >> accelerateCode;
+                }
+                else if (s1.compare("Unsteady_Mode") == 0){
+                    fid >> unsteady;
+                    if(unsteady){
+                        fid >> bodyKinFileLoc;
+                    }
+                }
             }
         }
         makeWorkingDir();
@@ -193,6 +216,24 @@ void inputParams::print(std::ostream &stream)
     
     stream << std::setw(nChars) << "Write Inf Coeff to File " << "-> ";
     if (writeCoeffFlag)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
+    
+    stream << std::setw(nChars) << "Vortex Particle Wake " << "-> ";
+    if (vortexParticles)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
+    
+    stream << std::setw(nChars) << "Accelerate Code " << "-> ";
+    if (accelerateCode)
+        stream << "ON" << std::endl;
+    else
+        stream << "OFF" << std::endl;
+    
+    stream << std::setw(nChars) << "Unsteady Mode " << "-> ";
+    if (unsteady)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
@@ -305,6 +346,19 @@ void inputParams::writeInputFile()
     fid << stabDerivFlag << std::endl;
     fid << "Write_Influence_Coefficients" << std::endl;
     fid << writeCoeffFlag << std::endl;
+    fid << "Vortex_Particle_Wake" << std::endl;
+    fid << vortexParticles << std::endl;
+    fid << "Accelerate_Code" << std::endl;
+    fid << accelerateCode << std::endl;
+    fid << std::endl;
+    fid << "% Vortex Particle Wake Options %" << std::endl;
+    fid << "Time_Step" << std::endl;
+    fid << timeStep << std::endl;
+    fid << "Number_of_Timesteps" << std::endl;
+    fid << numSteps << std::endl;
+    fid << "Unsteady_Mode" << std::endl;
+    fid << unsteady << std::endl;
+    fid << bodyKinFileLoc << std::endl;
     
     fid.close();
 }

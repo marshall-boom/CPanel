@@ -46,8 +46,12 @@ struct inputParams
     bool set();
     void print(std::ostream &stream);
     
-    bool vortexParticles = true;
-    double timeStep = 0.1;
+    bool vortexParticles;
+    bool accelerateCode;
+    double timeStep;
+    int numSteps;
+    bool unsteady;
+    std::string bodyKinFileLoc;
 
 private:
     bool checkGeomFile();

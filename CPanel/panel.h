@@ -39,16 +39,16 @@ protected:
     double area;
     double longSide;
 
-    double doubletStrength;
-    double potential;
-    Eigen::Vector3d velocity;
-    double Cp;
+    double doubletStrength = 0;
+    double potential = 0;
+    Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
+    double Cp = 0;
     int ID;
+    double core = 0.05;
     
     Eigen::Vector3d global2local(const Eigen::Vector3d &globalVec,bool translate);
     Eigen::Vector3d local2global(const Eigen::Vector3d &localVec,bool translate);
     
-    Eigen::Vector3d vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s);
     double vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m,const Eigen::Vector3d &n);
     Eigen::Vector3d getUnitVector(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2);
     Eigen::Matrix3d getLocalSys();
@@ -57,9 +57,15 @@ protected:
     
     Eigen::Vector3d pntDubV(const Eigen::Vector3d n,const Eigen::Vector3d &pjk);
     
+    Eigen::Matrix3d velocityGradientPointDoublet(Eigen::Vector3d POI);
+    Eigen::Matrix3d velocityGradientDoublet(Eigen::Vector3d POI);
+    Eigen::Matrix3d gradDoub(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s);
+    
 public:
     panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,int surfID);
     
+    Eigen::Vector3d vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s); // Is public so vortexFilament can use this as a common function
+
     virtual ~panel() {}
     
 //    panel(const panel &copy);
@@ -89,7 +95,10 @@ public:
     double getArea() {return area;}
     double getMu() {return doubletStrength;}
     double getPotential() {return potential;}
-    
+    bool nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI);
+
+    bool onPanelCheck(const Eigen::Vector3d &POI);
+
 };
 
 #endif /* defined(__CPanel__panel__) */

@@ -538,4 +538,368 @@ std::vector<bodyPanel*> bodyPanel::getRelatedPanels()
     return pans;
 }
 
+Eigen::Vector3d bodyPanel::partStretching(particle* part){
+    Eigen::Vector3d POI = part->pos;
+    Eigen::Vector3d partStretching;
+    double dist2panel = (POI-center).norm();
+    bool isFarField = false;
+    Eigen::MatrixXd velGradMat = Eigen::Matrix3d::Zero();
+    
+    if(dist2panel/longSide > 5){
+        isFarField = true;
+    }
+    
+    if(isFarField)
+    {
+        velGradMat += velocityGradientPointSource(POI);
+        velGradMat += velocityGradientPointDoublet(POI);
+    }
+    else if (this->getNodes().size() == 3)
+    {
+        velGradMat += velocityGradientTriSource(POI);
+        velGradMat += velocityGradientDoublet(POI);
+    }
+    else
+    {
+        velGradMat += velocityGradientQuadSource(POI);
+        velGradMat += velocityGradientDoublet(POI);
+    }
+    
+    partStretching = velGradMat*part->strength;
+    
+    return partStretching;
+}
+
+
+
+
+Eigen::Matrix3d bodyPanel::velocityGradientPointSource(Eigen::Vector3d POI){
+    Eigen::Matrix3d velGradMat;
+    // dudx  dvdx  dwdx
+    // dudy  dvdy  dwdy
+    // dudz  dvdz  dwdz
+    
+    double x, y, z, x0, y0, z0;
+    x = this->getCenter().x(); y = this->getCenter().y(); z = this->getCenter().z();
+    x0 = POI.x(); y0 = POI.y(); z0 = POI.z();
+    
+    double sdd = pow(pow(x-x0,2) + pow(y-y0,2) + z*z,2.5); // source deriv denom
+    
+    double derConst = sourceStrength*area/(4*M_PI);
+    velGradMat(0,0) = (-2*(x-x0)*(x-x0) + (y-y0)*(y-y0) + z*z)/sdd;
+    velGradMat(1,0) = -3*(x-x0)*(y-y0)/sdd;
+    velGradMat(2,0) = -3*(x-x0)*z/sdd;
+    
+    velGradMat(0,1) = -3*(x-x0)*(y-y0)/sdd;
+    velGradMat(1,1) = ((x-x0)*(x-x0)- (y-y0)*(y-y0) + z*z)/sdd;
+    velGradMat(2,1) = -3*z*(y-y0)/sdd;
+    
+    velGradMat(0,2) = -3*(x-x0)*(z-z0)/sdd;
+    velGradMat(1,2) = -3*(y-y0)*(z-z0)/sdd;
+    velGradMat(2,2) = (-3*z*(z-z0) + ((x-x0)*(x-x0) + (y-y0)*(y-y0) + z*z))/sdd;
+    
+    velGradMat *= derConst;
+    
+    return velGradMat;
+}
+
+
+Eigen::Matrix3d bodyPanel::velocityGradientQuadSource(Eigen::Vector3d POI){
+    Eigen::Matrix3d velGradMat;
+    // dudx  dvdx  dwdx
+    // dudy  dvdy  dwdy
+    // dudz  dvdz  dwdz
+    
+    Eigen::Vector3d n1global = this->getNodes()[0]->getPnt();
+    Eigen::Vector3d n2global = this->getNodes()[1]->getPnt();
+    Eigen::Vector3d n3global = this->getNodes()[2]->getPnt();
+    Eigen::Vector3d n4global = this->getNodes()[3]->getPnt();
+    
+    Eigen::Vector3d n1 = global2local(n1global, true);
+    Eigen::Vector3d n2 = global2local(n2global, true);
+    Eigen::Vector3d n3 = global2local(n3global, true);
+    Eigen::Vector3d n4 = global2local(n4global, true);
+    Eigen::Vector3d POIloc = global2local(POI, true);
+    
+    double x1, y1, x2, y2, x3, y3, x4, y4;
+    x1 = n1.x(); x2 = n2.x(); x3 = n3.x(), x4 = n4.x();
+    y1 = n1.y(); y2 = n2.y(); y3 = n3.y(), y4 = n4.y();
+    
+    double x, y, z;
+    x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
+    
+    
+    double derConst = sourceStrength/(4*M_PI);
+    
+    // Terms
+    double d12,d23,d34,d41;
+    d12 = pow((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1),0.5);
+    d23 = pow((x3-x2)*(x3-x2) + (y3-y2)*(y3-y2),0.5);
+    d34 = pow((x4-x3)*(x4-x3) + (y4-y3)*(y4-y3),0.5);
+    d41 = pow((x1-x4)*(x1-x4) + (y1-y4)*(y1-y4),0.5);
+    
+    double r1,r2,r3,r4;
+    r1 = pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    r2 = pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    r3 = pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    r4 = pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
+    
+    double dr1dx, dr2dx, dr3dx, dr4dx;
+    dr1dx = (x-x1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    dr2dx = (x-x2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    dr3dx = (x-x3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    dr4dx = (x-x4)/pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
+    
+    double dr1dy, dr2dy, dr3dy, dr4dy;
+    dr1dy = (y-y1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    dr2dy = (y-y2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    dr3dy = (y-y3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    dr4dy = (y-y4)/pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
+    
+    double dr1dz, dr2dz, dr3dz, dr4dz;
+    dr1dz = (z)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    dr2dz = (z)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    dr3dz = (z)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    dr4dz = (z)/pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
+    
+    double m12,m23,m34,m41;
+    m12 = (y2-y1)/(x2-x1);
+    m23 = (y3-y2)/(x3-x2);
+    m34 = (y4-y3)/(x4-x3);
+    m41 = (y1-y4)/(x1-x4);
+    
+    double e1,e2,e3,e4;
+    e1 = (x-x1)*(x-x1) + z*z;
+    e2 = (x-x2)*(x-x2) + z*z;
+    e3 = (x-x3)*(x-x3) + z*z;
+    e4 = (x-x4)*(x-x4) + z*z;
+    
+    double h1,h2,h3,h4;
+    h1 = (x-x1)*(y-y1);
+    h2 = (x-x2)*(y-y2);
+    h3 = (x-x3)*(y-y3);
+    h4 = (x-x4)*(y-y4);
+    
+    double de1dx,de2dx,de3dx,de4dx;
+    de1dx = 2*(x-x1);
+    de2dx = 2*(x-x2);
+    de3dx = 2*(x-x3);
+    de4dx = 2*(x-x4);
+    
+    double dh1dx,dh2dx,dh3dx,dh4dx;
+    dh1dx = (y-y1);
+    dh2dx = (y-y2);
+    dh3dx = (y-y3);
+    dh4dx = (y-y4);
+    
+    double dh1dy,dh2dy,dh3dy,dh4dy;
+    dh1dy = (x-x1);
+    dh2dy = (x-x2);
+    dh3dy = (x-x3);
+    dh4dy = (x-x4);
+    
+    double de1dz,de2dz,de3dz,de4dz;
+    de1dz = 2*z;
+    de2dz = 2*z;
+    de3dz = 2*z;
+    de4dz = 2*z;
+    
+    
+    velGradMat(0,0)=(y2-y1)*(r1+r2+d12)*(dr1dx + dr2dx)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (y3-y2)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y4-y3)*(r3+r4+d34)*(dr3dx + dr4dx)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (y1-y4)*(r4+r1+d41)*(dr4dx + dr1dx)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    
+    velGradMat(1,0)=(y2-y1)*(r1+r2+d12)*(dr1dy + dr2dy)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (y3-y2)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y4-y3)*(r3+r4+d34)*(dr3dy + dr4dy)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (y1-y4)*(r4+r1+d41)*(dr4dy + dr1dy)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    
+    velGradMat(2,0)=(y2-y1)*(r1+r2+d12)*(dr1dz + dr2dz)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (y3-y2)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y4-y3)*(r3+r4+d34)*(dr3dz + dr4dz)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (y1-y4)*(r4+r1+d41)*(dr4dz + dr1dz)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    
+    velGradMat(0,1)=(x1-x2)*(r1+r2+d12)*(dr1dx + dr2dx)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (x2-x3)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x4)*(r3+r4+d34)*(dr3dx + dr4dx)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (x4-x1)*(r4+r1+d41)*(dr4dx + dr1dx)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    
+    velGradMat(1,1)=(x1-x2)*(r1+r2+d12)*(dr1dy + dr2dy)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (x2-x3)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x4)*(r3+r4+d34)*(dr3dy + dr4dy)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (x4-x1)*(r4+r1+d41)*(dr4dy + dr1dy)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    
+    velGradMat(2,1)=(x1-x2)*(r1+r2+d12)*(dr1dz + dr2dz)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (x2-x3)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x4)*(r3+r4+d34)*(dr3dz + dr4dz)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (x4-x1)*(r4+r1+d41)*(dr4dz + dr1dz)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    
+    velGradMat(0,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((z*r1*(m12*de1dx - dh1dx) - (m12*e1-h1)*(z*dr1dx))/pow(z*r1,2))-
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*(m12*de2dx - dh2dx) - (m12*e2-h2)*(z*dr2dx))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*(m23*de2dx - dh2dx) - (m23*e2-h2)*(z*dr2dx))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*(m23*de3dx - dh3dx) - (m23*e3-h3)*(z*dr3dx))/pow(z*r3,2))+
+    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((z*r3*(m34*de3dx - dh3dx) - (m34*e3-h3)*(z*dr3dx))/pow(z*r3,2))-
+    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((z*r4*(m34*de4dx - dh4dx) - (m34*e4-h4)*(z*dr4dx))/pow(z*r4,2))+
+    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((z*r4*(m41*de4dx - dh4dx) - (m41*e4-h4)*(z*dr4dx))/pow(z*r4,2))-
+    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((z*r1*(m41*de1dx - dh1dx) - (m41*e1-h1)*(z*dr1dx))/pow(z*r1,2));
+    
+    velGradMat(1,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m12*e1-h1)*(z*dr1dy))/pow(z*r1,2))-
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m12*e2-h2)*(z*dr2dy))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m23*e2-h2)*(z*dr2dy))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m23*e3-h3)*(z*dr3dy))/pow(z*r3,2))+
+    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m34*e3-h3)*(z*dr3dy))/pow(z*r3,2))-
+    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((-z*r4*dh4dy - (m34*e4-h4)*(z*dr4dy))/pow(z*r4,2))+
+    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((-z*r4*dh4dy - (m41*e4-h4)*(z*dr4dy))/pow(z*r4,2))-
+    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m41*e1-h1)*(z*dr1dy))/pow(z*r1,2));
+    
+    velGradMat(2,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((z*r1*m12*de1dz - (m12*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2))-
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*m12*de2dz - (m12*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*m23*de2dz - (m23*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*m23*de3dz - (m23*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))+
+    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((z*r3*m34*de3dz - (m34*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))-
+    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((z*r4*m34*de4dz - (m34*e4-h4)*(r4+z*dr4dz))/pow(z*r4,2))+
+    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((z*r4*m41*de4dz - (m41*e4-h4)*(r4+z*dr4dz))/pow(z*r4,2))-
+    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((z*r1*m41*de1dz - (m41*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2));
+    
+    velGradMat *= derConst;
+    
+    return velGradMat;
+}
+
+Eigen::Matrix3d bodyPanel::velocityGradientTriSource(Eigen::Vector3d POI){
+    Eigen::Matrix3d velGradMat;
+    // dudx  dvdx  dwdx
+    // dudy  dvdy  dwdy
+    // dudz  dvdz  dwdz
+    
+    Eigen::Vector3d n1global = this->getNodes()[0]->getPnt();
+    Eigen::Vector3d n2global = this->getNodes()[1]->getPnt();
+    Eigen::Vector3d n3global = this->getNodes()[2]->getPnt();
+    
+    Eigen::Vector3d n1 = global2local(n1global, true);
+    Eigen::Vector3d n2 = global2local(n2global, true);
+    Eigen::Vector3d n3 = global2local(n3global, true);
+    Eigen::Vector3d POIloc = global2local(POI, true);
+    
+    double x1, y1, x2, y2, x3, y3;
+    x1 = n1.x(); x2 = n2.x(); x3 = n3.x();
+    y1 = n1.y(); y2 = n2.y(); y3 = n3.y();
+    
+    double x, y, z;
+    x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
+    
+    double derConst = sourceStrength/(4*M_PI);
+    
+    // Terms
+    double d12,d23,d31;
+    d12 = pow((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1),0.5);
+    d23 = pow((x3-x2)*(x3-x2) + (y3-y2)*(y3-y2),0.5);
+    d31 = pow((x1-x3)*(x1-x3) + (y1-y3)*(y1-y3),0.5);
+    
+    double r1,r2,r3;
+    r1 = pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    r2 = pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    r3 = pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    
+    double dr1dx, dr2dx, dr3dx;
+    dr1dx = (x-x1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    dr2dx = (x-x2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    dr3dx = (x-x3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    
+    double dr1dy, dr2dy, dr3dy;
+    dr1dy = (y-y1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    dr2dy = (y-y2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    dr3dy = (y-y3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    
+    double dr1dz, dr2dz, dr3dz;
+    dr1dz = (z)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
+    dr2dz = (z)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
+    dr3dz = (z)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
+    
+    double m12,m23,m31;
+    m12 = (y2-y1)/(x2-x1);
+    m23 = (y3-y2)/(x3-x2);
+    m31 = (y1-y3)/(x1-x3);
+    
+    double e1,e2,e3;
+    e1 = (x-x1)*(x-x1) + z*z;
+    e2 = (x-x2)*(x-x2) + z*z;
+    e3 = (x-x3)*(x-x3) + z*z;
+    
+    double h1,h2,h3;
+    h1 = (x-x1)*(y-y1);
+    h2 = (x-x2)*(y-y2);
+    h3 = (x-x3)*(y-y3);
+    
+    double de1dx,de2dx,de3dx;
+    de1dx = 2*(x-x1);
+    de2dx = 2*(x-x2);
+    de3dx = 2*(x-x3);
+    
+    double dh1dx,dh2dx,dh3dx;
+    dh1dx = (y-y1);
+    dh2dx = (y-y2);
+    dh3dx = (y-y3);
+    
+    double dh1dy,dh2dy,dh3dy;
+    dh1dy = (x-x1);
+    dh2dy = (x-x2);
+    dh3dy = (x-x3);
+    
+    double de1dz,de2dz,de3dz;
+    de1dz = 2*z;
+    de2dz = 2*z;
+    de3dz = 2*z;
+    
+    
+    velGradMat(0,0)=(y2-y1)*(r1+r2+d12)*(dr1dx + dr2dx)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (y3-y2)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y1-y3)*(r3+r1+d31)*(dr3dx + dr1dx)*(2*d31)/(d31)/(r3+r1-d31)/(pow(r3+r1+d31,2));
+    
+    velGradMat(1,0)=(y2-y1)*(r1+r2+d12)*(dr1dy + dr2dy)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (y3-y2)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y1-y3)*(r3+r1+d31)*(dr3dy + dr1dy)*(2*d31)/(d31)/(r3+r1-d31)/(pow(r3+r1+d31,2));
+    
+    velGradMat(2,0)=(y2-y1)*(r1+r2+d12)*(dr1dz + dr2dz)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (y3-y2)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y1-y3)*(r3+r1+d31)*(dr3dz + dr1dz)*(2*d31)/(d31)/(r3+r1-d31)/(pow(r3+r1+d31,2));
+    
+    velGradMat(0,1)=(x1-x2)*(r1+r2+d12)*(dr1dx + dr2dx)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (x2-x3)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x1)*(r3+r1+d31)*(dr3dx + dr1dx)*(2*d31)/(d31)/(r3+r1-d31)/(pow(r3+r1+d31,2));
+    
+    velGradMat(1,1)=(x1-x2)*(r1+r2+d12)*(dr1dy + dr2dy)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (x2-x3)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x1)*(r3+r1+d31)*(dr3dy + dr1dy)*(2*d31)/(d31)/(r3+r1-d31)/(pow(r3+r1+d31,2));
+    
+    velGradMat(2,1)=(x1-x2)*(r1+r2+d12)*(dr1dz + dr2dz)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
+    (x2-x3)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x1)*(r3+r1+d31)*(dr3dz + dr1dz)*(2*d31)/(d31)/(r3+r1-d31)/(pow(r3+r1+d31,2));
+    
+    velGradMat(0,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((z*r1*(m12*de1dx - dh1dx) - (m12*e1-h1)*(z*dr1dx))/pow(z*r1,2))-
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*(m12*de2dx - dh2dx) - (m12*e2-h2)*(z*dr2dx))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*(m23*de2dx - dh2dx) - (m23*e2-h2)*(z*dr2dx))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*(m23*de3dx - dh3dx) - (m23*e3-h3)*(z*dr3dx))/pow(z*r3,2))+
+    (1/(1+pow((m31*e3-h3)/(z*r3),2)))*((z*r3*(m31*de3dx - dh3dx) - (m31*e3-h3)*(z*dr3dx))/pow(z*r3,2))-
+    (1/(1+pow((m31*e1-h1)/(z*r1),2)))*((z*r1*(m31*de1dx - dh1dx) - (m31*e1-h1)*(z*dr1dx))/pow(z*r1,2));
+    
+    velGradMat(1,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m12*e1-h1)*(z*dr1dy))/pow(z*r1,2))-
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m12*e2-h2)*(z*dr2dy))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m23*e2-h2)*(z*dr2dy))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m23*e3-h3)*(z*dr3dy))/pow(z*r3,2))+
+    (1/(1+pow((m31*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m31*e3-h3)*(z*dr3dy))/pow(z*r3,2))-
+    (1/(1+pow((m31*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m31*e1-h1)*(z*dr1dy))/pow(z*r1,2));
+    
+    velGradMat(2,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((z*r1*m12*de1dz - (m12*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2))-
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*m12*de2dz - (m12*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*m23*de2dz - (m23*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*m23*de3dz - (m23*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))+
+    (1/(1+pow((m31*e3-h3)/(z*r3),2)))*((z*r3*m31*de3dz - (m31*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))-
+    (1/(1+pow((m31*e1-h1)/(z*r1),2)))*((z*r1*m31*de1dz - (m31*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2));
+    
+    velGradMat *= derConst;
+    
+    return velGradMat;
+}
 

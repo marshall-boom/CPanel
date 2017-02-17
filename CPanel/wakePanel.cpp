@@ -10,6 +10,7 @@
 #include "wake.h"
 #include "bodyPanel.h"
 #include "edge.h"
+#include <numeric>
 
 
 wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake,int surfID) : panel(nodes,pEdges,bezNorm,surfID), TEpanel(false), parentWake(parentWake), upperPan(nullptr), lowerPan(nullptr)
@@ -195,3 +196,149 @@ edge* wakePanel::getTE()
 //    
 //    
 //}
+
+std::vector<edge*> wakePanel::edgesInOrder(){
+    // Can put in the constructor at a later time
+    
+    // Function will find the correct panel edges that look like this for a flat wake, but will still find the correct edges when the panel is flipped
+    
+    //       ----0---       --> y
+    //       |      |      |
+    //       1      3      V
+    //       |      |      x
+    //       ----2---
+    //
+    
+    std::vector<edge *> edgesIO(4);
+    std::vector<edge*> pEdges = this->getEdges();
+    
+    // The trailing edge is built first and the parallel downstream edge is always built third
+    edgesIO[0] = pEdges[0];
+    edgesIO[2] = pEdges[2];
+    
+    
+    // Find the vectors in the drawing
+    Eigen::Vector3d a = pEdges[0]->getMidPoint() - this->getCenter();
+    Eigen::Vector3d b = this->getNormal();
+    
+    Eigen::Vector3d c = a.cross(b);
+    Eigen::Vector3d d = center+c;
+    
+    // See if edge1 midpoint or edge 3 midpoint is closer to the point d;
+    double distToE1 = (pEdges[1]->getMidPoint() - d).norm();
+    double distToE3 = (pEdges[3]->getMidPoint() - d).norm();
+    
+    if(distToE3 < distToE1)
+    {
+        edgesIO[3] = pEdges[3];
+        edgesIO[1] = pEdges[1];
+    }
+    else
+    {
+        edgesIO[3] = pEdges[1];
+        edgesIO[1] = pEdges[3];
+    }
+    
+    
+    return edgesIO;
+}
+
+double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
+    //radius will be the average distance between the spanwise particle seed points a la Quackenbush et al. eq. (9)
+    
+    Eigen::Vector3d currPnt = this->getCenter() + dt*Vinf;
+    //    Eigen::Vector3d currPnt = this->partSeedPt(Vinf, dt);
+    
+    wakePanel* neighbor1 = this->getEdges()[1]->getOtherWakePan(this);
+    wakePanel* neighbor2 = this->getEdges()[3]->getOtherWakePan(this);
+    
+    std::vector<double> dist;
+    if(neighbor1) // If there is a neighbor, then use it
+    {
+        Eigen::Vector3d neighbor1Pnt = neighbor1->getCenter() + dt*Vinf;
+        dist.push_back(std::abs((currPnt-neighbor1Pnt).norm()));
+    }
+    if(neighbor2)
+    {
+        Eigen::Vector3d neighbor2Pnt = neighbor2->getCenter() + dt*Vinf;
+        dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
+    }
+    
+    return std::accumulate(dist.begin(), dist.end(), 0.0)/dist.size();
+};
+
+std::vector<cpNode*> wakePanel::pointsInOrder(){
+    // will use edges in order to find the correct points
+    
+    //           0
+    //       1------0       --> y
+    //       |      |      |
+    //      1|      |3      V
+    //       |      |
+    //       2------3      x
+    //           2
+    
+    
+    std::vector<edge*> pEdges = this->edgesInOrder();
+    std::vector<cpNode*> ptsIO(4);
+    
+    // Look at points on the trailing edge first
+    cpNode* n1 = pEdges[0]->getN1();
+    cpNode* n2 = pEdges[0]->getN2();
+    
+    // If n1 shares a node with edge3, then it is node0
+    if(pEdges[3]->containsNode(n1))
+    {
+        ptsIO[0] = n1;
+        ptsIO[1] = n2;
+    }
+    else{
+        ptsIO[0] = n2;
+        ptsIO[1] = n1;
+    }
+    
+    // Now look at other edge
+    n1 = pEdges[2]->getN1();
+    n2 = pEdges[2]->getN2();
+    
+    // If n1 shares a node with edge1 then it is node 2
+    if(pEdges[1]->containsNode(n1))
+    {
+        ptsIO[2] = n1;
+        ptsIO[3] = n2;
+    }
+    else
+    {
+        ptsIO[2] = n2;
+        ptsIO[3] = n1;
+    }
+    
+    
+    return ptsIO;
+}
+
+Eigen::Vector3d wakePanel::partStretching(particle* part){
+    Eigen::Vector3d POI = part->pos;
+    Eigen::Vector3d partStretching;
+    double dist2panel = (POI-center).norm();
+    bool isFarField = false;
+    Eigen::MatrixXd velGradMat = Eigen::Matrix3d::Zero();
+    
+    if(dist2panel/longSide > 5){
+        isFarField = true;
+    }
+    
+    if(isFarField)
+    {
+        velGradMat += velocityGradientPointDoublet(POI);
+    }
+    else
+    {
+        velGradMat += velocityGradientDoublet(POI);
+    }
+    
+    partStretching = velGradMat*part->strength;
+    
+    return partStretching;
+}
+

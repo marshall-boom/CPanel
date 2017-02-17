@@ -706,6 +706,8 @@ void geometry::setInfCoeff()
     
     A.resize(nBodyPans,nBodyPans);
     B.resize(nBodyPans,nBodyPans);
+    C.resize(nBodyPans,w2Panels.size());
+
     
     Eigen::VectorXi percentage(9);
     percentage << 10,20,30,40,50,60,70,80,90;
@@ -756,6 +758,17 @@ void geometry::setInfCoeff()
         }
         
     }
+    
+    // Construct doublet influence coefficient matrices for bufferWake panels
+    
+    for (int i=0; i<nBodyPans; i++)
+    {
+        for (int j=0; j<w2Panels.size(); j++)
+        {
+            C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
+        }
+    }
+    
     std::cout << "Complete" << std::endl;
 
     if (writeCoeffFlag)
@@ -828,7 +841,7 @@ void geometry::readInfCoeff()
     
     std::ifstream fid;
     fid.open(infCoeffFile);
-    int nPans;
+    int nPans, nW2pans;
     fid >> nPans;
     A.resize(nPans,nPans);
     B.resize(nPans,nPans);
@@ -845,6 +858,20 @@ void geometry::readInfCoeff()
         {
             fid >> B(i,j);
         }
+    }
+    if (vortPartFlag)
+    {
+        fid >> nW2pans;
+        C.resize(nPans, nW2pans);
+        
+        for (int i=0; i<bPanels.size(); i++)
+        {
+            for (int j=0; j<w2Panels.size(); j++)
+            {
+                fid >> C(i,j);
+            }
+        }
+        
     }
     fid.close();
 }
@@ -870,6 +897,18 @@ void geometry::writeInfCoeff()
             fid << B(i,j) << "\t";
         }
         fid << "\n";
+    }
+    if(vortPartFlag)
+    {
+        fid << w2Panels.size() << "\n";
+        for (int i=0; i<bPanels.size(); i++)
+        {
+            for (int j=0; j<w2Panels.size(); j++)
+            {
+                fid << C(i,j) << "\t";
+            }
+            fid << "\n";
+        }
     }
     fid.close();
 }

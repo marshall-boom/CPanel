@@ -49,7 +49,11 @@ void VTUfile::write()
             for (int i=0; i<piece.connectivity.rows(); i++)
             {
                 offset(i) = (i+1)*verts;
-                if (verts == 2)
+                if (verts == 1)
+                {
+                    type(i) = 1;
+                }
+                else if (verts == 2)
                 {
                     type(i) = 3;
                 }
@@ -60,6 +64,10 @@ void VTUfile::write()
                 else if (verts == 4)
                 {
                     type(i) = 9;
+                }
+                else if (verts == 8)
+                {
+                    type(i) = 11;
                 }
                 else
                 {

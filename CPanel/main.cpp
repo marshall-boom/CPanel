@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
 //
 
+#include <fenv.h> // Used to debug
 #include <stdio.h>
 #include <iostream>
 #include "CPanelMgr.h"
@@ -93,6 +94,10 @@ int main(int argc, const char * argv[])
         usage(argv);
         exit(EXIT_FAILURE);
     }
+    
+     // Enable all floating point exceptions but FE_INEXACT
+    feraiseexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+    
     
     // Check for file existence
     cpFile inFile(argv[1]);

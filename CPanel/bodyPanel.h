@@ -11,12 +11,17 @@
 
 #include <iostream>
 #include <math.h>
+#include "particle.h"
 #include "panel.h"
+#include "particle.h"
+
 //#include "edge.h"
 //#include "cpNode.h"
 //
 //class edge;
 class cpNode;
+class panel;
+class particle;
 
 class bodyPanel : public panel
 {
@@ -24,15 +29,15 @@ class bodyPanel : public panel
     std::vector<bodyPanel*> neighbors;
     std::vector<bodyPanel*> cluster;
     int TSorder;
-    double sourceStrength;
+    double sourceStrength = 0;
     bool upper; // Sheds wake panel from lower edge
     bool lower; // Sheds wake panel from upper edge
     bool TEpanel;
     edge* TE;
     bool tipFlag;
     bool streamFlag; // Surface Streamline crosses panel.
-    Eigen::Vector3d velocity;
-    double Cp;
+    Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
+    double Cp = 0;
     
     int index; // Index in panel vector contained in geometry class.  Used for interpolating strength for wake panel influences.
     
@@ -46,6 +51,10 @@ class bodyPanel : public panel
     
     bool clusterTest(bodyPanel* other, double angle,bool upFlag,bool lowFlag);
     bool nearTrailingEdge();
+    
+    Eigen::Matrix3d velocityGradientPointSource(Eigen::Vector3d POI);
+    Eigen::Matrix3d velocityGradientQuadSource(Eigen::Vector3d POI);
+    Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
     
     
 public:
@@ -99,6 +108,8 @@ public:
     double getCp() {return Cp;}
     
     std::vector<bodyPanel*> getCluster() {return cluster;}
+    Eigen::Vector3d partStretching(particle* part);
+
 };
 
 #endif /* defined(__CPanel__bodyPanel__) */

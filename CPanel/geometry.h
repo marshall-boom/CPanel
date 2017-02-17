@@ -49,6 +49,9 @@ class geometry
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     
+    Eigen::MatrixXd C; // Wake Doublet Influence Coefficient Matrix
+
+    
     bool writeCoeffFlag;
     bool vortPartFlag;
     std::string infCoeffFile;
@@ -120,9 +123,13 @@ public:
     std::vector<panel*> getPanels();
     std::vector<bodyPanel*>* getBodyPanels() {return &bPanels;}
     std::vector<wakePanel*>* getWakePanels() {return &wPanels;}
+    std::vector<wakePanel*>* getBufferWake2Panels() {return &w2Panels;}
     std::vector<wake*> getWakes();
     Eigen::MatrixXd* getA() {return &A;}
     Eigen::MatrixXd* getB() {return &B;}
+    Eigen::MatrixXd* getC() {return &C;}
+    double getDt() {return dt;}
+
     
 };
 

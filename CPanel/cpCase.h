@@ -29,6 +29,7 @@
 
 class cpCase
 {
+protected:
     geometry *geom;
 
     inputParams* params;
@@ -84,6 +85,7 @@ public:
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
         PG = sqrt(1-pow(mach,2));
+      
     }
     
     virtual ~cpCase();

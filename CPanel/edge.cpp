@@ -114,6 +114,19 @@ bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
     return nullptr;
 }
 
+wakePanel* edge::getOtherWakePan(wakePanel* currentPan)
+{
+    
+    for (int i=0; i<wakePans.size(); i++)
+    {
+        if (wakePans[i] != currentPan)
+        {
+            return wakePans[i];
+        }
+    }
+    return nullptr;
+}
+
 cpNode* edge::getOtherNode(cpNode* current)
 {
     if (current == n1)
@@ -212,4 +225,16 @@ Eigen::Vector3d edge::TEgamma()
         gamma = wakePans[0]->getMu()*getVector().normalized();
     }
     return gamma;
+}
+
+bool edge::containsNode(cpNode* node)
+{
+    if(node == this->getN1() || node == this->getN2())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

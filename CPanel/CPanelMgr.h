@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "cpCase.h"
+#include "cpCaseVP.h"
 #include "inputParams.h"
 #include "geometry.h"
 
@@ -21,6 +22,7 @@ class caseMgr
     Eigen::VectorXi outSpacing;
  
     std::vector<cpCase*> cases;
+    std::vector<cpCaseVP*> casesVP;
     
     void setCases();
     void runCases();

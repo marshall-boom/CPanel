@@ -341,3 +341,176 @@ Eigen::Vector3d panel::pntNearEdge(edge* e)
     return pnt;
 }
 
+
+Eigen::Matrix3d panel::velocityGradientPointDoublet(Eigen::Vector3d POI){
+    Eigen::Matrix3d velGradMat;
+    // dudx  dvdx  dwdx
+    // dudy  dvdy  dwdy
+    // dudz  dvdz  dwdz
+    
+    double x, y, z, x0, y0, z0;
+    x = this->getCenter().x(); y = this->getCenter().y(); z = this->getCenter().z();
+    x0 = POI.x(); y0 = POI.y(); z0 = POI.z();
+    
+    double ddd = pow(pow(x-x0,2) + pow(y-y0,2) + z*z,3.5); // doublet deriv denom
+    double uvConst = 3*doubletStrength*area/(4*M_PI);
+    double wConst = -doubletStrength*area/(4*M_PI);
+    
+    velGradMat(0,0) = uvConst*z*(-4*pow(x-x0,2)+pow(y-y0,2)+z*z)/ddd;
+    velGradMat(1,0) = uvConst*(-5)*z*(y-y0)*(x-x0)/ddd;
+    velGradMat(2,0) = uvConst*(x-x0)*(pow(x-x0,2)+pow(y-y0,2)-4*z*z)/ddd;
+    
+    velGradMat(0,1) = uvConst*(-5)*(x-x0)*(y-y0)*z/ddd;
+    velGradMat(1,1) = uvConst*z*(pow(x-x0,2) - 4*pow(y-y0,2) + z*z)/ddd;
+    velGradMat(2,1) = uvConst*(y-y0)*(pow(x-x0,2) + pow(y-y0,2) - 4*z*z)/ddd;
+    
+    velGradMat(0,2) = wConst*(-3)*(x-x0)*(pow(x-x0,2) + pow(y-y0,2) - 4*z*z)/ddd;
+    velGradMat(1,2) = wConst*(-3)*(y-y0)*(pow(x-x0,2) + pow(y-y0,2) - 4*z*z)/ddd;
+    velGradMat(2,2) = wConst*(-3)*z*(3*pow(x-x0,2) + 3*pow(y-y0,2) - 2*z*z)/ddd;
+    
+    return velGradMat;
+}
+
+Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
+    Eigen::Matrix3d velGradMat = Eigen::Matrix3d::Zero();
+    // dudx  dvdx  dwdx
+    // dudy  dvdy  dwdy
+    // dudz  dvdz  dwdz
+    
+    Eigen::Vector3d p1,p2,a,b,s;
+    int i1,i2;
+    for (int i=0; i<nodes.size(); i++)
+    {
+        if (i!=nodes.size()-1)
+        {
+            i1 = i;
+            i2 = i+1;
+        }
+        else
+        {
+            i1 = i;
+            i2 = 0;
+        }
+        p1 = nodes[i1]->getPnt();
+        p2 = nodes[i2]->getPnt();
+        a = POI-p1;
+        b = POI-p2;
+        s = p2-p1;
+        
+        bool isOnPanel = onPanelCheck(POI);
+        bool isNearFilament = nearFilamentCheck(p1,p2,POI);
+        
+        //If the POI is within the core distance of the filament (isNearFilament), the stretching influence is not accounted for
+        if(isNearFilament == false && isOnPanel == false)
+        {
+            velGradMat += gradDoub(a,b,s);
+        }
+        else if(isNearFilament == false && isOnPanel == true)
+        {
+            // Only add the w gradint values, as u and v are zero on the panel. Katz
+            velGradMat.col(2) += gradDoub(a,b,s).col(2);
+            std::cout << "particle is on Panel" << std::endl; // Also, convet the Katz values to VSaero by dividing(or mult) by 4pi. Do for both source and doublet.
+        }
+    }
+    
+    return velGradMat*doubletStrength/(4*M_PI);
+}
+
+Eigen::Matrix3d panel::gradDoub(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s){
+    Eigen::Matrix3d velGradMat = Eigen::Matrix3d::Zero();
+    
+    Eigen::Vector3d top = (a.norm() + b.norm())*(a.cross(b));
+    double bot = a.norm()*b.norm()*(a.norm()*b.norm()+(a.dot(b)))+pow(core*s.norm(),2);
+    
+    Eigen::Vector3d dadx = {1,0,0};
+    Eigen::Vector3d dbdx = {1,0,0};
+    Eigen::Vector3d dady = {0,1,0};
+    Eigen::Vector3d dbdy = {0,1,0};
+    Eigen::Vector3d dadz = {0,0,1};
+    Eigen::Vector3d dbdz = {0,0,1};
+    
+    double dandx = a.x()/a.norm();
+    double dbndx = b.x()/b.norm();
+    double dandy = a.y()/a.norm();
+    double dbndy = b.y()/b.norm();
+    double dandz = a.z()/a.norm();
+    double dbndz = b.z()/b.norm();
+    
+    Eigen::Vector3d dtopdx = (a.norm()+b.norm())*(dadx.cross(b)+a.cross(dbdx)) + a.cross(b)*(dandx + dbndx);
+    Eigen::Vector3d dtopdy = (a.norm()+b.norm())*(dady.cross(b)+a.cross(dbdy)) + a.cross(b)*(dandy + dbndy);
+    Eigen::Vector3d dtopdz = (a.norm()+b.norm())*(dadz.cross(b)+a.cross(dbdz)) + a.cross(b)*(dandz + dbndz);
+    
+    double dbotdx = dandx*b.norm()*(a.norm()*b.norm()+a.dot(b))+
+    a.norm()*dbndx*(a.norm()*b.norm()+a.dot(b))+
+    a.norm()*b.norm()*(dandx*b.norm()+a.norm()*dbndx+(dadx).dot(b)+a.dot(dbdx));
+    
+    double dbotdy = dandy*b.norm()*(a.norm()*b.norm()+a.dot(b))+
+    a.norm()*dbndy*(a.norm()*b.norm()+a.dot(b))+
+    a.norm()*b.norm()*(dandy*b.norm()+a.norm()*dbndy+(dady).dot(b)+a.dot(dbdy));
+    
+    double dbotdz = dandz*b.norm()*(a.norm()*b.norm()+a.dot(b))+
+    a.norm()*dbndz*(a.norm()*b.norm()+a.dot(b))+
+    a.norm()*b.norm()*(dandz*b.norm()+a.norm()*dbndz+(dadz).dot(b)+a.dot(dbdz));
+    
+    velGradMat.row(0) = (bot*dtopdx - top*dbotdx)/(bot*bot);
+    velGradMat.row(1) = (bot*dtopdy - top*dbotdy)/(bot*bot);
+    velGradMat.row(2) = (bot*dtopdz - top*dbotdz)/(bot*bot);
+    
+    return velGradMat;
+}
+
+
+bool panel::nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI){
+    // Function checks if a point of interest is near a filament. First, the POI (point of interest) is compared with the filament endpoints to see if it is within the core radius value. Next, the cross product is taken between the two vectors going from each endpoint to the POI. If this cross product is within the core value times the edge length, then it is near.
+    
+    
+    bool isNear = false;
+    double edgeLength = (p2-p1).norm();
+    double p1d = (p1-POI).norm();
+    double p2d = (p2-POI).norm();
+    
+    // Check to see if POI is within the core radius of end points
+    if(p1d < core*edgeLength || p2d < core*edgeLength)
+    {
+        isNear = true;
+        return isNear;
+    }
+    
+    // Check to see if point is also outside of the edges
+    bool outsideEdges = false;
+    if(p1d > edgeLength || p2d > edgeLength){
+        outsideEdges = true;
+    }
+    
+    // Check to see if point is within core distance height
+    bool isWithinHeight = false;
+    double dist = ((p1-POI).cross(p2-POI)).norm()/edgeLength;
+    
+    if(dist < core*edgeLength)
+    {
+        isWithinHeight = true;
+    }
+    
+    if(isWithinHeight && !outsideEdges){
+        isNear = true;
+    }
+    
+    return isNear;
+}
+
+bool panel::onPanelCheck(const Eigen::Vector3d &POI){
+    // Checks to see if a point of interest lies on a panel. Will be using my completely arbitrary definition of 5% of the panel's longest side as the cutoff for 'in the panel'
+    
+    Eigen::Vector3d dummy = Eigen::Vector3d::Zero(); //inPanelProjection returns the projected point which is not needed for this application.
+    Eigen::Vector3d pointInLocal = global2local(POI, true);
+    
+    // See if the point is in the projection AND if point in local coords is within the distance of panel
+    if( inPanelProjection(POI, dummy) && (pointInLocal.z() < 0.05*this->longSide) )
+    {
+        return true;
+    }
+    return false;
+    
+}
+
+

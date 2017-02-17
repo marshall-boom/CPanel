@@ -11,6 +11,7 @@
 void caseMgr::setCases()
 {
     cpCase* c;
+    cpCaseVP* cVP;
     for (int v=0; v<p->velocities.rows(); v++)
     {
         for (int a=0; a<p->alphas.rows(); a++)
@@ -19,8 +20,14 @@ void caseMgr::setCases()
             {
                 for (int m=0; m<p->machs.rows(); m++)
                 {
-                            c = new cpCase(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
-                            cases.push_back(c);
+                    if (p->vortexParticles) {
+                        cVP = new cpCaseVP(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
+                        casesVP.push_back(cVP);
+                    }
+                    else{
+                        c = new cpCase(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
+                        cases.push_back(c);
+                    }
                 }
             }
         }
@@ -29,18 +36,41 @@ void caseMgr::setCases()
 
 void caseMgr::runCases()
 {
-    std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
+    std::cout << "\nRunning " << (cases.size() + casesVP.size()) << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
     std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(22) << std::left << "Stability Derivatives" << std::endl;
-    for (int i=0; i<cases.size(); i++)
+    
+    if( p->vortexParticles)
     {
-        std::string out;
-        std::stringstream outstream;
-        outstream << i+1 << "/" << cases.size();
-        out = outstream.str();
-        std::cout << std::setw(10) << std::left << out << std::flush;
-        cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag);
+        for (int i=0; i<casesVP.size(); i++)
+        {
+            std::string out;
+            std::stringstream outstream;
+            outstream << i+1 << "/" << cases.size();
+            out = outstream.str();
+            std::cout << std::setw(10) << std::left << out << std::flush;
+            
+            casesVP[i]->run(true,p->surfStreamFlag,p->stabDerivFlag);
+        }
     }
+    else
+    {
+        for (int i=0; i<cases.size(); i++)
+        {
+            std::string out;
+            std::stringstream outstream;
+            outstream << i+1 << "/" << cases.size();
+            out = outstream.str();
+            std::cout << std::setw(10) << std::left << out << std::flush;
+            
+            cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag);
+        }
+    }
+    
+    
+    
     std::cout << "Complete" << std::endl;
+    std::cout << "when get working, this is how can have different terminal output..." << std::endl;
+    
 }
 
 void caseMgr::writeSummary()
