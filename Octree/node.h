@@ -255,7 +255,7 @@ public:
             {
                 if(part != nParts[i])
                 {
-                    velInfl += nParts[i]->partVelInflGaussian(part);
+                    velInfl += nParts[i]->partVelInfl(part);
                 }
             }
         }
@@ -263,7 +263,7 @@ public:
         {
             if(this->isFarField(part->pos))
             {
-                velInfl = this->multExp->partVelInflGaussian(part);
+                velInfl = this->multExp->partVelInfl(part);
             }
             else
             {
@@ -289,7 +289,7 @@ public:
             {
                 if(nParts[i] != part) // Kroneger delta func.
                 {
-                    stretchInfl += nParts[i]->vortexStretchingGaussian(part);
+                    stretchInfl += nParts[i]->vortexStretching(part);
                 }
             }
         }
@@ -297,7 +297,7 @@ public:
         {
             if(this->isFarField(part->pos))
             {
-                stretchInfl = this->multExp->vortexStretchingGaussian(part);
+                stretchInfl = this->multExp->vortexStretching(part);
             }
             else
             {
@@ -324,7 +324,7 @@ public:
             {
                 if(nParts[i] != part) // Kroneger delta func.
                 {
-                    diffInfl += nParts[i]->viscousDiffusionGaussian(part);
+                    diffInfl += nParts[i]->viscousDiffusion(part);
                 }
             }
         }
@@ -332,7 +332,7 @@ public:
         {
             if(this->isFarField(part->pos))
             {
-                diffInfl = this->multExp->viscousDiffusionGaussian(part);
+                diffInfl = this->multExp->viscousDiffusion(part);
             }
             else
             {

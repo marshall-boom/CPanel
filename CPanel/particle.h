@@ -20,7 +20,7 @@ class wakePanel;
 class particle {
     
     Eigen::Vector3d previousVelInfl, previousStrengthUpdate; //used for Adams-Bashforth stepping routine
-    double coreOverlap = 1.5; // The amount of core overlap between neighboring particles. Wincklemans used 1.3. More info: calebretta pp. 47
+    double coreOverlap = 1.5; // More info: calebretta pp. 47
     
 public:
     double radius;
@@ -41,21 +41,19 @@ public:
     Eigen::Vector3d pos, strength;
     void setPos(Eigen::Vector3d newPos) {pos = newPos;};
     void setStrength(Eigen::Vector3d newStrength) {strength = newStrength;};
-    
-    Eigen::Vector3d partVelInfl(const Eigen::Vector3d &POI);
-    Eigen::Vector3d partVelInflGaussian(particle* part);
-    Eigen::Vector3d partVelInflGaussian(const Eigen::Vector3d &POI);
-    Eigen::Vector3d partStrengthUpdate(particle* part);
-    Eigen::Vector3d partStrengthUpdate(bodyPanel* bPan);
-    
-    Eigen::Vector3d vortexStretchingGaussian(particle* part);
-    Eigen::Vector3d viscousDiffusionGaussian(particle* part);
-    
-    Eigen::Vector3d ptSourceStretching(bodyPanel* bPan);
-    Eigen::Vector3d ptDoubletStretching(bodyPanel* bPan);
-    
     void setParentWake(wakePanel* pan){parentPanel = pan;};
 
+    
+    Eigen::Vector3d partVelInfl(particle* part);
+    Eigen::Vector3d partVelInfl(const Eigen::Vector3d &POI);
+    Eigen::Vector3d vortexStretching(particle* part);
+    Eigen::Vector3d viscousDiffusion(particle* part);
+    
+    
+
+    
+//    Eigen::Vector3d partVelInfl(const Eigen::Vector3d &POI);
+//    Eigen::Vector3d partStrengthUpdate(particle* part);
 };
 
 

@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		012A35081D90A16700DDE256 /* octreeFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E347D61A17F2790054842E /* octreeFile.cpp */; };
+		016CCE531E5A97A500CA3CCD /* cpCaseVP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 016CCE511E5A97A500CA3CCD /* cpCaseVP.cpp */; };
+		016CCE541E5A97A500CA3CCD /* cpCaseVP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 016CCE511E5A97A500CA3CCD /* cpCaseVP.cpp */; };
+		016CCE551E5A97A500CA3CCD /* cpCaseVP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 016CCE511E5A97A500CA3CCD /* cpCaseVP.cpp */; };
 		016D1BCA1D6B6C3F00B2C992 /* inputParams.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8346AFD91A69B861007745C4 /* inputParams.cpp */; };
 		01C0DD6B1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
 		01C0DD6C1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
@@ -153,6 +156,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		016CCE511E5A97A500CA3CCD /* cpCaseVP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cpCaseVP.cpp; path = CPanel/cpCaseVP.cpp; sourceTree = SOURCE_ROOT; };
+		016CCE521E5A97A500CA3CCD /* cpCaseVP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cpCaseVP.h; path = CPanel/cpCaseVP.h; sourceTree = SOURCE_ROOT; };
 		01B5A1EA1DDA6F6700DCB351 /* streamline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = streamline.cpp; path = CPanel/streamline.cpp; sourceTree = SOURCE_ROOT; };
 		01B5A1EB1DDA6F6700DCB351 /* streamline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = streamline.h; path = CPanel/streamline.h; sourceTree = SOURCE_ROOT; };
 		01C0DD621E3179F400F32ECC /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particle.cpp; path = CPanel/particle.cpp; sourceTree = SOURCE_ROOT; };
@@ -347,6 +352,8 @@
 				83BB320C19FD508C005EE19C /* wakeLine.h */,
 				83039E1119129C9100271526 /* wakePanel.cpp */,
 				83039E1219129C9100271526 /* wakePanel.h */,
+				016CCE511E5A97A500CA3CCD /* cpCaseVP.cpp */,
+				016CCE521E5A97A500CA3CCD /* cpCaseVP.h */,
 			);
 			name = CPanel;
 			path = Solver;
@@ -606,6 +613,7 @@
 				83539BD71A23B443002C6865 /* chtlsnd.cpp in Sources */,
 				83EF7A2719EF004700E54C6E /* liftingSurf.cpp in Sources */,
 				8346AFD81A69A396007745C4 /* CPanelMgr.cpp in Sources */,
+				016CCE541E5A97A500CA3CCD /* cpCaseVP.cpp in Sources */,
 				833CAB381A755EF2003F65FE /* edge.cpp in Sources */,
 				8348F5891A253542003FDE1B /* VTUfile.cpp in Sources */,
 				8346AFDB1A69B861007745C4 /* inputParams.cpp in Sources */,
@@ -631,6 +639,7 @@
 				834845E61A74645B00975384 /* geometry.cpp in Sources */,
 				834845EE1A74648700975384 /* wakePanel.cpp in Sources */,
 				01D857011E31853800BB737F /* particleOctree.cpp in Sources */,
+				016CCE551E5A97A500CA3CCD /* cpCaseVP.cpp in Sources */,
 				01C0DD6F1E3179F400F32ECC /* particleFMM.cpp in Sources */,
 				834845E71A74646200975384 /* surface.cpp in Sources */,
 				01C0DD721E3179F400F32ECC /* panelOctree.cpp in Sources */,
@@ -677,6 +686,7 @@
 			files = (
 				01D856FD1E3182E800BB737F /* particleFMM.cpp in Sources */,
 				01D856FF1E31852500BB737F /* particleOctree.cpp in Sources */,
+				016CCE531E5A97A500CA3CCD /* cpCaseVP.cpp in Sources */,
 				01D857021E31871100BB737F /* panelOctree.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

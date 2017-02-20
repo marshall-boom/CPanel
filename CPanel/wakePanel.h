@@ -61,6 +61,7 @@ public:
 
     std::vector<Eigen::Vector3d> vortexRingVectors();
     double getPartRadius(Eigen::Vector3d Vinf, double &dt);
+    bool isSecondRow = false;
 
     
     std::vector<int> sort_indexes(std::vector<double> &v);

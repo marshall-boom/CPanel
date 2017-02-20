@@ -32,7 +32,7 @@ struct inputParams
 //    double c_w;
     double numSteps;
     double streamSpacing;
-    bool accel = false;
+    bool accelerateCode = false;
     bool high_accuracy = false;
     bool unsteady = false;
     std::string bodyKinFileLoc;
@@ -43,7 +43,7 @@ struct inputParams
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;
-    bool vortPartFlag;
+    bool vortexParticles;
     
     inputParams(cpFile* inFile) : inputFile(inFile) {}
     

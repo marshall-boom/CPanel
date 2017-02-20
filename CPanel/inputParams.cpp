@@ -126,7 +126,7 @@ bool inputParams::set()
                 }
                 else if (s1.compare("Vortex_Particle_Wake") == 0)
                 {
-                    fid >> vortPartFlag;
+                    fid >> vortexParticles;
                 }
                 else if (s1.compare("Time_Step") == 0)
                 {
@@ -139,7 +139,7 @@ bool inputParams::set()
                 }
                 else if (s1.compare("Accelerate_Code") == 0)
                 {
-                    fid >> accel;
+                    fid >> accelerateCode;
                 }
                 else if (s1.compare("High_Accuracy") == 0) {
                     fid >> high_accuracy;
@@ -224,13 +224,13 @@ void inputParams::print(std::ostream &stream)
         stream << "OFF" << std::endl;
     
     stream << std::setw(nChars) << "Vortex Particle Wake " << "-> ";
-    if (vortPartFlag)
+    if (vortexParticles)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
 
     stream << std::setw(nChars) << "Accelerate Code " << "-> ";
-    if (accel)
+    if (accelerateCode)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
@@ -357,9 +357,9 @@ void inputParams::writeInputFile()
     fid << "Write_Influence_Coefficients" << std::endl;
     fid << writeCoeffFlag << std::endl;
     fid << "Vortex_Particle_Wake" << std::endl;
-    fid << vortPartFlag << std::endl;
+    fid << vortexParticles << std::endl;
     fid << "Accelerate_Code" << std::endl;
-    fid << accel << std::endl;
+    fid << accelerateCode << std::endl;
     fid << "High_Accuracy" << std::endl;
     fid << high_accuracy << std::endl;
     fid << std::endl;
