@@ -446,6 +446,13 @@ void bodyPanel::computeCp(double Vinf)
     Cp = (1-pow(velocity.norm()/Vinf,2));
 }
 
+void bodyPanel::computeCp(double Vinf,double dt)
+{
+    double dPhi_dt = ( prevPotential - potential ) / dt;
+    
+    Cp = 1 - pow( velocity.norm()/Vinf , 2) - 2/(Vinf*Vinf) * dPhi_dt; // Katz 13.168
+}
+
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
     velocity = pntVelocity(center,potential,PG,Vinf);

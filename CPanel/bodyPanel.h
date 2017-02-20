@@ -83,6 +83,7 @@ public:
     
     void computeVelocity(double PG, const Eigen::Vector3d &Vinf);
     void computeCp(double Vinf);
+    void computeCp(double Vinf,double dt);
     Eigen::Vector3d computeMoments(const Eigen::Vector3d &cg);
     
     void setSigma(Eigen::Vector3d Vinf, double Vnorm);

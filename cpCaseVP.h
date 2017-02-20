@@ -15,7 +15,7 @@
 #include "vortexFilament.h"
 
 
-class cpCaseVP : protected cpCase{
+class cpCaseVP : public cpCase{
     
     std::vector<particle*> particles;
     std::vector<vortexFilament*> filaments;

@@ -44,15 +44,21 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
         particleStrengthUpdate();
         
         // Influence of particles onto body
-        setSourceStrengths();
-        
-        // If forces are desired in middle of sim
-        if(false){
-            compVelocity();
-        }
+        setSourceStrengthsVP();
         
         // Solve system of equations
         converged = solveVPmatrixEq();
+        
+        // If forces are desired in middle of sim
+        if(true){
+            compVelocity();
+        }
+        
+//        writeFilesVP();
+//        timestep++;
+//        // Move Geometry
+//        std::vector<double> bodyKin { 1, 0, 0, 0, 0, 0 };
+//        geom->moveGeom(bodyKin);
         
         writeFilesVP();
         
@@ -223,7 +229,6 @@ bool cpCaseVP::solveVPmatrixEq()
         
     }
     
-    // VinfPlusVecPot
     for (int i=0; i<wPanels->size(); i++)
     {
         (*wPanels)[i]->setPrevStrength((*wPanels)[i]->getMu()); 
@@ -231,7 +236,7 @@ bool cpCaseVP::solveVPmatrixEq()
         
         (*wPanels)[i]->setPotential(VinfPlusVecPot((*wPanels)[i]->getCenter()));
         
-        (*w2panels)[i]->setPotential(VinfPlusVecPot((*w2panels)[i]->getCenter())); // Included in this loop because there are the same number of w2pans as w1pans
+        (*w2panels)[i]->setPotential(VinfPlusVecPot((*w2panels)[i]->getCenter())); // Included in this loop because there are always the same number of w2pans as w1pans
         
     }
     return converged;
@@ -319,7 +324,7 @@ void cpCaseVP::compVelocity()
         p = (*bPanels)[i];
         p->computeVelocity(PG,Vinf(p->getCenter()));
         if (unsteady) {
-//            p->computeCp( Vinf((*bPanels)[i]->getCenter()).norm() , dt ); // Katz 13.169 ///
+            p->computeCp( Vinf((*bPanels)[i]->getCenter()).norm() , dt ); // Katz 13.169 ///
         }else{
             p->computeCp( Vmag );
         }
@@ -334,11 +339,23 @@ void cpCaseVP::compVelocity()
 //    CL.push_back(Fbody.z());
 //    CM_x.push_back(CM(1));
     
-//    std::cout << Fbody.z() << "   " << CM(1) << std::endl;
+    std::cout << Fbody.z() << std::endl;
     
+//    std::cout << std::endl;
 }
 
-void cpCaseVP::trefftzPlaneAnalysis(){}
+void cpCaseVP::trefftzPlaneAnalysis(){
+
+    std::vector<wake*> wakes = geom->getWakes();
+    CL_trefftz = 0;
+    CD_trefftz = 0;
+    for (int i=0; i<wakes.size(); i++)
+    {
+        wakes[i]->trefftzPlane(Vmag,params->Sref);
+        CL_trefftz += wakes[i]->getCL()/PG;
+        CD_trefftz += wakes[i]->getCD()/pow(PG,2);
+    }
+}
 
 void cpCaseVP::particleStrengthUpdate(){
     // This function uses the update equations found in 'Vortex Methods for DNS of...' by Plouhmhans. It uses the particle strength exchange for the viscous diffusion

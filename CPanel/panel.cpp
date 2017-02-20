@@ -95,6 +95,9 @@ void panel::setGeom()
 
 void panel::setPotential(Eigen::Vector3d Vinf)
 {
+    
+    prevPotential = potential;
+
     potential = Vinf.dot(center)-doubletStrength;
 }
 

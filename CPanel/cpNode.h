@@ -47,6 +47,7 @@ public:
     void setTE();
     void setIndex(int i);
     
+    void setPnt(Eigen::Vector3d pos){pnt = pos;}
     Eigen::Vector3d getPnt() const {return pnt;}
     
     int getIndex() const {return index;}

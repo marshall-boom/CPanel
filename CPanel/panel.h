@@ -41,6 +41,7 @@ protected:
 
     double doubletStrength = 0;
     double potential = 0;
+    double prevPotential = 0;
     Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
     double Cp = 0;
     int ID;

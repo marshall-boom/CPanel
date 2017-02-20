@@ -130,7 +130,7 @@ public:
     Eigen::MatrixXd* getC() {return &C;}
     double getDt() {return dt;}
 
-    
+    void moveGeom( std::vector<double> bodyKin );
 };
 
 

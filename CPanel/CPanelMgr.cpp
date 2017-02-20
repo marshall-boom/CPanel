@@ -94,6 +94,9 @@ void caseMgr::writeSummary()
         {
             writeCase(i+1, cases[i], out);
         }
+        for (int i=0; i<casesVP.size(); i++) {
+            writeCase(i+1, casesVP[i], out);
+        }
     }
     std::cout << "Case data written to " << outFile << std::endl;
     

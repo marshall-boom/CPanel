@@ -1054,3 +1054,35 @@ void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, con
     }
     
 }
+
+void geometry::moveGeom( std::vector<double> bodyKin ){
+    
+    for (int i=0; i<nodes.size(); i++) {
+        
+        Eigen::Vector3d localMovement;
+        
+        Eigen::Vector3d pos = nodes[i]->getPnt();
+        
+        // U = U3 + (-q*z + r*y)
+        localMovement.x() = bodyKin[0] - bodyKin[4]*pos.z() + bodyKin[5]*pos.y();
+        
+        // V = V3 + (-r*x + p*z)
+        localMovement.y() = bodyKin[1] - bodyKin[5]*pos.x() + bodyKin[3]*pos.z();
+        
+        // W = W3 + (-p*y + q*x)
+        localMovement.z() = bodyKin[2] - bodyKin[3]*pos.y() + bodyKin[4]*pos.x();
+        
+        nodes[i]->setPnt( pos + localMovement );
+    }
+    
+    std::cout << "Geom moved..." << std::endl;
+    
+}
+
+
+
+
+
+
+
+
