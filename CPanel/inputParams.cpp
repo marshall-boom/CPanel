@@ -141,9 +141,6 @@ bool inputParams::set()
                 {
                     fid >> accelerateCode;
                 }
-                else if (s1.compare("High_Accuracy") == 0) {
-                    fid >> high_accuracy;
-                }
                 else if (s1.compare("Unsteady_Mode") == 0){
                     fid >> unsteady;
                     if(unsteady){
@@ -231,12 +228,6 @@ void inputParams::print(std::ostream &stream)
 
     stream << std::setw(nChars) << "Accelerate Code " << "-> ";
     if (accelerateCode)
-        stream << "ON" << std::endl;
-    else
-        stream << "OFF" << std::endl;
-    
-    stream << std::setw(nChars) << "High Accuracy Mode " << "-> ";
-    if (high_accuracy)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
@@ -360,8 +351,6 @@ void inputParams::writeInputFile()
     fid << vortexParticles << std::endl;
     fid << "Accelerate_Code" << std::endl;
     fid << accelerateCode << std::endl;
-    fid << "High_Accuracy" << std::endl;
-    fid << high_accuracy << std::endl;
     fid << std::endl;
     fid << "% Vortex Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;

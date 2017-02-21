@@ -1205,13 +1205,7 @@ void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nod
 //    for(int i=0;i<particles.size();i++){
 //        
 //        Eigen::Vector3d newPos;
-//        
-//        if(highAccuracy)
-//        {
-//            newPartPositions.push_back(rungeKuttaStepper(particles[i]->pos));
-//        }
-//        else
-//        {
+//
 //            // Adams bashforth scheme
 //            Eigen::Vector3d downwash = Eigen::Vector3d::Zero(); // Used for rotor hover estimation
 ////            downwash.z() = -0.1137;
@@ -1229,7 +1223,6 @@ void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nod
 //            particles[i]->setPrevVelInfl(velOnPart);
 //            newPartPositions.push_back(newPos);
 //        }
-//    }
 //    
 //    for(int i=0;i<particles.size();i++){
 //        particles[i]->setPos(newPartPositions[i]);

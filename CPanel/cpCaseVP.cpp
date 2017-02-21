@@ -60,10 +60,6 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
             
             partOctree.removeData();
             partOctree.setMaxMembers(10); //Barnes Hut
-            
-//            if(highAccuracy){
-//                partOctree.setMaxTheta(0.25);
-//            }
             partOctree.addData(particles);
             
             FMM.build(&partOctree);
@@ -356,7 +352,7 @@ void cpCaseVP::collapseBufferWake(){
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-                strength += edgeStrength((*w2panels)[i], pEdges[j], j); // Don't need to pass in pEdges...
+                strength += (*w2panels)[i]->edgeStrength( pEdges[j], j); // Don't need to pass in pEdges...
             }
         }
         
@@ -364,7 +360,7 @@ void cpCaseVP::collapseBufferWake(){
         Eigen::Vector3d ptVel = Vinf(pos);
         double radius = (*w2panels)[i]->getPartRadius(ptVel,dt); // VinfLocal
         
-        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}, timestep); // Last two are previous pos and strength values used for advanced time stepper.
+        particle* p = new particle(pos, strength, radius, {0,0,0}, {0,0,0}, timestep); // Zeroes are previous pos and strength values used for Adams-Bashforth scheme
         p->parentPanel = (*w2panels)[i];
         particles.push_back(p);
         
@@ -560,7 +556,7 @@ void cpCaseVP::convectParticles()
     }
 }
 
-double bodyKin(int dum1, int dum2){return 3.4;}; ///
+//double bodyKin(int dum1, int dum2){return 3.4;}; ///
 
 Eigen::Vector3d cpCaseVP::Vinf(Eigen::Vector3d POI)
 {
@@ -610,56 +606,7 @@ Eigen::Vector3d cpCaseVP::VinfPlusVecPot(Eigen::Vector3d POI)
     return vInfluence;
 }
 
-Eigen::Vector3d cpCaseVP::edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum){
-    //wait, why can't this go in the panel class?? Ithink it can
-    
-    
-    Eigen::Vector3d strength;
-    std::vector<cpNode*> ptsIO = pan->pointsInOrder();
-    
-    if(edgeNum == 0){
-        std::cout << "Don't try to collapse the upstream edge" << std::endl;
-        std::exit(0);
-        // Equation for part strength comes from Martin eq. 5.25
-        //        Eigen::Vector3d Rj = pan->pointsInOrder()[0]->getPnt();
-        //        Eigen::Vector3d Ri = pan->pointsInOrder()[1]->getPnt();
-        //        strength = (pan->getMu())*(Ri-Rj);
-    }
-    if(edgeNum == 2)
-    {
-        Eigen::Vector3d Rj = pan->pointsInOrder()[2]->getPnt();
-        Eigen::Vector3d Ri = pan->pointsInOrder()[3]->getPnt();
-        strength = (pan->getMu()-pan->getPrevStrength())*(Ri-Rj);
-        
-    }
-    else if(edgeNum == 1)
-    {
-        wakePanel* otherPan = curEdge->getOtherWakePan(pan);
-        Eigen::Vector3d Rj = ptsIO[1]->getPnt();
-        Eigen::Vector3d Ri = ptsIO[2]->getPnt();
-        
-        if(otherPan) // Panel has neighbor
-        {
-            strength = (pan->getMu()-otherPan->getMu())*(Ri-Rj);
-        }else{
-            strength = pan->getMu()*(Ri-Rj);
-        }
-    }
-    else // Is edge 3
-    {
-        wakePanel* otherPan = curEdge->getOtherWakePan(pan);
-        Eigen::Vector3d Rj = ptsIO[3]->getPnt();
-        Eigen::Vector3d Ri = ptsIO[0]->getPnt();
-        
-        if(otherPan)
-        {
-            strength = (pan->getMu()-otherPan->getMu())*(Ri-Rj);
-        }else{
-            strength = pan->getMu()*(Ri-Rj);
-        }
-    }
-    return strength;
-}
+
 
 Eigen::Vector3d cpCaseVP::rungeKuttaStepper( Eigen::Vector3d POI ){
     

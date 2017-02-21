@@ -556,3 +556,48 @@ Eigen::Vector3d wakePanel::partSeedPt(Eigen::Vector3d &Vinf, double &dt){ //VPP
     
     return (n0+n1+n2+n3)/4;
 }
+
+Eigen::Vector3d wakePanel::edgeStrength( edge* curEdge, int edgeNum){
+    
+    
+    Eigen::Vector3d strength;
+    std::vector<cpNode*> ptsIO = this->pointsInOrder();
+    
+    if(edgeNum == 0){
+        std::cout << "Don't try to collapse the upstream edge" << std::endl;
+        std::exit(0);
+    }
+    if(edgeNum == 2)
+    {
+        Eigen::Vector3d Rj = this->pointsInOrder()[2]->getPnt();
+        Eigen::Vector3d Ri = this->pointsInOrder()[3]->getPnt();
+        strength = (this->getMu()-this->getPrevStrength())*(Ri-Rj);
+    }
+    else if(edgeNum == 1)
+    {
+        wakePanel* otherPan = curEdge->getOtherWakePan(this);
+        Eigen::Vector3d Rj = ptsIO[1]->getPnt();
+        Eigen::Vector3d Ri = ptsIO[2]->getPnt();
+        
+        if(otherPan) // Panel has neighbor
+        {
+            strength = (this->getMu()-otherPan->getMu())*(Ri-Rj);
+        }else{
+            strength = this->getMu()*(Ri-Rj);
+        }
+    }
+    else // Is edge 3
+    {
+        wakePanel* otherPan = curEdge->getOtherWakePan(this);
+        Eigen::Vector3d Rj = ptsIO[3]->getPnt();
+        Eigen::Vector3d Ri = ptsIO[0]->getPnt();
+        
+        if(otherPan)
+        {
+            strength = (this->getMu()-otherPan->getMu())*(Ri-Rj);
+        }else{
+            strength = this->getMu()*(Ri-Rj);
+        }
+    }
+    return strength;
+}

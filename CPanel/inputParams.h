@@ -33,7 +33,6 @@ struct inputParams
     double numSteps;
     double streamSpacing;
     bool accelerateCode = false;
-    bool high_accuracy = false;
     bool unsteady = false;
     std::string bodyKinFileLoc;
     

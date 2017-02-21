@@ -77,7 +77,8 @@ public:
     void setBufferParent(wakePanel* pan){bufferParent = pan;};
     wakePanel* getBufferParent(){return bufferParent;};
 
-    
+    Eigen::Vector3d edgeStrength( edge* curEdge, int edgeNum);
+
 };
 
 #endif /* defined(__CPanel__wakePanel__) */
