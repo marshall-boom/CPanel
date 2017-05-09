@@ -128,6 +128,25 @@ bool inputParams::set()
                 {
                     fid >> vortexParticles;
                 }
+                else if (s1.compare("Volume_Mesh") == 0)
+                {
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+                    fid >> volMeshFlag;
+                    if (volMeshFlag)
+                    {
+                        double lim;
+                        for (int i=0; i<6; i++) {
+                            fid >> lim;
+                            volMeshBounds.push_back(lim);
+                        }
+                        int res;
+                        for (int i=0; i<3; i++) {
+                            fid >> res;
+                            volMeshRes.push_back(res);
+                        }
+                        std::cout << std::endl;
+                    }
+                }
                 else if (s1.compare("Time_Step") == 0)
                 {
                     fid >> timeStep;
@@ -136,6 +155,11 @@ bool inputParams::set()
                 {
                     fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');                    
                     fid >> numSteps;
+                    if(numSteps != 0){
+                        stepsSetMaunally = true;
+                    }else{
+                        stepsSetMaunally = false;
+                    }
                 }
                 else if (s1.compare("Accelerate_Code") == 0)
                 {

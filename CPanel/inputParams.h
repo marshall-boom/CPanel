@@ -28,9 +28,9 @@ struct inputParams
     double Sref;
     double bref;
     double cref;
-    double timeStep; //VPP
-//    double c_w;
+    double timeStep; 
     double numSteps;
+    bool stepsSetMaunally;
     double streamSpacing;
     bool accelerateCode = false;
     bool unsteady = false;
@@ -43,6 +43,13 @@ struct inputParams
     bool stabDerivFlag;
     bool writeCoeffFlag;
     bool vortexParticles;
+    bool volMeshFlag;
+    
+    double meshXo;
+    double meshXf;
+    std::vector<double> volMeshBounds;
+    std::vector<int> volMeshRes;
+    
     
     inputParams(cpFile* inFile) : inputFile(inFile) {}
     

@@ -213,8 +213,7 @@ public:
         return isSame;
     }
     
-    Eigen::Vector3d calcVel(Eigen::Vector3d POI)
-    {
+    Eigen::Vector3d calcVel(Eigen::Vector3d POI){
         
         Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
@@ -244,8 +243,7 @@ public:
         return velInfl;
     }
     
-    Eigen::Vector3d calcVel(type* part)
-    {
+    Eigen::Vector3d calcVel(type* part){
         
         Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
@@ -278,8 +276,7 @@ public:
         return velInfl;
     }
     
-    Eigen::Vector3d calcStretch(type* part)
-    {
+    Eigen::Vector3d calcStretch(type* part){
         
         Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
@@ -313,8 +310,7 @@ public:
     }
 
     
-    Eigen::Vector3d calcDiff(type* part)
-    {
+    Eigen::Vector3d calcDiff(type* part){
         
         Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
@@ -364,8 +360,8 @@ public:
 //        }
 //    };
     
-    bool isFarField(node<type>* otherNode)
-    {
+    bool isFarField(node<type>* otherNode){
+        // Follows documentation in FTM chapter of Connor's thesis
 
         // Width of Node
         double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
@@ -385,8 +381,7 @@ public:
         }
     };
     
-    bool isFarField(Eigen::Vector3d POI)
-    {
+    bool isFarField(Eigen::Vector3d POI){
         
         // Width of Node
         double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic

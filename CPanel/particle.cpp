@@ -49,8 +49,7 @@ Eigen::Vector3d particle::partVelInfl(const Eigen::Vector3d &POI){
 };
 
 
-Eigen::Vector3d particle::vortexStretching(particle* part)
-{
+Eigen::Vector3d particle::vortexStretching(particle* part){
     
     if(this == part){return Eigen::Vector3d::Zero();} // Particle doesn't influence itself
     
@@ -94,8 +93,7 @@ Eigen::Vector3d particle::vortexStretching(particle* part)
 
 
 
-Eigen::Vector3d particle::viscousDiffusion(particle* part)
-{
+Eigen::Vector3d particle::viscousDiffusion(particle* part){
     // From Ploumhans: 'Vortex Methods for 3D Bluff...'
     
     if(this == part){return Eigen::Vector3d::Zero();} // Part doesn't influence itself
@@ -121,7 +119,7 @@ Eigen::Vector3d particle::viscousDiffusion(particle* part)
 
 //=======================================//
 
-// This function is much faster than using the Gaussian influence (above). However, it is not technically as stable. This influencing function could be used for almost all simulations. However, I wanted to make sure the solver was robust in case CPanel is extended to a very parallel, high resultion solver.
+// This method is faster than using the Gaussian influence (above). However, it is not technically as stable. This influencing function could be used for almost all simulations. However, I (connor) wanted to make sure the solver was robust in case CPanel is extended to a very parallel, high resultion solver.
 
 
 //Eigen::Vector3d particle::partVelInfl(const Eigen::Vector3d &POI){

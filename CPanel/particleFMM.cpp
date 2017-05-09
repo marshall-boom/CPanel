@@ -10,8 +10,7 @@
 #include "particle.h"
 #include "cpCase.h"
 
-void particleFMM::build(particleOctree* tree)
-{
+void particleFMM::build(particleOctree* tree){
 
     partTree = tree;
     levels = tree->numTreeLevels();
@@ -19,8 +18,7 @@ void particleFMM::build(particleOctree* tree)
     computeMultExp();
 }
 
-void particleFMM::computeMultExp()
-{
+void particleFMM::computeMultExp(){
     for(int i=levels+1; i>1; i--)
     { // Ignore root node. 1 based indexing for tree
         std::vector<node<particle> *> nodes = partTree->getLevelNodes(i);
@@ -55,8 +53,7 @@ void particleFMM::computeMultExp()
 }
 
 
-Eigen::Vector3d particleFMM::barnesHutVel(Eigen::Vector3d POI)
-{
+Eigen::Vector3d particleFMM::barnesHutVel(Eigen::Vector3d POI){
     // Ignore the root node. Root node wouldn't be beneficial in implementation since octree is always near POI. Instead, start at level 2
     
     Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
@@ -70,8 +67,8 @@ Eigen::Vector3d particleFMM::barnesHutVel(Eigen::Vector3d POI)
     return velInfl;
 }
 
-Eigen::Vector3d particleFMM::barnesHutVel(particle* part)
-{
+Eigen::Vector3d particleFMM::barnesHutVel(particle* part){
+    // Overloaded for particle to particle interactions
     // Ignore the root node. Root node wouldn't be beneficial in implementation since octree is always near POI. Instead, start at level 2
     
     Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
@@ -85,8 +82,7 @@ Eigen::Vector3d particleFMM::barnesHutVel(particle* part)
     return velInfl;
 }
 
-Eigen::Vector3d particleFMM::barnesHutStretch(particle* part)
-{
+Eigen::Vector3d particleFMM::barnesHutStretch(particle* part){
     Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
@@ -98,8 +94,7 @@ Eigen::Vector3d particleFMM::barnesHutStretch(particle* part)
     return stretchInfl;
 }
 
-Eigen::Vector3d particleFMM::barnesHutDiff(particle* part)
-{
+Eigen::Vector3d particleFMM::barnesHutDiff(particle* part){
     Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
@@ -147,17 +142,7 @@ Eigen::Vector3d particleFMM::findExpPos(std::vector<particle*> parts)
 }
 
 
-//Eigen::Vector3d particleFMM::findExpPos(node<particle>* thisNode){
-//    std::vector<particle*> nParts = thisNode->getMembers();
-//    
-//    Eigen::Vector3d nodePos = Eigen::Vector3d::Zero();
-//    
-//    for (int i=0; i<nParts.size(); i++) {
-//        nodePos+=nParts[i]->pos;
-//    }
-//    
-//    return nodePos/=nParts.size();
-//}
+
 
 
 
@@ -196,22 +181,9 @@ double particleFMM::findExpRadius(node<particle>* thisNode){
         nodeRad+=nodeParticles[i]->radius;
     }
     
-//    return nodeRad/=nodeParticles.size();
     return nodeRad;
 }
 
-double particleFMM::findExpRadius(std::vector<particle*> parts){
-    // Overloaded function does same as above, but intakes a vector of particles
-    
-    double nodeRad = 0;
-    
-    for (int i=0; i<parts.size(); i++) {
-        nodeRad+=parts[i]->radius;
-    }
-    
-    //    return nodeRad/=nodeParticles.size();
-    return nodeRad;
-}
 
 
 //write first here, then make a general case in a new folder above using a general type.

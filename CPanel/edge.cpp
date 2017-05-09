@@ -231,17 +231,6 @@ Eigen::Vector3d edge::TEgamma()
     return gamma;
 }
 
-//double edge::neighbPanMu(wakePanel* currentPan){
-//    
-//    for (int i=0; i<wakePans.size(); i++)
-//    {
-//        if (wakePans[i] != currentPan)
-//        {
-//            return wakePans[i]->getMu();
-//        }
-//    }
-//    return 0;
-//}
 
 bool edge::containsNode(cpNode* node)
 {

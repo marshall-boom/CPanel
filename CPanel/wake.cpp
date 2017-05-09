@@ -172,19 +172,17 @@ void wake::trefftzPlane(double Vinf,double Sref)
         i += 2;
     }
     
-    
-    std::cout << "CL_t_base = " << CL << std::endl;
-    std::cout << "CD_t_base = " << CD << std::endl;
 }
 
 
 void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* particles, int numSimSteps){
     
+    
     // Finding row of particles to use
     if(numSimSteps % 2 != 0){
         numSimSteps++;
     }
-    int partRow = numSimSteps/2;
+    int partRow = numSimSteps/2 + 2; // Particles aren't shed until timestep 3
     
     // Collect these particles in a vector
     std::vector<particle*> unsortedParts;
@@ -284,7 +282,6 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     for (int i=1; i<Spts.size(); i++)
     {
         Eigen::Vector3d pWake = Spts[i];
-//        pWake.z() += 0.01; // Proper implementation would find S normal and project
         
         Eigen::Vector3d partV = Eigen::Vector3d::Zero();
         for (int j=0; j<(*particles).size(); j++) {
@@ -295,7 +292,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         
         
         double parentPanWeightedY = particlePntInWakeY( Spts[i] , SptsP1[i] , SptsP2[i]);
-        double stFac = stretchFactor( Spts[i] , SptsP1[i] , SptsP2[i]);
+        double stFac = stretchFactor(SptsP1[i] , SptsP2[i]);
 
         dPhi(i) = -wakeStrength(parentPanWeightedY) * stFac;
 
@@ -316,7 +313,8 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     
 //    std::cout << "CL_t_VP = " << CL << std::endl;
 //    std::cout << "CD_t_VP = " << CD << std::endl;
-    
+
+//    std::cout << CL << " " << CD << std::endl;
 }
 
 
@@ -359,7 +357,7 @@ double wake::particlePntInWakeY(Eigen::Vector3d pt , particle* P1 , particle* P2
     
 }
 
-double wake::stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2){
+double wake::stretchFactor(particle* P1 , particle* P2){
     
     double dShed = (P2->parentPanel->getCenter() - P1->parentPanel->getCenter()).norm();
     double dCurr = (P2->pos - P1->pos).norm();
@@ -591,100 +589,100 @@ double wake::Vradial(Eigen::Vector3d pWake)
     return Vr;
 }
 
-Eigen::Vector3d wake::Vradial2(Eigen::Vector3d pWake)
-{
-    double r;
-    double theta = M_PI/4;
-    double dZmax = 0.3;
-    double delZ;
-    Eigen::Vector3d POI;
-    POI(0) = pWake(0);
-    if (pWake(1) >= 0)
-    {
-        r = yMax-pWake(1);
-    }
-    else
-    {
-        r = pWake(1)-yMin;
-    }
-    delZ = r*sin(theta);
-    if (delZ > dZmax)
-    {
-        delZ = dZmax;
-        theta = asin(dZmax/r);
-    }
-    if (pWake(1) >= 0)
-    {
-        POI(1) = yMax-r*cos(theta);
-    }
-    else
-    {
-        POI(1) = yMin+r*cos(theta);
-    }
-    
-    POI(2) = pWake(2)+r*sin(theta);
-    
-    
-    double Vr;
-    int nPnts = 6;
-    if (nPnts % 2 != 0)
-    {
-        nPnts++;
-    }
-    double dz = 0.5*delZ;
-    double step = 2*dz/(nPnts-1);
-    double phiPOI = 0;
-    Eigen::VectorXd dPhiy(nPnts);
-    Eigen::VectorXd dPhiz(nPnts);
-    Eigen::MatrixXd dY(nPnts,1);
-    Eigen::MatrixXd dZ(nPnts,1);
-    //    for (int i=0; i<wpanels.size(); i++)
-    //    {
-    //        phiPOI += wpanels[i]->panelPhi(POI);
-    //    }
-    phiPOI = geom->wakePotential(POI);
-    
-    int i=0;
-    while (i < nPnts)
-    {
-        double phiPnt1 = 0;
-        double phiPnt2 = 0;
-        double delta = -dz+i*step;
-        Eigen::Vector3d ydir,zdir;
-        ydir << 0,1,0;
-        zdir << 0,0,1;
-        Eigen::Vector3d pnt1 = POI+delta*ydir;
-        Eigen::Vector3d pnt2 = POI+delta*zdir;
-        //        for (int j=0; j<wpanels.size(); j++)
-        //        {
-        //            phiPnt1 += wpanels[j]->panelPhi(pnt1);
-        //            phiPnt2 += wpanels[j]->panelPhi(pnt2);
-        //        }
-        phiPnt1 = geom->wakePotential(pnt1);
-        phiPnt2 = geom->wakePotential(pnt2);
-        
-        dPhiy(i) = phiPnt1-phiPOI;
-        dPhiz(i) = phiPnt2-phiPOI;
-        dY(i) = pnt1(1) - POI(1);
-        dZ(i) = pnt2(2) - POI(2);
-        i = i+1;
-    }
-    
-    Eigen::MatrixXd Xb(0,3),Vb(0,3);
-    Eigen::Vector3d V0 = Eigen::Vector3d::Zero();
-    Eigen::Matrix<double,1,1> x0;
-    x0.setZero();
-    chtlsnd weightsY(x0,dY,3,Xb,Vb,V0);
-    double v = weightsY.getF().row(0)*dPhiy;
-    chtlsnd weightsZ(x0,dZ,3,Xb,Vb,V0);
-    double w = weightsZ.getF().row(0)*dPhiz;
-    Vr = sqrt(pow(v,2)+pow(w,2));
-    return {0,v,w};
-}
+//Eigen::Vector3d wake::Vradial2(Eigen::Vector3d pWake)
+//{
+//    double r;
+//    double theta = M_PI/4;
+//    double dZmax = 0.3;
+//    double delZ;
+//    Eigen::Vector3d POI;
+//    POI(0) = pWake(0);
+//    if (pWake(1) >= 0)
+//    {
+//        r = yMax-pWake(1);
+//    }
+//    else
+//    {
+//        r = pWake(1)-yMin;
+//    }
+//    delZ = r*sin(theta);
+//    if (delZ > dZmax)
+//    {
+//        delZ = dZmax;
+//        theta = asin(dZmax/r);
+//    }
+//    if (pWake(1) >= 0)
+//    {
+//        POI(1) = yMax-r*cos(theta);
+//    }
+//    else
+//    {
+//        POI(1) = yMin+r*cos(theta);
+//    }
+//    
+//    POI(2) = pWake(2)+r*sin(theta);
+//    
+//    
+//    double Vr;
+//    int nPnts = 6;
+//    if (nPnts % 2 != 0)
+//    {
+//        nPnts++;
+//    }
+//    double dz = 0.5*delZ;
+//    double step = 2*dz/(nPnts-1);
+//    double phiPOI = 0;
+//    Eigen::VectorXd dPhiy(nPnts);
+//    Eigen::VectorXd dPhiz(nPnts);
+//    Eigen::MatrixXd dY(nPnts,1);
+//    Eigen::MatrixXd dZ(nPnts,1);
+//    //    for (int i=0; i<wpanels.size(); i++)
+//    //    {
+//    //        phiPOI += wpanels[i]->panelPhi(POI);
+//    //    }
+//    phiPOI = geom->wakePotential(POI);
+//    
+//    int i=0;
+//    while (i < nPnts)
+//    {
+//        double phiPnt1 = 0;
+//        double phiPnt2 = 0;
+//        double delta = -dz+i*step;
+//        Eigen::Vector3d ydir,zdir;
+//        ydir << 0,1,0;
+//        zdir << 0,0,1;
+//        Eigen::Vector3d pnt1 = POI+delta*ydir;
+//        Eigen::Vector3d pnt2 = POI+delta*zdir;
+//        //        for (int j=0; j<wpanels.size(); j++)
+//        //        {
+//        //            phiPnt1 += wpanels[j]->panelPhi(pnt1);
+//        //            phiPnt2 += wpanels[j]->panelPhi(pnt2);
+//        //        }
+//        phiPnt1 = geom->wakePotential(pnt1);
+//        phiPnt2 = geom->wakePotential(pnt2);
+//        
+//        dPhiy(i) = phiPnt1-phiPOI;
+//        dPhiz(i) = phiPnt2-phiPOI;
+//        dY(i) = pnt1(1) - POI(1);
+//        dZ(i) = pnt2(2) - POI(2);
+//        i = i+1;
+//    }
+//    
+//    Eigen::MatrixXd Xb(0,3),Vb(0,3);
+//    Eigen::Vector3d V0 = Eigen::Vector3d::Zero();
+//    Eigen::Matrix<double,1,1> x0;
+//    x0.setZero();
+//    chtlsnd weightsY(x0,dY,3,Xb,Vb,V0);
+//    double v = weightsY.getF().row(0)*dPhiy;
+//    chtlsnd weightsZ(x0,dZ,3,Xb,Vb,V0);
+//    double w = weightsZ.getF().row(0)*dPhiz;
+//    Vr = sqrt(pow(v,2)+pow(w,2));
+//    return {0,v,w};
+//}
 
 
 Eigen::Vector3d wake::pntInWake(double x, double y)
-{   //Connor's note: function finds the TE that projects out to the input point and then finds where the point lies on the trailing edge. Some testing (with a flat wake) showed that it doesn't change the x or y inputs, maybe it just finds the 'z' value??
+{   //Connor's note: function finds the TE that projects out to the input point and then finds where the point lies on the trailing edge. Some testing (with a flat wake) showed that it doesn't change the x or y inputs, maybe it just finds the 'z' value?
     
     Eigen::Vector3d p1,p2,tvec,pnt,out,pntInWake;
     double t,scale;

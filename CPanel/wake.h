@@ -44,13 +44,13 @@ class wake
     void setWakeDimensions();
     wakeLine* findWakeLine(double y);
     double Vradial(Eigen::Vector3d pWake);
-    Eigen::Vector3d Vradial2(Eigen::Vector3d pWake);
+//    Eigen::Vector3d Vradial2(Eigen::Vector3d pWake);
     Eigen::Vector3d pntInWake(double x, double y);
 //    Eigen::Vector3d pntVel(Eigen::Matrix<double,1,3> POI, Eigen::MatrixXd pntCloud,Eigen::Matrix<bool,Eigen::Dynamic,1> upperFlag, Eigen::Vector3d Vinf);
     
     double particlePntInWakeY(Eigen::Vector3d Spts , particle* SptsP1 , particle* SptsP2);
     double dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2);
-    double stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2);
+    double stretchFactor( particle* P1 , particle* P2 );
 
 
     

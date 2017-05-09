@@ -25,3 +25,30 @@ Eigen::Vector3d vortexFil::velInfl(Eigen::Vector3d POI){
     
     return vel*strength/(4*M_PI);
 }
+
+//Eigen::Vector3d vortexFil::moveNode(Eigen::Vector3d pos, double dt, std::vector<double> bodyKin){
+//    
+//    
+//    Eigen::Vector3d localMovement;
+//    
+//    // U = U3 + (-q*z + r*y)
+//    localMovement.x() = bodyKin[0] - bodyKin[4]*pos.z() + bodyKin[5]*pos.y();
+//    
+//    // V = V3 + (-r*x + p*z)
+//    localMovement.y() = bodyKin[1] - bodyKin[5]*pos.x() + bodyKin[3]*pos.z();
+//    
+//    // W = W3 + (-p*y + q*x)
+//    localMovement.z() = bodyKin[2] - bodyKin[3]*pos.y() + bodyKin[4]*pos.x();
+//    
+//    return  pos + localMovement*dt;
+//    
+//}
+//
+//void vortexFil::moveFilament(std::vector<double> bodyKin, double dt){
+//    
+//    Eigen::Vector3d newP1 = moveNode(p1, dt, bodyKin);
+//    Eigen::Vector3d newP2 = moveNode(p2, dt, bodyKin);
+//
+//    p1 = newP1;
+//    p2 = newP2;
+//}

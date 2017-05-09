@@ -8,8 +8,7 @@
 
 #include "particleOctree.h"
 
-Eigen::Vector3d particleOctree::findRefPoint(const particle &obj)
-{
+Eigen::Vector3d particleOctree::findRefPoint(const particle &obj){
     return obj.pos;
 }
 

@@ -29,7 +29,6 @@ class particleFMM
     Eigen::Vector3d findExpStrength(std::vector<particle*> parts);
 
     double findExpRadius(node<particle>* thisNode);
-    double findExpRadius(std::vector<particle*> parts);
     
     void printParts();
     void printMultExps();

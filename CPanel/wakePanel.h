@@ -59,7 +59,7 @@ public:
     Eigen::Vector3d panToPartStrengthT1();
     Eigen::Vector3d panToPartStrength();
 
-    std::vector<Eigen::Vector3d> vortexRingVectors();
+//    std::vector<Eigen::Vector3d> vortexRingVectors();
     double getPartRadius(Eigen::Vector3d Vinf, double &dt);
     bool isSecondRow = false;
 

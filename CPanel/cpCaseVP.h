@@ -24,28 +24,27 @@ class cpCaseVP : public cpCase{
     std::vector<particle*> particles;
     std::vector<vortexFil*> filaments;
     std::vector<wakePanel*>* w2panels; // Second row of buffer wake
+
+    Eigen::VectorXd wake2Doublets;
     
+    void convectBufferWake();
+    void setSourceStrengthsVP();
+    bool solutionConvergence();
     
     bool solveMatrixEq();
     bool solveVPmatrixEq();
-    void convectBufferWake();
     bool edgeIsUsed(edge* thisEdge, std::vector<edge*> pEdges);
     void collapseBufferWake();
-    void setSourceStrengthsVP();
     void compVelocity();
-    void trefftzPlaneAnalysis();
+    void trefftzPlaneAnalysisVP();
+    void stabilityDerivativesVP();
     void particleStrengthUpdate();
     void convectParticles();
-    void writeFiles();
-    
-    bool solutionConvergence();
-    double changeCDnm1, changeCLnm1;
     
     Eigen::Vector3d Vinf(Eigen::Vector3d POI);
     Eigen::Vector3d VinfPlusVecPot(Eigen::Vector3d POI);
-    Eigen::Vector3d edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum);
-    Eigen::Vector3d rungeKuttaStepper(Eigen::Vector3d POI);
     
+    Eigen::Vector3d rungeKuttaStepper(Eigen::Vector3d POI);
     Eigen::Vector3d velocityInflFromEverything(Eigen::Vector3d POI);
     Eigen::Vector3d velocityInflFromEverything(particle* part);
     
@@ -57,10 +56,9 @@ class cpCaseVP : public cpCase{
     void writeParticleData(boost::filesystem::path path);
     
     void readBodyKinFile();
+    void populateVolMesh();
     
-    Eigen::VectorXd wake2Doublets;
     int timestep = 1;
-    
     double dt;
     int numSteps;
     bool accelerate;
@@ -71,8 +69,8 @@ class cpCaseVP : public cpCase{
     particleFMM FMM;
     Eigen::MatrixXd bodyKin;
 
-    
-    
+//    void moveGeometry();
+
     
 public:
     cpCaseVP( geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams ) : cpCase( geom, V, alpha, beta, mach, inParams )

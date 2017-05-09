@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include "wakePanel.h"
+#include "geometry.h"
 #include <Eigen/Dense>
 
 class vortexFil{
@@ -26,6 +27,9 @@ public:
     double getStrength(){return strength;};
     Eigen::Vector3d getP1(){return p1;};
     Eigen::Vector3d getP2(){return p2;};
+    
+    Eigen::Vector3d moveNode(Eigen::Vector3d pos, double dt, std::vector<double> bodyKin);
+    void moveFilament(std::vector<double> bodyKin, double dt);
 };
 
 

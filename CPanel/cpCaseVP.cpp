@@ -12,41 +12,47 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
     
     if(unsteady){
         readBodyKinFile();
+        solnMat.resize(numSteps, 12);
     }
     
-    bool converged = false;
+    bool matrix_convergence = false;
     std::string check = "\u2713";
+    std::setprecision(5);
+    if(printFlag) std::cout << std::setw(11) << " Time step " << std::to_string(timestep) + "/" + std::to_string(numSteps) + ".  " << "Flow time = " << std::setw(5) << std::to_string(timestep*dt) + ". " << std::endl;
+    
+    // First time step
     setSourceStrengths();
-    
-    converged = solveMatrixEq();
+    matrix_convergence = solveMatrixEq();
+    if (unsteady) compVelocity();
     writeFilesVP();
-    
-    bool matrixConversion = false;
-    
-    if(unsteady){
-//            compVelocity(); // This doesn't need to be here unless solving Cl/Cd etc
-    }
-    
+//    moveGeometry();
+
     
     // Initially convect buffer wake and solve
     timestep++;
-    convectBufferWake(); ///
-    converged = solveVPmatrixEq();
-    if (unsteady) { /* compVelocity(); */ }
+    if(printFlag) std::cout << std::setw(11) << " Time step " << std::to_string(timestep) + "/" + std::to_string(numSteps) + ".  " << "Flow time = " << std::setw(5) << std::to_string(timestep*dt) + ". " << std::endl;
+    
+    convectBufferWake();
+    matrix_convergence = solveVPmatrixEq();
+    
+    if (unsteady) compVelocity();
     writeFilesVP();
+//    moveGeometry();
+
     
     // For rest of timesteps
     while (timestep < numSteps){
         
         timestep++;
-        
-        std::cout << "Time step " << timestep << "/" << numSteps << ".  Flow time = " << timestep*dt;
-        std::cout << ".  " << particles.size() << " particles" << std::endl;
-        
+        if(printFlag) std::cout << std::setw(11) << " Time step " << (std::to_string(timestep) + "/" + std::to_string(numSteps) + ".  ") << "Flow time = " << std::setw(8) << std::to_string(timestep*dt) + ".  " << particles.size() << " particles" << std::endl;
+
         convectParticles();
         
         // Turn second row of wake panels into particles
         collapseBufferWake();
+        
+        // Move Geometry
+//        moveGeometry();
         
         // Advance first row of wake panels to second row
         convectBufferWake();
@@ -54,10 +60,8 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
         // Influence of body and particles onto particles
         particleStrengthUpdate();
         
-        
-        // SOMETHING SOMETHING OCTREEE------------------
+        // Build/update particle octree
         if(accelerate){
-            
             partOctree.removeData();
             partOctree.setMaxMembers(10); //Barnes Hut
             partOctree.addData(particles);
@@ -65,106 +69,82 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
             FMM.build(&partOctree);
         }
         
-        
         // Influence of particles onto body
         setSourceStrengthsVP();
         
         // Solve system of equations
-        matrixConversion = solveVPmatrixEq();
+        matrix_convergence = solveVPmatrixEq();
         
         // Check for simulation convergence
-        if (!matrixConversion) {
-            std::cout << "*** Warning : Solution did not converge ***" << std::endl;
+        if(!matrix_convergence){
+            std::cout << "*** Warning : Matrix solution did not converge ***" << std::endl;
             std::exit(0);
         }else{
-            bool conv = solutionConvergence();
-            if (conv) {
-                //                    break;
+            bool soln_conv = solutionConvergence();
+            if (soln_conv) {
+                if(printFlag) std::cout << "Converged..." << std::endl;
+                break;
             }
         }
         
-        // If forces are desired in middle of sim
-        if(unsteady){
-            compVelocity();
-        }
-        
-//        writeFilesVP();
-//        timestep++;
-//        // Move Geometry
-//        std::vector<double> bodyKin { 1, 0, 0, 0, 0, 0 };
-//        geom->moveGeom(bodyKin);
+        if(unsteady) compVelocity();
         
         writeFilesVP();
         
     }
     
-    if (printFlag)
-    {
-        std::cout << std::setw(17) << std::left << check << std::flush;
-    }
+    if(printFlag) std::cout << "\n (\u2713 - Complete, X - Not Requested)\n"<< std::setw(17) << std::left << " Solve System" << std::setw(17) << std::left << "Surface Data" << std::setw(18) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(24) << std::left << "Stability Derivatives" << std::setw(23) << std::left << "Volume Mesh" << std::endl << std::setw(19) << std::left << " " + check << std::flush;
     
-    compVelocity();
+    if(!unsteady) compVelocity(); // calculated each time step in unsteady
+    if(printFlag) std::cout << std::setw(19) << std::left << check << std::flush;
     
-    
-    if (printFlag)
-    {
-        std::cout << std::setw(17) << std::left << check << std::flush;
-    }
-    
-    trefftzPlaneAnalysis();
-    
-    if (printFlag)
-    {
-        std::cout << std::setw(18) << std::left << check << std::flush;
-    }
+    trefftzPlaneAnalysisVP();
+    if(printFlag) std::cout << std::setw(20) << std::left << check << std::flush;
+
     
     if (surfStreamFlag)
     {
         createStreamlines();
-        if (printFlag)
-        {
-            std::cout << std::setw(16) << std::left << check << std::flush;
-        }
+        if(printFlag) std::cout << std::setw(14) << std::left << check << std::flush;
     }
     else
     {
-        if (printFlag)
-        {
-            std::cout << std::setw(16) << std::left << "X" << std::flush;
-        }
+        if(printFlag) std::cout << std::setw(14) << std::left << "X" << std::flush;
     }
     
     if (stabDerivFlag)
     {
-        stabilityDerivatives();
-        if (printFlag)
-        {
-            std::cout << std::setw(23) << std::left << check << std::endl;
-        }
+        stabilityDerivativesVP();
+        if(printFlag) std::cout << std::setw(24) << std::left << check << std::flush;
     }
     else
     {
-        if (printFlag)
-        {
-            std::cout << std::setw(23) << std::left << "X" << std::endl;
-        }
+        if(printFlag) std::cout << std::setw(24) << std::left << "X" << std::flush;
     }
     
     
-    if (!converged && printFlag)
+    if (params->volMeshFlag) {
+        createVolMesh();
+        populateVolMesh();
+        if (printFlag) std::cout << std::setw(23) << std::left << check << std::endl;
+    }
+    else
+    {
+        if (printFlag) std::cout << std::setw(23) << std::left << "X" << std::endl;
+    }
+    
+    
+    if (!matrix_convergence && printFlag)
     {
         std::cout << "*** Warning : Solution did not converge ***" << std::endl;
     }
     
-    if (printFlag){
-        writeFilesVP();
-    }
+    if (printFlag) writeFilesVP();
     
     
 }
 
-void cpCaseVP::convectBufferWake()
-{
+void cpCaseVP::convectBufferWake(){
     wake2Doublets.resize((*w2panels).size());
     for (int i=0; i<(*w2panels).size(); i++)
     {
@@ -176,8 +156,8 @@ void cpCaseVP::convectBufferWake()
     
 }
 
-void cpCaseVP::setSourceStrengthsVP()
-{
+
+void cpCaseVP::setSourceStrengthsVP(){
     sigmas.resize(bPanels->size());
     
     for (int i=0; i<bPanels->size(); i++)
@@ -185,7 +165,7 @@ void cpCaseVP::setSourceStrengthsVP()
         Eigen::Vector3d sumVelInfl = Eigen::Vector3d::Zero();
         
         // Influence from particles
-        if (accelerate && timestep > 0){ //??
+        if (accelerate){
             sumVelInfl += FMM.barnesHutVel((*bPanels)[i]->getCenter());
         }
         else
@@ -202,49 +182,32 @@ void cpCaseVP::setSourceStrengthsVP()
             sumVelInfl += filaments[j]->velInfl( (*bPanels)[i]->getCenter() );
         }
         
-        (*bPanels)[i]->setSigma( Vinf( (*bPanels)[i]->getCenter() ) + sumVelInfl , 0 );
+        (*bPanels)[i]->setSigma( Vinf((*bPanels)[i]->getCenter()) + sumVelInfl , 0 );
+        
         sigmas(i) = (*bPanels)[i]->getSigma();
     }
 }
 
 bool cpCaseVP::solutionConvergence(){
     
-    if(unsteady | (timestep < 5)){
+    if(unsteady | (timestep < 5) | params->stepsSetMaunally){
         return false;
     }
     
     // Check for simulation convergence. Will use the Trefftz plane because it is so cheap. Medium size mesh takes <1% of time step time.
     
-    double strengthDiff = 0;
-    for(int i=0; i<(*w2panels).size(); i++)
-    {
-        double pan2mu = (*w2panels)[i]->getMu();
-        double pan1mu = (*w2panels)[i]->getBufferParent()->getMu();
-        
-        strengthDiff += std::abs(pan2mu - pan1mu);
-    }
-    
-    strengthDiff /= (*w2panels).size();
-    
     // Store previous time step values
-    double CDnm1 = CD_trefftz;
-    double CLnm1 = CL_trefftz;
+    double prevCD = CD_trefftz;
+    double prevCL = CL_trefftz;
     
-    if(timestep > 2){
-        // Need particles to create the S curve
-        trefftzPlaneAnalysis();
-    }
+    trefftzPlaneAnalysisVP();
     
-    //    std::cout << timeStep << " " << CL_trefftz << "  " << CD_trefftz << std::endl;
+    double changeCD = std::abs((CD_trefftz - prevCD)/prevCD);
+    double changeCL = std::abs((CL_trefftz - prevCL)/prevCL);
     
-    double changeCD = std::abs((CD_trefftz - CDnm1)/CDnm1);
-    double changeCL = std::abs((CL_trefftz - CLnm1)/CLnm1);
+    double val = 0.0001; // 0.01%
     
-    //    std::cout << timeStep<< "        " << CL_trefftz << "   " <<changeCL << "        " << CD_trefftz << "       " <<  changeCD  << std::endl;
-    
-    double val = 0.0001;
-    
-    if((changeCL < val) && (changeCD < val) && (changeCDnm1 < val) && (changeCDnm1 < val)){
+    if((changeCL < val) && (changeCD < val)){
         return true;
     }
     
@@ -254,8 +217,7 @@ bool cpCaseVP::solutionConvergence(){
 
 
 
-bool cpCaseVP::solveMatrixEq()
-{
+bool cpCaseVP::solveMatrixEq(){
     bool converged = true;
     
     Eigen::MatrixXd* A = geom->getA();
@@ -287,8 +249,7 @@ bool cpCaseVP::solveMatrixEq()
     return converged;
 }
 
-bool cpCaseVP::solveVPmatrixEq()
-{
+bool cpCaseVP::solveVPmatrixEq(){
     bool converged = true;
     
     Eigen::MatrixXd* A = geom->getA();
@@ -352,11 +313,12 @@ void cpCaseVP::collapseBufferWake(){
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-                strength += (*w2panels)[i]->edgeStrength( pEdges[j], j); // Don't need to pass in pEdges...
+                strength += (*w2panels)[i]->edgeStrength( pEdges[j], j ); // Don't need to pass in pEdges...
             }
         }
         
         Eigen::Vector3d pos = rungeKuttaStepper((*w2panels)[i]->getCenter());
+//        Eigen::Vector3d pos = (*w2panels)[i]->getCenter(); // For moving geometry
         Eigen::Vector3d ptVel = Vinf(pos);
         double radius = (*w2panels)[i]->getPartRadius(ptVel,dt); // VinfLocal
         
@@ -392,16 +354,12 @@ void cpCaseVP::collapseBufferWake(){
     }
 }
 
-void cpCaseVP::compVelocity()
-{
+void cpCaseVP::compVelocity(){
     //  Velocity Survey with known doublet and source strengths
     CM.setZero();
     Eigen::Vector3d moment;
     Fbody = Eigen::Vector3d::Zero();
     bodyPanel* p;
-    
-    //    std::vector<double> panLift;
-    //    bool liftDist = false;
     
     for (int i=0; i<bPanels->size(); i++)
     {
@@ -417,18 +375,34 @@ void cpCaseVP::compVelocity()
         CM(0) += moment(0)/(params->Sref*params->bref);
         CM(1) += moment(1)/(params->Sref*params->cref);
         CM(2) += moment(2)/(params->Sref*params->bref);
-        
     }
     Fwind = bodyToWind(Fbody);
-    //    CL.push_back(Fbody.z());
-    //    CM_x.push_back(CM(1));
     
-    std::cout << Fbody.z() << std::endl;
-    
-    //    std::cout << std::endl;
+    if(unsteady){
+        if(timestep > 3) trefftzPlaneAnalysisVP(); // No convergence check for unsteady sims
+        
+        //   flow_time | CL_tr | CDi_tr | CN | CA | CY | CL | CD | CY | Cm | Cl | Cn |
+        solnMat(timestep-1,0) = timestep*dt;
+        solnMat(timestep-1,1) = CL_trefftz;
+        solnMat(timestep-1,2) = CD_trefftz;
+        
+        solnMat(timestep-1,3) = Fbody.x();
+        solnMat(timestep-1,4) = Fbody.y();
+        solnMat(timestep-1,5) = Fbody.z();
+        
+        solnMat(timestep-1,6) = Fwind.x();
+        solnMat(timestep-1,7) = Fwind.y();
+        solnMat(timestep-1,8) = Fwind.z();
+        
+        solnMat(timestep-1,9)  = CM.x();
+        solnMat(timestep-1,10) = CM.y();
+        solnMat(timestep-1,11) = CM.z();
+    }
+
+
 }
 
-void cpCaseVP::trefftzPlaneAnalysis(){
+void cpCaseVP::trefftzPlaneAnalysisVP(){
     
     std::vector<wake*> wakes = geom->getWakes();
     CL_trefftz = 0;
@@ -441,11 +415,42 @@ void cpCaseVP::trefftzPlaneAnalysis(){
     }
 }
 
+void cpCaseVP::stabilityDerivativesVP()
+{
+    double delta = 0.5;
+    double dRad = delta*M_PI/180;
+    cpCaseVP dA(geom,Vmag,alpha+delta,beta,mach,params);
+    cpCaseVP dB(geom,Vmag,alpha,beta+delta,mach,params);
+    
+    dA.run(false,false,false);
+    dB.run(false,false,false);
+    
+    Eigen::Vector3d FA = dA.getWindForces();
+    FA(2) = dA.getCL();
+    FA(0) = dA.getCD();
+    
+    Eigen::Vector3d FB = dB.getWindForces();
+    FB(2) = dB.getCL();
+    FB(0) = dB.getCD();
+    
+    Eigen::Vector3d F = Fwind;
+    F(2) = CL_trefftz;
+    F(0) = CD_trefftz;
+    
+    // Finish calculating stability derivatives
+    dF_dAlpha = (FA-F)/dRad;
+    dF_dBeta = (FB-F)/dRad;
+    
+    dM_dAlpha = (dA.getMoment()-CM)/dRad;
+    dM_dBeta = (dB.getMoment()-CM)/dRad;
+    
+    
+}
+
+
 void cpCaseVP::particleStrengthUpdate(){
     // This function uses the update equations found in 'Vortex Methods for DNS of...' by Plouhmhans. It uses the particle strength exchange for the viscous diffusion
-    
-    // Can use this strength exchange function and call it from the normal stretching function instead of the winklemans function?
-    
+
     std::vector<Eigen::Vector3d> stretchDiffVec; // Creating vector values because the strength change needs to be set after all particle influences have been calculated
     for(int i=0; i<particles.size(); i++)
     {
@@ -460,7 +465,7 @@ void cpCaseVP::particleStrengthUpdate(){
         // FarField1 condition
         else if((particles[i]->pos-Eigen::Vector3d::Zero()).norm() > 12*params->cref)
         {
-            if(unsteady)
+            if(accelerate)
             {
                 dAlpha_stretch = FMM.barnesHutStretch(particles[i]); ///
                 dAlpha_diff = FMM.barnesHutDiff(particles[i]);
@@ -526,8 +531,7 @@ void cpCaseVP::particleStrengthUpdate(){
     }
 }
 
-void cpCaseVP::convectParticles()
-{
+void cpCaseVP::convectParticles(){
     std::vector<Eigen::Vector3d> newPartPositions;
     
     for(int i=0;i<particles.size();i++){
@@ -556,10 +560,8 @@ void cpCaseVP::convectParticles()
     }
 }
 
-//double bodyKin(int dum1, int dum2){return 3.4;}; ///
 
-Eigen::Vector3d cpCaseVP::Vinf(Eigen::Vector3d POI)
-{
+Eigen::Vector3d cpCaseVP::Vinf(Eigen::Vector3d POI){
     if (!unsteady)
     {
         return windToBody( Vmag , alpha , beta );
@@ -569,20 +571,19 @@ Eigen::Vector3d cpCaseVP::Vinf(Eigen::Vector3d POI)
         Eigen::Vector3d localVel;
         
         // U = U3 + (-q*z + r*y)
-        localVel.x() = bodyKin(timestep, 0) - bodyKin(timestep, 4)*POI.z() + bodyKin(timestep, 5)*POI.y();
+        localVel.x() = bodyKin(timestep-1, 0) - bodyKin(timestep-1, 4)*POI.z() + bodyKin(timestep-1, 5)*POI.y();
         
         // V = V3 + (-r*x + p*z)
-        localVel.y() = bodyKin(timestep, 1) - bodyKin(timestep, 5)*POI.x() + bodyKin(timestep, 3)*POI.z();
+        localVel.y() = bodyKin(timestep-1, 1) - bodyKin(timestep-1, 5)*POI.x() + bodyKin(timestep-1, 3)*POI.z();
         
         // W = W3 + (-p*y + q*x)
-        localVel.z() = bodyKin(timestep, 2) - bodyKin(timestep, 3)*POI.y() + bodyKin(timestep, 4)*POI.x();
+        localVel.z() = bodyKin(timestep-1, 2) - bodyKin(timestep-1, 3)*POI.y() + bodyKin(timestep-1, 4)*POI.x();
         
         return localVel;
     }
 }
 
-Eigen::Vector3d cpCaseVP::VinfPlusVecPot(Eigen::Vector3d POI)
-{
+Eigen::Vector3d cpCaseVP::VinfPlusVecPot(Eigen::Vector3d POI){
     Eigen::Vector3d vInfluence = Vinf(POI);
     
     // Particles
@@ -623,15 +624,12 @@ Eigen::Vector3d cpCaseVP::rungeKuttaStepper( Eigen::Vector3d POI ){
     
 }
 
-Eigen::Vector3d cpCaseVP::velocityInflFromEverything( Eigen::Vector3d POI )
-{
+Eigen::Vector3d cpCaseVP::velocityInflFromEverything( Eigen::Vector3d POI ){
     // Freestream influence
     Eigen::Vector3d velOnPart = Vinf(POI);
-    //    std::cout << velOnPart.x() << " , " << velOnPart.y() << " , " << velOnPart.z() << std::endl;
-    
     
     // Particle influence
-    if(accelerate && timestep > 3){ //??
+    if(accelerate && timestep > 3){
         velOnPart += FMM.barnesHutVel(POI);
     }
     else{
@@ -667,8 +665,8 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything( Eigen::Vector3d POI )
     return velOnPart;
 }
 
-Eigen::Vector3d cpCaseVP::velocityInflFromEverything(particle* part)
-{
+Eigen::Vector3d cpCaseVP::velocityInflFromEverything(particle* part){
+    
     // Function is overloaded for symmeterized velocity influence for particles
     Eigen::Vector3d pos = part->pos;
     
@@ -719,13 +717,10 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything(particle* part)
         velOnPart +=filaments[i]->velInfl(pos);
     }
     
-//    std::cout << velOnPart.x() << " , " << velOnPart.y() << " , " << velOnPart.z() << std::endl;
-    
     return velOnPart;
 }
 
-void cpCaseVP::writeFilesVP()
-{
+void cpCaseVP::writeFilesVP(){
     std::stringstream caseLabel;
     caseLabel << "/V" << Vmag << "_Mach" << mach << "_alpha" << alpha << "_beta" << beta;
     boost::filesystem::path subdir = boost::filesystem::current_path().string()+caseLabel.str();
@@ -742,9 +737,9 @@ void cpCaseVP::writeFilesVP()
     writeParticleData(subdir);
     writeFilamentData(subdir);
     
-    if (false) {
-//        createVolMesh();
-//        writeVolMeshData(subdir, pts, cells);
+    if (params->volMeshFlag && cells.size() > 0) //
+    {
+        writeVolMeshData(subdir, pts, cells);
     }
     
     if (params->surfStreamFlag)
@@ -754,8 +749,7 @@ void cpCaseVP::writeFilesVP()
     
 }
 
-void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat)
-{
+void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals");
     Eigen::MatrixXi con(bPanels->size(),3);
@@ -792,8 +786,7 @@ void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixX
     VTUfile bodyFile(fname,body);
 }
 
-void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat)
-{
+void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
     Eigen::MatrixXi con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
@@ -819,8 +812,7 @@ void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::Matrix
 }
 
 
-void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat)
-{
+void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
     Eigen::MatrixXi con;
@@ -844,8 +836,7 @@ void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Mat
     VTUfile wakeFile(fname,wake);
 }
 
-void cpCaseVP::writeFilamentData(boost::filesystem::path path)
-{
+void cpCaseVP::writeFilamentData(boost::filesystem::path path){
     std::vector<cellDataArray> data;
     cellDataArray mu("Gamma");
     Eigen::MatrixXi con;
@@ -880,8 +871,7 @@ void cpCaseVP::writeFilamentData(boost::filesystem::path path)
     VTUfile filFile(fname,fils);
 }
 
-void cpCaseVP::writeParticleData(boost::filesystem::path path)
-{
+void cpCaseVP::writeParticleData(boost::filesystem::path path){
     
     Eigen::MatrixXd partMat(particles.size(),3);
     for (int i=0; i<particles.size(); i++)
@@ -931,6 +921,52 @@ void cpCaseVP::readBodyKinFile(){
     
     fid.close();
 }
+
+
+void cpCaseVP::populateVolMesh(){
+    
+    // Clear Past Timestep Mesh
+    volMeshDat.velocity.clear();
+    volMeshDat.coef_press.clear();
+    
+    for (int i=0; i<cells.size(); i++) {
+        Eigen::Vector3d velInCell = velocityInflFromEverything(volMeshDat.cellCenter[i]);
+        volMeshDat.velocity.push_back(velInCell);
+    }
+    
+    for (int i=0; i<cells.size(); i++) {
+        // Incompressible Bernoulli equation
+        double Cp = pow( volMeshDat.velocity[i].norm() / Vmag , 2 );
+        volMeshDat.coef_press.push_back(Cp);
+    }
+    
+}
+
+
+
+
+//void cpCaseVP::moveGeometry(){
+//    // Steps to continue development include (but are not limited to)
+//        // In the 'velocityInflFromEverything' functions, initialize with zero velocity instead of freestream
+//        // Uncomment all 'moveGeometry' calls
+//        // The 'collapseBufferWake' function must seed particle at the panel center instead of tracking it with freestream.
+//        // Instead of the 'bodyMovement' vector, you'll probably want to use Eigen::MatrixXd and just slice with .row
+//    
+//    std::vector<double> bodyMovement = { -99.619, 0, -8.7156, 0, 0, 0 };
+//    
+//    geom->moveGeom(bodyMovement);
+//    
+//    // Filaments aren't part of geom... but they should be.
+//    for (int i=0; i<filaments.size(); i++) {
+//        filaments[i]->moveFilament(bodyMovement, dt);
+//    }
+//    
+//
+//}
+
+
+
+
 
 //void cpCase::particleStrengthUpdate(){
 //    // This function uses the combined vortex stretching and diffusion equation used by Wincklemans for a regularized vortex core with high algebraic smoothing. (he refers to it as the strength update equation.)

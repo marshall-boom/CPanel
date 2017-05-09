@@ -182,8 +182,8 @@ class geometry
 {
     std::vector<surface*> surfaces;
     std::vector<wake*> wakes;
-    //    std::vector<liftingSurf*> liftingSurfs;
-    //    std::vector<surface*> nonLiftingSurfs;
+//    std::vector<liftingSurf*> liftingSurfs;
+//    std::vector<surface*> nonLiftingSurfs;
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
     std::vector<wakePanel*> w2Panels; // Buffer wake row two
@@ -193,7 +193,7 @@ class geometry
     panelOctree pOctree;
     std::vector<cpNode*> nodes;
     std::vector<edge*> edges;
-    //    std::vector<cpNode*> TEnodes;
+//    std::vector<cpNode*> TEnodes;
     short nNodes;
     short nTris;
     
@@ -283,6 +283,7 @@ public:
     double getDt() {return dt;}
     
     void moveGeom( std::vector<double> bodyKin );
+
 };
 
 

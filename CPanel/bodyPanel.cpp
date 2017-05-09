@@ -566,30 +566,31 @@ std::vector<bodyPanel*> bodyPanel::getRelatedPanels()
 }
 
 Eigen::Vector3d bodyPanel::partStretching(particle* part){
-    Eigen::Vector3d POI = part->pos;
+    
     Eigen::Vector3d partStretching;
-    double dist2panel = (POI-center).norm();
-    bool isFarField = false;
+    double dist2panel = (part->pos-center).norm();
     Eigen::MatrixXd velGradMat = Eigen::Matrix3d::Zero();
    
+    // Far field convention usually either 3 or 5, see Katz or Chris' thesis
+    bool isFarField = false;
     if(dist2panel/longSide > 5){
         isFarField = true;
     }
     
     if(isFarField)
     {
-        velGradMat += velocityGradientPointSource(POI);
-        velGradMat += velocityGradientPointDoublet(POI);
+        velGradMat += velocityGradientPointSource(part->pos);
+        velGradMat += velocityGradientPointDoublet(part->pos);
     }
     else if (this->getNodes().size() == 3)
     {
-        velGradMat += velocityGradientTriSource(POI);
-        velGradMat += velocityGradientDoublet(POI);
+        velGradMat += velocityGradientTriSource(part->pos);
+        velGradMat += velocityGradientDoublet(part->pos);
     }
     else
     {
-        velGradMat += velocityGradientQuadSource(POI);
-        velGradMat += velocityGradientDoublet(POI);
+        velGradMat += velocityGradientQuadSource(part->pos);
+        velGradMat += velocityGradientDoublet(part->pos);
     }
     
     partStretching = velGradMat*part->strength;
@@ -600,13 +601,16 @@ Eigen::Vector3d bodyPanel::partStretching(particle* part){
 
 
 Eigen::Matrix3d bodyPanel::velocityGradientPointSource(Eigen::Vector3d POI){
+    // Equations in documentation
     Eigen::Matrix3d velGradMat;
     // dudx  dvdx  dwdx
     // dudy  dvdy  dwdy
     // dudz  dvdz  dwdz
     
     double x, y, z, x0, y0, z0;
+    
     x = this->getCenter().x(); y = this->getCenter().y(); z = this->getCenter().z();
+    
     x0 = POI.x(); y0 = POI.y(); z0 = POI.z();
     
     double sdd = pow(pow(x-x0,2) + pow(y-y0,2) + z*z,2.5); // source deriv denom
@@ -813,35 +817,7 @@ Eigen::Matrix3d bodyPanel::velocityGradientTriSource(Eigen::Vector3d POI){
     y1 = n1.y(); y2 = n2.y(); y3 = n3.y();
     
     double x, y, z;
-    x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
-
-    
-//    Eigen::Vector3d centerLoc = global2local(this->getCenter(), true);
-    //    std::cout << "hold on;" << std::endl;
-    //    std::cout << "x_center = [" << this->getCenter().x() << ","<< this->getCenter().y() << ","<< this->getCenter().z() << "];" << std::endl;
-    //    std::cout << "plot3(x_center(1),x_center(2),xcenter(3),'g*')" << std::endl;
-    //    std::cout << "plot3(" << x << "," <<y<< "," << z << ",'r*');" << std::endl;
-    //
-    //    std::cout << "n1global = [" << n1global.x() << ","<< n1global.y() << ","<< n1global.z() << "];" << std::endl;
-    //    std::cout << "n2global = [" << n2global.x() << ","<< n2global.y() << ","<< n2global.z() << "];" << std::endl;
-    //    std::cout << "n3global = [" << n3global.x() << ","<< n3global.y() << ","<< n3global.z() << "];" << std::endl;
-    //    std::cout << "plot3([n1global(1) n2global(1)],[n1global(2) n2global(2)],[n1global(3) n2global(3)]);" << std::endl;
-    //    std::cout << "plot3([n2global(1) n3global(1)],[n2global(2) n3global(2)],[n2global(3) n3global(3)]);" << std::endl;
-    //    std::cout << "plot3([n3global(1) n1global(1)],[n3global(2) n1global(2)],[n3global(3) n1global(3)]);" << std::endl;
-    
-//    std::cout << "figure;" << std::endl;
-//    std::cout << "hold on;" << std::endl;
-//    std::cout << "x_center_loc = [" << centerLoc.x() << ","<< centerLoc.y() << ","<< centerLoc.z() << "];" << std::endl;
-//    std::cout << "plot3(x_center_loc(1),x_center_loc(2),xcenter_loc(3),'g*')" << std::endl;
-//    std::cout << "plot3(" << POIloc.x() << "," <<POIloc.y()<< "," << POIloc.z() << ",'r*');" << std::endl;
-//
-//    std::cout << "n1loc = [" << n1.x() << ","<< n1.y() << ","<< n1.z() << "];" << std::endl;
-//    std::cout << "n2loc = [" << n2.x() << ","<< n2.y() << ","<< n2.z() << "];" << std::endl;
-//    std::cout << "n3loc = [" << n3.x() << ","<< n3.y() << ","<< n3.z() << "];" << std::endl;
-//    std::cout << "plot3([n1loc(1) n2loc(1)],[n1loc(2) n2loc(2)],[n1loc(3) n2loc(3)]);" << std::endl;
-//    std::cout << "plot3([n2loc(1) n3loc(1)],[n2loc(2) n3loc(2)],[n2loc(3) n3loc(3)]);" << std::endl;
-//    std::cout << "plot3([n3loc(1) n1loc(1)],[n3loc(2) n1loc(2)],[n3loc(3) n1loc(3)]);" << std::endl;
-//    
+    x = POIloc.x(); y = POIloc.y(); z = POIloc.z();    
     
     double derConst = sourceStrength/(4*M_PI);
     

@@ -77,18 +77,22 @@ protected:
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
 
+
+    Eigen::MatrixXd solnMat;
+
     
     struct meshDat {
         std::vector<Eigen::Vector3d> velocity;
-        std::vector<double> vorticity;
-        std::vector<double> pressure;
+        std::vector<double> coef_press;
         std::vector<Eigen::Vector3d> cellCenter;
     } volMeshDat;
     
     std::vector<Eigen::VectorXi> cells;
     Eigen::MatrixXd pts;
-
+    
+    Eigen::Vector3d velocityAtPoint(Eigen::Vector3d POI);
     void createVolMesh();
+    void populateVolMesh();
     void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
 
 
@@ -120,6 +124,7 @@ public:
     Eigen::Vector3d get_dF_dBeta() {return dF_dBeta;}
     Eigen::Vector3d get_dM_dAlpha() {return dM_dAlpha;}
     Eigen::Vector3d get_dM_dBeta() {return dM_dBeta;}
+    Eigen::MatrixXd get_soln_mat() {return solnMat;}
     
 };
 #endif /* defined(__CPanel__runCase__) */
