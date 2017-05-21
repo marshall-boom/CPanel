@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>768E247A-92BE-4D03-AC0E-4AD689DF0213</string>
+	<key>IDESourceControlProjectName</key>
+	<string>CPanel_BEM</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>725F9969-0586-4907-889E-77CF00EAFBBB</key>
+		<string>https://github.com/ConnorSousa/CPanel.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>CPanel_BEM.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>725F9969-0586-4907-889E-77CF00EAFBBB</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/ConnorSousa/CPanel.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>725F9969-0586-4907-889E-77CF00EAFBBB</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>725F9969-0586-4907-889E-77CF00EAFBBB</string>
+			<key>IDESourceControlWCCName</key>
+			<string>CPanel</string>
+		</dict>
+	</array>
+</dict>
+</plist>

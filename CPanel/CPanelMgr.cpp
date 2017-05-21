@@ -11,6 +11,7 @@
 void caseMgr::setCases()
 {
     cpCase* c;
+    cpCaseVP* cVP;
     for (int v=0; v<p->velocities.rows(); v++)
     {
         for (int a=0; a<p->alphas.rows(); a++)
@@ -19,8 +20,14 @@ void caseMgr::setCases()
             {
                 for (int m=0; m<p->machs.rows(); m++)
                 {
-                            c = new cpCase(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
-                            cases.push_back(c);
+                    if (p->vortPartFlag) {
+                        cVP = new cpCaseVP(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
+                        casesVP.push_back(cVP);
+                    }
+                    else{
+                        c = new cpCase(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
+                        cases.push_back(c);
+                    }
                 }
             }
         }
@@ -29,23 +36,43 @@ void caseMgr::setCases()
 
 void caseMgr::runCases()
 {
-    if(p->vortPartFlag == false){ //VPP just this if statement
-        std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
-        std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(22) << std::left << "Stability Derivatives" << std::endl;
-    }
-    for (int i=0; i<cases.size(); i++)
+    
+    if( p->vortPartFlag)
     {
-        std::string out;
-        std::stringstream outstream;
-        if(p->vortPartFlag == false){
+        std::cout << "\nRunning " << casesVP.size() << " Cases...\n" << std::flush;
+        
+        for (int i=0; i<casesVP.size(); i++)
+        {
+            std::string out;
+            std::stringstream outstream;
+            outstream << "\n\nCase # " << i+1 << "/" << casesVP.size() << ":" << std::endl;
+            out = outstream.str();
+            std::cout << out << std::flush;
+            
+            casesVP[i]->run(true,p->surfStreamFlag,p->stabDerivFlag);
+        }
+    }
+    else
+    {
+        std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
+        std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(24) << std::left << "Stability Derivatives" << std::setw(15) << std::left << "Volume Mesh" << std::endl;
+        
+        for (int i=0; i<cases.size(); i++)
+        {
+            std::string out;
+            std::stringstream outstream;
             outstream << i+1 << "/" << cases.size();
             out = outstream.str();
             std::cout << std::setw(10) << std::left << out << std::flush;
+            
+            cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag,false);
         }
-        cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag,p->vortPartFlag);
     }
     
+    
+    
     std::cout << "Complete" << std::endl;
+    
 }
 
 void caseMgr::writeSummary()
@@ -68,6 +95,9 @@ void caseMgr::writeSummary()
         for (int i=0; i<cases.size(); i++)
         {
             writeCase(i+1, cases[i], out);
+        }
+        for (int i=0; i<casesVP.size(); i++) {
+            writeCase(i+1, casesVP[i], out);
         }
     }
     std::cout << "Case data written to " << outFile << std::endl;
@@ -106,6 +136,20 @@ void caseMgr::writeCase(int caseNumber, cpCase* c, std::ofstream &outStream)
         outStream << "\t\t" << std::setw(12) << "CL_beta" << std::setw(12) << "CY_beta" << std::setw(12) << "Cm_beta" << std::setw(12) << "Cl_beta" << std::setw(12) << "Cn_beta" << std::endl;
         outStream << "\t\t" << std::setw(12) << c->get_dF_dBeta()(2) << std::setw(12) << c->get_dF_dBeta()(1) << std::setw(12) << c->get_dM_dBeta()(1) << std::setw(12) << c->get_dM_dBeta()(0) << std::setw(12) << c->get_dM_dBeta()(2) << std::endl;
         outStream << "\n\n" << std::endl;
+    }
+    
+    if (p->unsteady) {
+        outStream << "\n\t--Time Dependent Forces and Moments--\n" << std::endl;
+        
+        outStream << "\t\t" << std::setw(9) << "Time" << std::setw(12) << "CL_Trefftz" << std::setw(13) << "CDi_Trefftz" << std::setw(10) << "CN_body" << std::setw(10) << "CA_body" << std::setw(10) << "CY_body" <<  std::setw(10) << "CL_wind" << std::setw(10) << "CD_wind" << std::setw(10) << "CY_wind" << std::setw(12) << "Cm (pitch)" << std::setw(12) << "Cl (roll)" << std::setw(12) << "Cn (yaw)" << std::endl;
+        
+        
+//        Eigen::MatrixXd resMat = c->get_soln_mat();
+//        for (int i=0; i<resMat.rows(); i++) {
+//            outStream << "\t\t" << std::setw(9) << resMat(i,0) << std::setw(12) << resMat(i,1) << std::setw(13) << resMat(i,2) << std::setw(10) << resMat(i,5) << std::setw(10) << resMat(i,3) << std::setw(10) << resMat(i,4) <<  std::setw(10) << resMat(i,8) << std::setw(10) << resMat(i,6) << std::setw(10) << resMat(i,7) << std::setw(12) << resMat(i,10) << std::setw(12) << resMat(i,9) << std::setw(12) << resMat(i,11) << std::endl;
+//        }
+        
+        //   | CL_tr | CDi_tr | CN | CA | CY | CL | CD | CY | Cm | Cl | Cn |
     }
     
 }

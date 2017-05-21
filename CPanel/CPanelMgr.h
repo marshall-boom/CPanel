@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "cpCase.h"
+#include "cpCaseVP.h"
 #include "inputParams.h"
 #include "geometry.h"
 
@@ -19,9 +20,9 @@ class caseMgr
     inputParams* p;
     geometry* geom;
     Eigen::VectorXi outSpacing;
-    bool vortPartFlag; //VPP
- 
+    
     std::vector<cpCase*> cases;
+    std::vector<cpCaseVP*> casesVP;
     
     void setCases();
     void runCases();
@@ -33,9 +34,7 @@ public:
         setCases();
         runCases();
         writeSummary();
-//        vortPartFlag = p->vortPartFlag; //VPP
     }
-    
 };
 
 

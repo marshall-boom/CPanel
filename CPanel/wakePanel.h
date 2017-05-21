@@ -30,7 +30,7 @@ class wakePanel : public panel
     double prevStrength = 0;
     vortexFil* vortFil;
     wakePanel* bufferParent;
-        
+    
 public:
     wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
     
@@ -43,11 +43,11 @@ public:
     void setLower(bodyPanel* lp);
     void setParentPanels(bodyPanel* upper, bodyPanel* lower);
     void setParentWake(wake* w) {parentWake = w;}
-//    wakePanel* makeVortexSheet();
+    //    wakePanel* makeVortexSheet();
     void interpPanels(std::vector<bodyPanel*> &interpP, double &interpC);
     double panelPhi(const Eigen::Vector3d &POI);
     Eigen::Vector3d panelV(const Eigen::Vector3d &POI);
-
+    
     void setMu();
     void setMu(double strength); //2BW
     void setStrength();
@@ -58,14 +58,15 @@ public:
     
     Eigen::Vector3d panToPartStrengthT1();
     Eigen::Vector3d panToPartStrength();
-
-    std::vector<Eigen::Vector3d> vortexRingVectors();
+    
+    //    std::vector<Eigen::Vector3d> vortexRingVectors();
     double getPartRadius(Eigen::Vector3d Vinf, double &dt);
-
+    bool isSecondRow = false;
+    
     
     std::vector<int> sort_indexes(std::vector<double> &v);
     Eigen::Vector3d partStretching(particle* part);
-
+    
     std::vector<cpNode*> pointsInOrder();
     std::vector<edge*> edgesInOrder();
     
@@ -75,7 +76,8 @@ public:
     Eigen::Vector3d partSeedPt(Eigen::Vector3d &Vinf, double &dt);
     void setBufferParent(wakePanel* pan){bufferParent = pan;};
     wakePanel* getBufferParent(){return bufferParent;};
-
+    
+    Eigen::Vector3d edgeStrength( edge* curEdge, int edgeNum);
     
 };
 

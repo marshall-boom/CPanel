@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		012A35081D90A16700DDE256 /* octreeFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E347D61A17F2790054842E /* octreeFile.cpp */; };
 		016D1BCA1D6B6C3F00B2C992 /* inputParams.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8346AFD91A69B861007745C4 /* inputParams.cpp */; };
+		01A2ABC71ED147B90076BF0D /* cpCaseVP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01A2ABC51ED147B90076BF0D /* cpCaseVP.cpp */; };
+		01A2ABC81ED147B90076BF0D /* cpCaseVP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01A2ABC51ED147B90076BF0D /* cpCaseVP.cpp */; };
 		01C0DD6B1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
 		01C0DD6C1E3179F400F32ECC /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD621E3179F400F32ECC /* particle.cpp */; };
 		01C0DD6E1E3179F400F32ECC /* particleFMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C0DD641E3179F400F32ECC /* particleFMM.cpp */; };
@@ -153,6 +155,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01A2ABC51ED147B90076BF0D /* cpCaseVP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cpCaseVP.cpp; path = CPanel/cpCaseVP.cpp; sourceTree = SOURCE_ROOT; };
+		01A2ABC61ED147B90076BF0D /* cpCaseVP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cpCaseVP.h; path = CPanel/cpCaseVP.h; sourceTree = SOURCE_ROOT; };
 		01B5A1EA1DDA6F6700DCB351 /* streamline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = streamline.cpp; path = CPanel/streamline.cpp; sourceTree = SOURCE_ROOT; };
 		01B5A1EB1DDA6F6700DCB351 /* streamline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = streamline.h; path = CPanel/streamline.h; sourceTree = SOURCE_ROOT; };
 		01C0DD621E3179F400F32ECC /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particle.cpp; path = CPanel/particle.cpp; sourceTree = SOURCE_ROOT; };
@@ -307,6 +311,8 @@
 				8346AFD71A69A395007745C4 /* CPanelMgr.h */,
 				8358C3E31A0C2767004E94E0 /* cpCase.cpp */,
 				8358C3E41A0C2767004E94E0 /* cpCase.h */,
+				01A2ABC51ED147B90076BF0D /* cpCaseVP.cpp */,
+				01A2ABC61ED147B90076BF0D /* cpCaseVP.h */,
 				834098701A7991E8005B71C5 /* cpFile.cpp */,
 				834098711A7991E8005B71C5 /* cpFile.h */,
 				83A4EA7C1A804ECA001F8739 /* cpNode.cpp */,
@@ -606,6 +612,7 @@
 				83539BD71A23B443002C6865 /* chtlsnd.cpp in Sources */,
 				83EF7A2719EF004700E54C6E /* liftingSurf.cpp in Sources */,
 				8346AFD81A69A396007745C4 /* CPanelMgr.cpp in Sources */,
+				01A2ABC81ED147B90076BF0D /* cpCaseVP.cpp in Sources */,
 				833CAB381A755EF2003F65FE /* edge.cpp in Sources */,
 				8348F5891A253542003FDE1B /* VTUfile.cpp in Sources */,
 				8346AFDB1A69B861007745C4 /* inputParams.cpp in Sources */,
@@ -677,6 +684,7 @@
 			files = (
 				01D856FD1E3182E800BB737F /* particleFMM.cpp in Sources */,
 				01D856FF1E31852500BB737F /* particleOctree.cpp in Sources */,
+				01A2ABC71ED147B90076BF0D /* cpCaseVP.cpp in Sources */,
 				01D857021E31871100BB737F /* panelOctree.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

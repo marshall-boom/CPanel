@@ -34,6 +34,7 @@
 
 class cpCase
 {
+protected:
     geometry *geom;
 
     inputParams* params;
@@ -158,7 +159,7 @@ public:
         PG = sqrt(1-pow(mach,2));
         
         vortPartFlag = inParams->vortPartFlag; //VPP
-        dt = geom->dt;
+        dt = geom->getDt();
         if(inParams->numSteps != 0){
             manualStepsSet = true;
             numSteps = inParams->numSteps;

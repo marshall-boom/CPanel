@@ -48,6 +48,7 @@ Eigen::Vector3d particle::partStrengthUpdate(particle* part){
 
 Eigen::Vector3d particle::partVelInflGaussian(particle* part){
     // Velocity influence with Gaussian smoothing
+    if(this == part){return Eigen::Vector3d::Zero();} // Particle doesn't influence itself
     
     // 'part' is the influenced particle
     double sigma = std::sqrt(pow(coreOverlap*this->radius,2) + pow(coreOverlap*part->radius,2))/std::sqrt(2);
@@ -62,6 +63,9 @@ Eigen::Vector3d particle::partVelInflGaussian(particle* part){
 
 Eigen::Vector3d particle::partVelInflGaussian(const Eigen::Vector3d &POI){
     // This overloaded function is to calculate the velocity at a point, instead of on a particle. The only difference is that the smoothing radius is no longer symmeterized
+    if((this->pos - POI).norm() == 0){return Eigen::Vector3d::Zero();}
+
+    
     double sigma = coreOverlap*radius;
     
     Eigen::Vector3d dist = POI-pos;
