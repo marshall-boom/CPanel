@@ -243,7 +243,7 @@ public:
         temp << p->geomFile->name << ".infCoeff";
         infCoeffFile = temp.str();
         writeCoeffFlag = p->writeCoeffFlag;
-        vortPartFlag = p->vortPartFlag;
+        vortPartFlag = p->vortexParticles;
         dt = p->timeStep;
         inputV = p->velocities(0);
         

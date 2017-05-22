@@ -20,7 +20,7 @@ void caseMgr::setCases()
             {
                 for (int m=0; m<p->machs.rows(); m++)
                 {
-                    if (p->vortPartFlag) {
+                    if (p->vortexParticles) {
                         cVP = new cpCaseVP(geom,p->velocities(v),p->alphas(a),p->betas(b),p->machs(m),p);
                         casesVP.push_back(cVP);
                     }
@@ -37,7 +37,7 @@ void caseMgr::setCases()
 void caseMgr::runCases()
 {
     
-    if( p->vortPartFlag)
+    if( p->vortexParticles)
     {
         std::cout << "\nRunning " << casesVP.size() << " Cases...\n" << std::flush;
         
@@ -65,7 +65,7 @@ void caseMgr::runCases()
             out = outstream.str();
             std::cout << std::setw(10) << std::left << out << std::flush;
             
-            cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag,false);
+            cases[i]->run(true,p->surfStreamFlag,p->stabDerivFlag);
         }
     }
     
@@ -144,7 +144,7 @@ void caseMgr::writeCase(int caseNumber, cpCase* c, std::ofstream &outStream)
         outStream << "\t\t" << std::setw(9) << "Time" << std::setw(12) << "CL_Trefftz" << std::setw(13) << "CDi_Trefftz" << std::setw(10) << "CN_body" << std::setw(10) << "CA_body" << std::setw(10) << "CY_body" <<  std::setw(10) << "CL_wind" << std::setw(10) << "CD_wind" << std::setw(10) << "CY_wind" << std::setw(12) << "Cm (pitch)" << std::setw(12) << "Cl (roll)" << std::setw(12) << "Cn (yaw)" << std::endl;
         
         
-//        Eigen::MatrixXd resMat = c->get_soln_mat();
+//        Eigen::MatrixXd resMat = c->get_soln_mat();999
 //        for (int i=0; i<resMat.rows(); i++) {
 //            outStream << "\t\t" << std::setw(9) << resMat(i,0) << std::setw(12) << resMat(i,1) << std::setw(13) << resMat(i,2) << std::setw(10) << resMat(i,5) << std::setw(10) << resMat(i,3) << std::setw(10) << resMat(i,4) <<  std::setw(10) << resMat(i,8) << std::setw(10) << resMat(i,6) << std::setw(10) << resMat(i,7) << std::setw(12) << resMat(i,10) << std::setw(12) << resMat(i,9) << std::setw(12) << resMat(i,11) << std::endl;
 //        }

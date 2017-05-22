@@ -126,7 +126,26 @@ bool inputParams::set()
                 }
                 else if (s1.compare("Vortex_Particle_Wake") == 0)
                 {
-                    fid >> vortPartFlag;
+                    fid >> vortexParticles;
+                }
+                else if (s1.compare("Volume_Mesh") == 0)
+                {
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+                    fid >> volMeshFlag;
+                    if (volMeshFlag)
+                    {
+                        double lim;
+                        for (int i=0; i<6; i++) {
+                            fid >> lim;
+                            volMeshBounds.push_back(lim);
+                        }
+                        int res;
+                        for (int i=0; i<3; i++) {
+                            fid >> res;
+                            volMeshRes.push_back(res);
+                        }
+                        std::cout << std::endl;
+                    }
                 }
                 else if (s1.compare("Time_Step") == 0)
                 {
@@ -134,15 +153,17 @@ bool inputParams::set()
                 }
                 else if (s1.compare("Number_of_Timesteps") == 0)
                 {
-                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');                    
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
                     fid >> numSteps;
+                    if(numSteps != 0){
+                        stepsSetMaunally = true;
+                    }else{
+                        stepsSetMaunally = false;
+                    }
                 }
                 else if (s1.compare("Accelerate_Code") == 0)
                 {
-                    fid >> accel;
-                }
-                else if (s1.compare("High_Accuracy") == 0) {
-                    fid >> high_accuracy;
+                    fid >> accelerateCode;
                 }
                 else if (s1.compare("Unsteady_Mode") == 0){
                     fid >> unsteady;
@@ -224,19 +245,13 @@ void inputParams::print(std::ostream &stream)
         stream << "OFF" << std::endl;
     
     stream << std::setw(nChars) << "Vortex Particle Wake " << "-> ";
-    if (vortPartFlag)
-        stream << "ON" << std::endl;
-    else
-        stream << "OFF" << std::endl;
-
-    stream << std::setw(nChars) << "Accelerate Code " << "-> ";
-    if (accel)
+    if (vortexParticles)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
     
-    stream << std::setw(nChars) << "High Accuracy Mode " << "-> ";
-    if (high_accuracy)
+    stream << std::setw(nChars) << "Accelerate Code " << "-> ";
+    if (accelerateCode)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
@@ -357,11 +372,9 @@ void inputParams::writeInputFile()
     fid << "Write_Influence_Coefficients" << std::endl;
     fid << writeCoeffFlag << std::endl;
     fid << "Vortex_Particle_Wake" << std::endl;
-    fid << vortPartFlag << std::endl;
+    fid << vortexParticles << std::endl;
     fid << "Accelerate_Code" << std::endl;
-    fid << accel << std::endl;
-    fid << "High_Accuracy" << std::endl;
-    fid << high_accuracy << std::endl;
+    fid << accelerateCode << std::endl;
     fid << std::endl;
     fid << "% Vortex Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;

@@ -82,7 +82,7 @@ public:
         PG = sqrt(1-pow(mach,2));
         
         numSteps = inParams->numSteps;
-        accelerate = inParams->accel;
+        accelerate = inParams->accelerateCode;
         unsteady = inParams->unsteady;
     }
     

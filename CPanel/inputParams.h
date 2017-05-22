@@ -28,22 +28,28 @@ struct inputParams
     double Sref;
     double bref;
     double cref;
-    double timeStep; //VPP
-//    double c_w;
+    double timeStep;
     double numSteps;
+    bool stepsSetMaunally;
     double streamSpacing;
-    bool accel = false;
-    bool high_accuracy = false;
+    bool accelerateCode = false;
     bool unsteady = false;
     std::string bodyKinFileLoc;
     
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
-        
+    
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;
-    bool vortPartFlag;
+    bool vortexParticles;
+    bool volMeshFlag;
+    
+    double meshXo;
+    double meshXf;
+    std::vector<double> volMeshBounds;
+    std::vector<int> volMeshRes;
+    
     
     inputParams(cpFile* inFile) : inputFile(inFile) {}
     
@@ -54,7 +60,7 @@ struct inputParams
     
     bool set();
     void print(std::ostream &stream);
-
+    
 private:
     bool checkGeomFile();
     void makeWorkingDir();

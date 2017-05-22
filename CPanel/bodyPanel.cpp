@@ -221,7 +221,7 @@ void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eige
 Eigen::Vector3d bodyPanel::pntVInf(const Eigen::Vector3d &POI)
 {
     // Function should only be used for CPanel test function.
-
+    
     // VSAero source and doublet velocity influence formulation
     Eigen::Vector3d pjk = POI-center;
     Eigen::Matrix3d local = getLocalSys();
@@ -361,7 +361,7 @@ void bodyPanel::setCluster()
 Eigen::Vector3d bodyPanel::pntVelocity(const Eigen::Vector3d &pnt,double pntPotential, double PG, const Eigen::Vector3d &Vinf)
 {
     Eigen::Vector3d vel;
-
+    
     if (cluster.size() == 0)
     {
         setCluster();
@@ -566,30 +566,31 @@ std::vector<bodyPanel*> bodyPanel::getRelatedPanels()
 }
 
 Eigen::Vector3d bodyPanel::partStretching(particle* part){
-    Eigen::Vector3d POI = part->pos;
+    
     Eigen::Vector3d partStretching;
-    double dist2panel = (POI-center).norm();
-    bool isFarField = false;
+    double dist2panel = (part->pos-center).norm();
     Eigen::MatrixXd velGradMat = Eigen::Matrix3d::Zero();
-   
+    
+    // Far field convention usually either 3 or 5, see Katz or Chris' thesis
+    bool isFarField = false;
     if(dist2panel/longSide > 5){
         isFarField = true;
     }
     
     if(isFarField)
     {
-        velGradMat += velocityGradientPointSource(POI);
-        velGradMat += velocityGradientPointDoublet(POI);
+        velGradMat += velocityGradientPointSource(part->pos);
+        velGradMat += velocityGradientPointDoublet(part->pos);
     }
     else if (this->getNodes().size() == 3)
     {
-        velGradMat += velocityGradientTriSource(POI);
-        velGradMat += velocityGradientDoublet(POI);
+        velGradMat += velocityGradientTriSource(part->pos);
+        velGradMat += velocityGradientDoublet(part->pos);
     }
     else
     {
-        velGradMat += velocityGradientQuadSource(POI);
-        velGradMat += velocityGradientDoublet(POI);
+        velGradMat += velocityGradientQuadSource(part->pos);
+        velGradMat += velocityGradientDoublet(part->pos);
     }
     
     partStretching = velGradMat*part->strength;
@@ -600,17 +601,20 @@ Eigen::Vector3d bodyPanel::partStretching(particle* part){
 
 
 Eigen::Matrix3d bodyPanel::velocityGradientPointSource(Eigen::Vector3d POI){
+    // Equations in documentation
     Eigen::Matrix3d velGradMat;
     // dudx  dvdx  dwdx
     // dudy  dvdy  dwdy
     // dudz  dvdz  dwdz
     
     double x, y, z, x0, y0, z0;
+    
     x = this->getCenter().x(); y = this->getCenter().y(); z = this->getCenter().z();
+    
     x0 = POI.x(); y0 = POI.y(); z0 = POI.z();
     
     double sdd = pow(pow(x-x0,2) + pow(y-y0,2) + z*z,2.5); // source deriv denom
-   
+    
     double derConst = sourceStrength*area/(4*M_PI);
     velGradMat(0,0) = (-2*(x-x0)*(x-x0) + (y-y0)*(y-y0) + z*z)/sdd;
     velGradMat(1,0) = -3*(x-x0)*(y-y0)/sdd;
@@ -653,7 +657,7 @@ Eigen::Matrix3d bodyPanel::velocityGradientQuadSource(Eigen::Vector3d POI){
     
     double x, y, z;
     x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
-
+    
     
     double derConst = sourceStrength/(4*M_PI);
     
@@ -732,61 +736,61 @@ Eigen::Matrix3d bodyPanel::velocityGradientQuadSource(Eigen::Vector3d POI){
     
     
     velGradMat(0,0)=(y2-y1)*(r1+r2+d12)*(dr1dx + dr2dx)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
-                    (y3-y2)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
-                    (y4-y3)*(r3+r4+d34)*(dr3dx + dr4dx)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
-                    (y1-y4)*(r4+r1+d41)*(dr4dx + dr1dx)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    (y3-y2)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y4-y3)*(r3+r4+d34)*(dr3dx + dr4dx)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (y1-y4)*(r4+r1+d41)*(dr4dx + dr1dx)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
     
     velGradMat(1,0)=(y2-y1)*(r1+r2+d12)*(dr1dy + dr2dy)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
-                    (y3-y2)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
-                    (y4-y3)*(r3+r4+d34)*(dr3dy + dr4dy)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
-                    (y1-y4)*(r4+r1+d41)*(dr4dy + dr1dy)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    (y3-y2)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y4-y3)*(r3+r4+d34)*(dr3dy + dr4dy)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (y1-y4)*(r4+r1+d41)*(dr4dy + dr1dy)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
     
     velGradMat(2,0)=(y2-y1)*(r1+r2+d12)*(dr1dz + dr2dz)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
-                    (y3-y2)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
-                    (y4-y3)*(r3+r4+d34)*(dr3dz + dr4dz)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
-                    (y1-y4)*(r4+r1+d41)*(dr4dz + dr1dz)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    (y3-y2)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (y4-y3)*(r3+r4+d34)*(dr3dz + dr4dz)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (y1-y4)*(r4+r1+d41)*(dr4dz + dr1dz)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
     
     velGradMat(0,1)=(x1-x2)*(r1+r2+d12)*(dr1dx + dr2dx)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
-                    (x2-x3)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
-                    (x3-x4)*(r3+r4+d34)*(dr3dx + dr4dx)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
-                    (x4-x1)*(r4+r1+d41)*(dr4dx + dr1dx)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    (x2-x3)*(r2+r3+d23)*(dr2dx + dr3dx)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x4)*(r3+r4+d34)*(dr3dx + dr4dx)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (x4-x1)*(r4+r1+d41)*(dr4dx + dr1dx)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
     
     velGradMat(1,1)=(x1-x2)*(r1+r2+d12)*(dr1dy + dr2dy)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
-                    (x2-x3)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
-                    (x3-x4)*(r3+r4+d34)*(dr3dy + dr4dy)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
-                    (x4-x1)*(r4+r1+d41)*(dr4dy + dr1dy)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    (x2-x3)*(r2+r3+d23)*(dr2dy + dr3dy)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x4)*(r3+r4+d34)*(dr3dy + dr4dy)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (x4-x1)*(r4+r1+d41)*(dr4dy + dr1dy)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
     
     velGradMat(2,1)=(x1-x2)*(r1+r2+d12)*(dr1dz + dr2dz)*(2*d12)/(d12)/(r1+r2-d12)/(pow(r1+r2+d12,2))+
-                    (x2-x3)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
-                    (x3-x4)*(r3+r4+d34)*(dr3dz + dr4dz)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
-                    (x4-x1)*(r4+r1+d41)*(dr4dz + dr1dz)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
+    (x2-x3)*(r2+r3+d23)*(dr2dz + dr3dz)*(2*d23)/(d23)/(r2+r3-d23)/(pow(r2+r3+d23,2))+
+    (x3-x4)*(r3+r4+d34)*(dr3dz + dr4dz)*(2*d34)/(d34)/(r3+r4-d34)/(pow(r3+r4+d34,2))+
+    (x4-x1)*(r4+r1+d41)*(dr4dz + dr1dz)*(2*d41)/(d41)/(r4+r1-d41)/(pow(r4+r1+d41,2));
     
     velGradMat(0,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((z*r1*(m12*de1dx - dh1dx) - (m12*e1-h1)*(z*dr1dx))/pow(z*r1,2))-
-                    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*(m12*de2dx - dh2dx) - (m12*e2-h2)*(z*dr2dx))/pow(z*r2,2))+
-                    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*(m23*de2dx - dh2dx) - (m23*e2-h2)*(z*dr2dx))/pow(z*r2,2))-
-                    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*(m23*de3dx - dh3dx) - (m23*e3-h3)*(z*dr3dx))/pow(z*r3,2))+
-                    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((z*r3*(m34*de3dx - dh3dx) - (m34*e3-h3)*(z*dr3dx))/pow(z*r3,2))-
-                    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((z*r4*(m34*de4dx - dh4dx) - (m34*e4-h4)*(z*dr4dx))/pow(z*r4,2))+
-                    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((z*r4*(m41*de4dx - dh4dx) - (m41*e4-h4)*(z*dr4dx))/pow(z*r4,2))-
-                    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((z*r1*(m41*de1dx - dh1dx) - (m41*e1-h1)*(z*dr1dx))/pow(z*r1,2));
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*(m12*de2dx - dh2dx) - (m12*e2-h2)*(z*dr2dx))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*(m23*de2dx - dh2dx) - (m23*e2-h2)*(z*dr2dx))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*(m23*de3dx - dh3dx) - (m23*e3-h3)*(z*dr3dx))/pow(z*r3,2))+
+    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((z*r3*(m34*de3dx - dh3dx) - (m34*e3-h3)*(z*dr3dx))/pow(z*r3,2))-
+    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((z*r4*(m34*de4dx - dh4dx) - (m34*e4-h4)*(z*dr4dx))/pow(z*r4,2))+
+    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((z*r4*(m41*de4dx - dh4dx) - (m41*e4-h4)*(z*dr4dx))/pow(z*r4,2))-
+    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((z*r1*(m41*de1dx - dh1dx) - (m41*e1-h1)*(z*dr1dx))/pow(z*r1,2));
     
     velGradMat(1,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m12*e1-h1)*(z*dr1dy))/pow(z*r1,2))-
-                    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m12*e2-h2)*(z*dr2dy))/pow(z*r2,2))+
-                    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m23*e2-h2)*(z*dr2dy))/pow(z*r2,2))-
-                    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m23*e3-h3)*(z*dr3dy))/pow(z*r3,2))+
-                    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m34*e3-h3)*(z*dr3dy))/pow(z*r3,2))-
-                    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((-z*r4*dh4dy - (m34*e4-h4)*(z*dr4dy))/pow(z*r4,2))+
-                    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((-z*r4*dh4dy - (m41*e4-h4)*(z*dr4dy))/pow(z*r4,2))-
-                    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m41*e1-h1)*(z*dr1dy))/pow(z*r1,2));
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m12*e2-h2)*(z*dr2dy))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((-z*r2*dh2dy - (m23*e2-h2)*(z*dr2dy))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m23*e3-h3)*(z*dr3dy))/pow(z*r3,2))+
+    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((-z*r3*dh3dy - (m34*e3-h3)*(z*dr3dy))/pow(z*r3,2))-
+    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((-z*r4*dh4dy - (m34*e4-h4)*(z*dr4dy))/pow(z*r4,2))+
+    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((-z*r4*dh4dy - (m41*e4-h4)*(z*dr4dy))/pow(z*r4,2))-
+    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((-z*r1*dh1dy - (m41*e1-h1)*(z*dr1dy))/pow(z*r1,2));
     
     velGradMat(2,2)=(1/(1+pow((m12*e1-h1)/(z*r1),2)))*((z*r1*m12*de1dz - (m12*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2))-
-                    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*m12*de2dz - (m12*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))+
-                    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*m23*de2dz - (m23*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))-
-                    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*m23*de3dz - (m23*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))+
-                    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((z*r3*m34*de3dz - (m34*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))-
-                    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((z*r4*m34*de4dz - (m34*e4-h4)*(r4+z*dr4dz))/pow(z*r4,2))+
-                    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((z*r4*m41*de4dz - (m41*e4-h4)*(r4+z*dr4dz))/pow(z*r4,2))-
-                    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((z*r1*m41*de1dz - (m41*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2));
+    (1/(1+pow((m12*e2-h2)/(z*r2),2)))*((z*r2*m12*de2dz - (m12*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))+
+    (1/(1+pow((m23*e2-h2)/(z*r2),2)))*((z*r2*m23*de2dz - (m23*e2-h2)*(r2+z*dr2dz))/pow(z*r2,2))-
+    (1/(1+pow((m23*e3-h3)/(z*r3),2)))*((z*r3*m23*de3dz - (m23*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))+
+    (1/(1+pow((m34*e3-h3)/(z*r3),2)))*((z*r3*m34*de3dz - (m34*e3-h3)*(r3+z*dr3dz))/pow(z*r3,2))-
+    (1/(1+pow((m34*e4-h4)/(z*r4),2)))*((z*r4*m34*de4dz - (m34*e4-h4)*(r4+z*dr4dz))/pow(z*r4,2))+
+    (1/(1+pow((m41*e4-h4)/(z*r4),2)))*((z*r4*m41*de4dz - (m41*e4-h4)*(r4+z*dr4dz))/pow(z*r4,2))-
+    (1/(1+pow((m41*e1-h1)/(z*r1),2)))*((z*r1*m41*de1dz - (m41*e1-h1)*(r1+z*dr1dz))/pow(z*r1,2));
     
     velGradMat *= derConst;
     
@@ -814,34 +818,6 @@ Eigen::Matrix3d bodyPanel::velocityGradientTriSource(Eigen::Vector3d POI){
     
     double x, y, z;
     x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
-
-    
-//    Eigen::Vector3d centerLoc = global2local(this->getCenter(), true);
-    //    std::cout << "hold on;" << std::endl;
-    //    std::cout << "x_center = [" << this->getCenter().x() << ","<< this->getCenter().y() << ","<< this->getCenter().z() << "];" << std::endl;
-    //    std::cout << "plot3(x_center(1),x_center(2),xcenter(3),'g*')" << std::endl;
-    //    std::cout << "plot3(" << x << "," <<y<< "," << z << ",'r*');" << std::endl;
-    //
-    //    std::cout << "n1global = [" << n1global.x() << ","<< n1global.y() << ","<< n1global.z() << "];" << std::endl;
-    //    std::cout << "n2global = [" << n2global.x() << ","<< n2global.y() << ","<< n2global.z() << "];" << std::endl;
-    //    std::cout << "n3global = [" << n3global.x() << ","<< n3global.y() << ","<< n3global.z() << "];" << std::endl;
-    //    std::cout << "plot3([n1global(1) n2global(1)],[n1global(2) n2global(2)],[n1global(3) n2global(3)]);" << std::endl;
-    //    std::cout << "plot3([n2global(1) n3global(1)],[n2global(2) n3global(2)],[n2global(3) n3global(3)]);" << std::endl;
-    //    std::cout << "plot3([n3global(1) n1global(1)],[n3global(2) n1global(2)],[n3global(3) n1global(3)]);" << std::endl;
-    
-//    std::cout << "figure;" << std::endl;
-//    std::cout << "hold on;" << std::endl;
-//    std::cout << "x_center_loc = [" << centerLoc.x() << ","<< centerLoc.y() << ","<< centerLoc.z() << "];" << std::endl;
-//    std::cout << "plot3(x_center_loc(1),x_center_loc(2),xcenter_loc(3),'g*')" << std::endl;
-//    std::cout << "plot3(" << POIloc.x() << "," <<POIloc.y()<< "," << POIloc.z() << ",'r*');" << std::endl;
-//
-//    std::cout << "n1loc = [" << n1.x() << ","<< n1.y() << ","<< n1.z() << "];" << std::endl;
-//    std::cout << "n2loc = [" << n2.x() << ","<< n2.y() << ","<< n2.z() << "];" << std::endl;
-//    std::cout << "n3loc = [" << n3.x() << ","<< n3.y() << ","<< n3.z() << "];" << std::endl;
-//    std::cout << "plot3([n1loc(1) n2loc(1)],[n1loc(2) n2loc(2)],[n1loc(3) n2loc(3)]);" << std::endl;
-//    std::cout << "plot3([n2loc(1) n3loc(1)],[n2loc(2) n3loc(2)],[n2loc(3) n3loc(3)]);" << std::endl;
-//    std::cout << "plot3([n3loc(1) n1loc(1)],[n3loc(2) n1loc(2)],[n3loc(3) n1loc(3)]);" << std::endl;
-//    
     
     double derConst = sourceStrength/(4*M_PI);
     
