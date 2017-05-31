@@ -182,8 +182,6 @@ class geometry
 {
     std::vector<surface*> surfaces;
     std::vector<wake*> wakes;
-//    std::vector<liftingSurf*> liftingSurfs;
-//    std::vector<surface*> nonLiftingSurfs;
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
     std::vector<wakePanel*> w2Panels; // Buffer wake row two
@@ -197,11 +195,10 @@ class geometry
     short nNodes;
     short nTris;
     
-    
-    Eigen::MatrixXd B; // Source Influence Coefficient Matrix
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
+    Eigen::MatrixXd B; // Source Influence Coefficient Matrix
+    Eigen::MatrixXd C; // 2nd Row Buffer Wake Doublet Influence Coefficient Matrix
     
-    Eigen::MatrixXd C; // Wake Doublet Influence Coefficient Matrix
     
     
     bool writeCoeffFlag;
@@ -213,15 +210,11 @@ class geometry
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
-    void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID, std::vector<int> wakeIDs);
+    void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID );
     void createOctree();
-    //    void setTEPanels();
-    //    void setTEnodes();
     void getLiftingSurfs(std::vector<surface*>& wakes, std::vector<surface*>& liftingSurfs);
     void setNeighbors(panel* p,int targetID);
-    //    void scanNode(panel* p, node<panel>* current, node<panel>* exception);
     bool isLiftingSurf(int currentID, std::vector<int> wakeIDs);
-    //    void correctWakeNodes(int wakeNodeStart);
     void correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity);
     double shortestEdge(const Eigen::MatrixXi &connectivity);
     liftingSurf* getParentSurf(int wakeID);
@@ -267,8 +260,6 @@ public:
     short getNumberOfTris() {return nTris;}
     std::vector<cpNode*> getNodes() {return nodes;}
     Eigen::MatrixXd getNodePnts();
-    //    std::vector<liftingSurf*> getLiftingSurfs() {return liftingSurfs;}
-    //    std::vector<surface*> getNonLiftingSurfs() {return nonLiftingSurfs;}
     
     std::vector<surface*> getSurfaces();
     panelOctree* getOctree() {return &pOctree;}
@@ -281,6 +272,8 @@ public:
     Eigen::MatrixXd* getB() {return &B;}
     Eigen::MatrixXd* getC() {return &C;}
     double getDt() {return dt;}
+    
+    void moveGeom( std::vector<double> bodyKin );
     
     void moveGeom( std::vector<double> bodyKin );
 

@@ -16,10 +16,6 @@ panel::panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vecto
     setGeom();
 }
 
-//panel::panel(const panel &copy) : ID(copy.ID), nodes(copy.nodes), pEdges(copy.pEdges)
-//{
-//    setGeom();
-//}
 
 void panel::setGeom()
 {
@@ -119,9 +115,7 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
         Eigen::Vector3d vec = POI-center;
         Eigen::Vector3d projVec = vec-(vec.dot(normal))*normal;
         projectedPnt = center + projVec;
-//        projectedPnt = points.row(nodes.size());
-//        projectedPnt(2) = 0; // Get point in panel plane.
-//        projectedPnt = local2global(projectedPnt, true);
+
         return true;
     }
     
@@ -130,12 +124,12 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
 }
 
 bool panel::onPanelCheck(const Eigen::Vector3d &POI){
-    // check to see if a point of interest lies on a panel. Will be using my completely arbitrary definition of 5% of the panel's longest side as the cutoff for 'in the panel'
+    // Check to see if a point of interest lies on a panel. Will be using my completely arbitrary definition of 5% of the panel's longest side as the cutoff for 'in the panel'
     
-    Eigen::Vector3d dummy = Eigen::Vector3d::Zero(); //isPanelProjection returns the projected point which is not needed for this application.
+    Eigen::Vector3d dummy = Eigen::Vector3d::Zero(); // Projected point which is not needed for this application.
     Eigen::Vector3d pointInLocal = global2local(POI, true);
     
-    // see if is in projection AND if point in local coords is within the distance of panel
+    // See if is in projection AND if point in local coords is within the distance of panel
     if(inPanelProjection(POI, dummy) && (pointInLocal.z() < 0.05*this->longSide))
     {
         return true;
@@ -247,11 +241,7 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
     Eigen::Vector3d vel = Eigen::Vector3d::Zero(3);
     Eigen::Vector3d pjk = POI-center;
     Eigen::Matrix3d local = getLocalSys();
-    //    if (pjk.norm() < 0.0000001)
-    //    {
-    //        vel << 0,0,0;
-    //        return vel;
-    //    }
+
     if (pjk.norm()/longSide > 5)
     {
         return pntDubV(local.row(2),pjk);
@@ -428,7 +418,7 @@ Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
         {
             // Only add the w gradint values, as u and v are zero on the panel. Katz
             velGradMat.col(2) += gradDoub(a,b,s).col(2);
-            std::cout << "particle is on Panel" << std::endl; // Also, convert the Katz values to VSaero by dividing(or mult) by 4pi. Do for both source and doublet.
+            std::cout << "Warning: particle is on panel..." << std::endl; // Not necessarily a bad thing if this panel is a wake panel. If it is a body panel, then a divergence free velocity field doesn't hold. Try increasing mesh resolution...
         }
     }
     
@@ -515,5 +505,4 @@ bool panel::nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &
 
     return isNear;
 }
-
 

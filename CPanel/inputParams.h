@@ -28,7 +28,7 @@ struct inputParams
     double Sref;
     double bref;
     double cref;
-    double timeStep; 
+    double timeStep;
     double numSteps;
     bool stepsSetMaunally;
     double streamSpacing;
@@ -38,15 +38,13 @@ struct inputParams
     
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
-        
+    
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;
     bool vortexParticles;
     bool volMeshFlag;
     
-    double meshXo;
-    double meshXf;
     std::vector<double> volMeshBounds;
     std::vector<int> volMeshRes;
     
@@ -60,7 +58,7 @@ struct inputParams
     
     bool set();
     void print(std::ostream &stream);
-
+    
 private:
     bool checkGeomFile();
     void makeWorkingDir();

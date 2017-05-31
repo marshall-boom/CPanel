@@ -59,15 +59,10 @@ protected:
     Eigen::Matrix3d velocityGradientDoublet(Eigen::Vector3d POI);
     Eigen::Matrix3d gradDoub(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s);
 
-//    Eigen::Matrix3d velocityGradientTriDoublet(Eigen::Vector3d POI);
-//    Eigen::Matrix3d velocityGradientQuadDoublet(Eigen::Vector3d POI);
-    
 public:
     panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,int surfID);
     
     virtual ~panel() {}
-    
-//    panel(const panel &copy);
     
     void setGeom();
         

@@ -67,10 +67,27 @@ void usage(const char * argv[])
     printf("Stability_Derivatives\n");
     printf("1\n");
     printf("Write_Influence_Coefficients\n");
-    printf("0\n\n\n\n");
+    printf("0\n");
+    printf("Vortex_Particle_Wake\n");
+    printf("0\n");
+    printf("Accelerate_Code\n");
+    printf("1\n");
+    printf("Volume_Mesh (Xo Xf Yo Yf Zo Zf nX nY nZ)\n");
+    printf("1\n");
+    printf("-0.5 6.5 -8 8 -0.5 1.25 40 1 30\n");
+    printf("\n");
+    printf("%% Vortex Particle Wake Options %%\n");
+    printf("Time_Step\n");
+    printf("0\n");
+    printf("Number_of_Timesteps\n");
+    printf("40\n");
+    printf("Unsteady_Mode\n");
+    printf("0\n");
+    printf("/filepath/kinematicFile.bKin\n\n");
+    
     
     printf("The number following Case variables indicates the number of different values for those variables, followed by the actual values\n\n");
-    printf("Write_Influence_Coefficients option writes dense matrix to file for future use. Saves time of recomputing influence coefficients if running the geometry multiple times. For fine meshes (> 10000 panels), can take significant amount of time for I/O and file can become very large.\n");
+    printf("Write_Influence_Coefficients option writes dense matrix to file for future use. Saves time of recomputing influence coefficients if running the geometry multiple times. For fine meshes (> 10000 panels), can take significant amount of time for I/O and file can become very large.\n\n");
     printf("\n");
     printf("For questions, contact :\n");
     printf("\tDavid D. Marshall\n");
@@ -109,7 +126,6 @@ int main(int argc, const char * argv[])
     std::cout << "Running CPanel with the following inputs...\n" << std::endl;
     inData.print(std::cout);
     std::cout << std::endl;
-//    geometry geom(params.geomFile,params.normFlag,params.Sref,params.bref,params.cref,params.cg);
     geometry geom(&inData);
     caseMgr cm(&inData,&geom);
     

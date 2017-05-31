@@ -203,18 +203,10 @@ double edge::distToEdge(const Eigen::Vector3d &pnt)
     return dist;
 }
 
-Eigen::Vector3d edge::edgeVelocity(const Eigen::Vector3d &Vinf)
+Eigen::Vector3d edge::edgeVelocity()
 {
     Eigen::Vector3d v1,v2,pnt;
-//    double pot;
-//    
-//    pnt = bodyPans[0]->pntNearEdge(this);
-//    pot = geom->pntPotential(pnt,Vinf);
-//    v1 = bodyPans[0]->pntVelocity(pnt, pot);
-//    
-//    pnt = bodyPans[1]->pntNearEdge(this);
-//    pot = geom->pntPotential(pnt,Vinf);
-//    v2 = bodyPans[1]->pntVelocity(pnt,pot);
+
     v1 = bodyPans[0]->getGlobalV();
     v2 = bodyPans[1]->getGlobalV();
     
@@ -230,7 +222,6 @@ Eigen::Vector3d edge::TEgamma()
     }
     return gamma;
 }
-
 
 bool edge::containsNode(cpNode* node)
 {

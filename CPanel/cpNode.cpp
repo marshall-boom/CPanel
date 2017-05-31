@@ -13,11 +13,6 @@
 
 cpNode::cpNode(Eigen::Vector3d pnt,int index) : pnt(pnt), index(index), TEnode(false) {}
 
-//cpNode::cpNode(const cpNode& copy) : pnt(copy.pnt), index(copy.index),TEnode(copy.TEnode)
-//{
-//    
-//}
-
 Eigen::Vector3d cpNode::operator-=(const cpNode &rhs)
 {
     return pnt-rhs.getPnt();
@@ -87,7 +82,6 @@ std::vector<edge*> cpNode::getTrailingEdges(){
     }
     return trailingEdges;
 }
-
 
 Eigen::Vector3d cpNode::nodeWakeProjAngle(){
     

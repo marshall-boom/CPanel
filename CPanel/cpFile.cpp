@@ -48,18 +48,6 @@ void cpFile::parsefile()
         ss2 << path << name << ext;
         file = ss2.str();
     }
-    
-//    // Set geometry path and geometry name
-//    if (pathEnd != 0)
-//    {
-//        path = file.substr(0,pathEnd);
-//    }
-//    else
-//    {
-//        boost::filesystem::path p = boost::filesystem::current_path();
-//        name = file.substr(0,nameEnd);
-//        changePath(p.string());
-//    }
 }
 
 void cpFile::changePath(std::string newPath)

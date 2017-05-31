@@ -55,9 +55,7 @@ class bodyPanel : public panel
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID);
-    
-//    bodyPanel(const bodyPanel &copy);
-    
+        
     void addNeighbor(bodyPanel* p);
     void setUpper();
     void setLower();
@@ -73,7 +71,7 @@ public:
     void panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &phiDub);
     void panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eigen::Vector3d &vDub);
     Eigen::Vector3d pntVInf(const Eigen::Vector3d &POI);
-
+    
     Eigen::Vector3d pntVelocity(const Eigen::Vector3d &pnt,double pntPotential, double PG, const Eigen::Vector3d &Vinf);
     
     double dist2Pan(bodyPanel* other);

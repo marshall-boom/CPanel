@@ -31,7 +31,7 @@ class cpCase
 {
 protected:
     geometry *geom;
-
+    
     inputParams* params;
     double Vmag;
     double mach;
@@ -76,10 +76,9 @@ protected:
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
-
-
-    Eigen::MatrixXd solnMat;
-
+    
+    
+    
     
     struct meshDat {
         std::vector<Eigen::Vector3d> velocity;
@@ -94,14 +93,15 @@ protected:
     void createVolMesh();
     void populateVolMesh();
     void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
-
-
     
-
+    Eigen::MatrixXd solnMat; // For unsteady sims, but needs to be in parent class for simple output
+    
+    
+    
 public:
     cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
     {
-        Vinf = windToBody(V,alpha,beta); 
+        Vinf = windToBody(V,alpha,beta);
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
         PG = sqrt(1-pow(mach,2));

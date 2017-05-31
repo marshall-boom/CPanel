@@ -73,7 +73,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/C_Man/Desktop/CPanelCases/wing/wing.CPin"
+            argument = "/Users/C_Man/Desktop/CPanelCases/quickTest/quickTest.CPin"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

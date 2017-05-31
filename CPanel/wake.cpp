@@ -193,7 +193,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
             unsortedParts.push_back((*particles)[i]);
         }
     }
-
+    
     
     // Sort this vector from where they were shed on a y position basis, so can connect with a single continuous curve
     std::vector<particle*> sortedParts;
@@ -234,7 +234,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     }
     
     
-    // 2. Find points that lie on the curve. Will make 3*N particles so that there are always a odd number of pts (for integration), regardless of even or odd number of particles on S.
+    // 2. Find points that lie on the curve. Will make 3*N particles so that there are always a odd number of pts (for simpsons integration), regardless of even or odd number of particles on S.
     
     int nPnts = (int)sortedParts.size()*3;
     double step = Slen/nPnts;
@@ -271,8 +271,8 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
             pt = newPt;
         }
     }
-  
-
+    
+    
     Eigen::VectorXd w,dPhi;
     w = Eigen::VectorXd::Zero(nPnts+1);
     dPhi = Eigen::VectorXd::Zero(nPnts+1);
@@ -285,17 +285,16 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         
         Eigen::Vector3d partV = Eigen::Vector3d::Zero();
         for (int j=0; j<(*particles).size(); j++) {
-            partV += (*particles)[j]->partVelInfl(pWake);
+            partV += (*particles)[j]->velInfl(pWake);
         }
-
+        
+        double parentPanWeightedY = particlePntInWakeY( Spts[i] , SptsP1[i] , SptsP2[i] );
+        double stFac = stretchFactor( SptsP1[i] , SptsP2[i] );
+        
         w(i) = std::abs(partV.z());
-        
-        
-        double parentPanWeightedY = particlePntInWakeY( Spts[i] , SptsP1[i] , SptsP2[i]);
-        double stFac = stretchFactor(SptsP1[i] , SptsP2[i]);
 
         dPhi(i) = -wakeStrength(parentPanWeightedY) * stFac;
-
+        
         Cl(i) = 2*dPhi(i)/(Vinf*Sref);
         Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
     }
@@ -309,12 +308,6 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         CD += 1.0/3*step*(Cd(i)+4*Cd(i+1)+Cd(i+2));
         i += 2;
     }
-    
-    
-//    std::cout << "CL_t_VP = " << CL << std::endl;
-//    std::cout << "CD_t_VP = " << CD << std::endl;
-
-//    std::cout << CL << " " << CD << std::endl;
 }
 
 
@@ -431,7 +424,7 @@ Eigen::Vector3d wake::lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd 
     while (TE != nullptr)
     {
         yLoc(i) = TE->getMidPoint()(1);
-        vel = TE->edgeVelocity(Vinf);
+        vel = TE->edgeVelocity();
         circ = TE->TEgamma();
         sectForces.row(i) = vel.cross(circ);
         TE = TE->nextTE();
@@ -589,96 +582,6 @@ double wake::Vradial(Eigen::Vector3d pWake)
     return Vr;
 }
 
-//Eigen::Vector3d wake::Vradial2(Eigen::Vector3d pWake)
-//{
-//    double r;
-//    double theta = M_PI/4;
-//    double dZmax = 0.3;
-//    double delZ;
-//    Eigen::Vector3d POI;
-//    POI(0) = pWake(0);
-//    if (pWake(1) >= 0)
-//    {
-//        r = yMax-pWake(1);
-//    }
-//    else
-//    {
-//        r = pWake(1)-yMin;
-//    }
-//    delZ = r*sin(theta);
-//    if (delZ > dZmax)
-//    {
-//        delZ = dZmax;
-//        theta = asin(dZmax/r);
-//    }
-//    if (pWake(1) >= 0)
-//    {
-//        POI(1) = yMax-r*cos(theta);
-//    }
-//    else
-//    {
-//        POI(1) = yMin+r*cos(theta);
-//    }
-//    
-//    POI(2) = pWake(2)+r*sin(theta);
-//    
-//    
-//    double Vr;
-//    int nPnts = 6;
-//    if (nPnts % 2 != 0)
-//    {
-//        nPnts++;
-//    }
-//    double dz = 0.5*delZ;
-//    double step = 2*dz/(nPnts-1);
-//    double phiPOI = 0;
-//    Eigen::VectorXd dPhiy(nPnts);
-//    Eigen::VectorXd dPhiz(nPnts);
-//    Eigen::MatrixXd dY(nPnts,1);
-//    Eigen::MatrixXd dZ(nPnts,1);
-//    //    for (int i=0; i<wpanels.size(); i++)
-//    //    {
-//    //        phiPOI += wpanels[i]->panelPhi(POI);
-//    //    }
-//    phiPOI = geom->wakePotential(POI);
-//    
-//    int i=0;
-//    while (i < nPnts)
-//    {
-//        double phiPnt1 = 0;
-//        double phiPnt2 = 0;
-//        double delta = -dz+i*step;
-//        Eigen::Vector3d ydir,zdir;
-//        ydir << 0,1,0;
-//        zdir << 0,0,1;
-//        Eigen::Vector3d pnt1 = POI+delta*ydir;
-//        Eigen::Vector3d pnt2 = POI+delta*zdir;
-//        //        for (int j=0; j<wpanels.size(); j++)
-//        //        {
-//        //            phiPnt1 += wpanels[j]->panelPhi(pnt1);
-//        //            phiPnt2 += wpanels[j]->panelPhi(pnt2);
-//        //        }
-//        phiPnt1 = geom->wakePotential(pnt1);
-//        phiPnt2 = geom->wakePotential(pnt2);
-//        
-//        dPhiy(i) = phiPnt1-phiPOI;
-//        dPhiz(i) = phiPnt2-phiPOI;
-//        dY(i) = pnt1(1) - POI(1);
-//        dZ(i) = pnt2(2) - POI(2);
-//        i = i+1;
-//    }
-//    
-//    Eigen::MatrixXd Xb(0,3),Vb(0,3);
-//    Eigen::Vector3d V0 = Eigen::Vector3d::Zero();
-//    Eigen::Matrix<double,1,1> x0;
-//    x0.setZero();
-//    chtlsnd weightsY(x0,dY,3,Xb,Vb,V0);
-//    double v = weightsY.getF().row(0)*dPhiy;
-//    chtlsnd weightsZ(x0,dZ,3,Xb,Vb,V0);
-//    double w = weightsZ.getF().row(0)*dPhiz;
-//    Vr = sqrt(pow(v,2)+pow(w,2));
-//    return {0,v,w};
-//}
 
 
 Eigen::Vector3d wake::pntInWake(double x, double y)

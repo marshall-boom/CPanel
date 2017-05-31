@@ -58,7 +58,6 @@ class cpCaseVP : public cpCase{
     void readBodyKinFile();
     void populateVolMesh();
     
-    int timestep = 1;
     double dt;
     int numSteps;
     bool accelerate;
@@ -68,9 +67,34 @@ class cpCaseVP : public cpCase{
     particleOctree partOctree;
     particleFMM FMM;
     Eigen::MatrixXd bodyKin;
-        
+    
     //    void moveGeometry();
     
+    
+    
+
+//    void setSourceStrengths();
+
+    void trefftzPlaneAnalysis();
+    void stabilityDerivatives();
+    void writeVTU(std::string filename);
+    void writeFiles();
+    void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+    void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+
+//    void writeSpanwiseData(boost::filesystem::path path);
+//    void writeBodyStreamlines(boost::filesystem::path path);
+    //    void collapsePanels(); //BW2
+//    void collapseWakeForEachEdge();
+    Eigen::Vector3d edgeStrength(wakePanel* pan, edge* curEdge, int edgeNum);
+    Eigen::Vector3d seedPos(wakePanel* pan, int edgeNum);
+    
+    void particleStrengthUpdateGaussian();//999
+//    void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
+//    void createVolMesh();
+    //============================
+    Eigen::MatrixXd solnMat;
+
     
 public:
     cpCaseVP( geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams ) : cpCase( geom, V, alpha, beta, mach, inParams )
@@ -88,8 +112,8 @@ public:
     
     
     void run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag);
-    
-    
+    Eigen::MatrixXd get_soln_mat() {return solnMat;}
+
 };
 
 

@@ -144,9 +144,9 @@ edge* wakePanel::getTE()
 //    Eigen::Vector3d p1,p2,p3,p4,deltaVec;
 //    Eigen::VectorXi sheetVerts = Eigen::VectorXi::Zero(4);
 //    double length = 100;
-//    
+//
 //    p1(1) = -1000000;
-//    
+//
 //    // Find points on trailing edge;
 //    Eigen::Vector3i neighbVerts = upperPan->getVerts();
 //    bool breakFlag = false;
@@ -161,10 +161,10 @@ edge* wakePanel::getTE()
 //                {
 //                    sheetVerts(1) = sheetVerts(0);
 //                    p2 = p1;
-//                    
+//
 //                    sheetVerts(0) = verts(i);
 //                    p1 = pnt;
-//                    
+//
 //                }
 //                else
 //                {
@@ -182,28 +182,28 @@ edge* wakePanel::getTE()
 //    }
 //    sheetVerts(2) = (int)nodes->rows();
 //    sheetVerts(3) = sheetVerts(2) + 1;
-//    
+//
 //    deltaVec = length*normal.cross((p2-p1).normalized());
 //    p3 = p2+deltaVec;
 //    p4 = p1+deltaVec;
-//    
+//
 //    nodes->conservativeResize(nodes->rows()+2, 3);
 //    nodes->row(sheetVerts(2)) = p3;
 //    nodes->row(sheetVerts(3)) = p4;
-//    
+//
 //    wakePanel* sheet = new wakePanel(sheetVerts,nodes,normal,ID,parentWake);
 //    sheet->setTEpanel();
 //    sheet->setUpper(upperPan);
 //    sheet->setLower(lowerPan);
 //    return sheet;
-//    
-//    
+//
+//
 //}
 
 
 double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
     // Particle radius will be the average distance between the spanwise particle seed points. Quackenbush, eq. 9
-
+    
     Eigen::Vector3d currPnt = this->getCenter() + dt*Vinf;
     
     wakePanel* neighbor1 = this->getEdges()[1]->getOtherWakePan(this);
@@ -220,7 +220,7 @@ double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
         Eigen::Vector3d neighbor2Pnt = neighbor2->getCenter() + dt*Vinf;
         dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
     }
-
+    
     return std::accumulate(dist.begin(), dist.end(), 0.0)/dist.size();
 };
 
@@ -266,7 +266,7 @@ Eigen::Vector3d wakePanel::partStretching(particle* part){
 
 
 std::vector<cpNode*> wakePanel::pointsInOrder(){
-// will use edges in order to find the correct points
+    // will use edges in order to find the correct points
     
     //           0
     //       1------0       --> y
@@ -311,11 +311,11 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
         ptsIO[3] = n1;
     }
     
-
+    
     return ptsIO;
 }
 
- 
+
 std::vector<edge*> wakePanel::edgesInOrder(){
     // Can put in the constructor at a later time
     

@@ -153,7 +153,7 @@ bool inputParams::set()
                 }
                 else if (s1.compare("Number_of_Timesteps") == 0)
                 {
-                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');                    
+                    fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
                     fid >> numSteps;
                     if(numSteps != 0){
                         stepsSetMaunally = true;
@@ -249,7 +249,7 @@ void inputParams::print(std::ostream &stream)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-
+    
     stream << std::setw(nChars) << "Accelerate Code " << "-> ";
     if (accelerateCode)
         stream << "ON" << std::endl;
@@ -375,7 +375,14 @@ void inputParams::writeInputFile()
     fid << vortexParticles << std::endl;
     fid << "Accelerate_Code" << std::endl;
     fid << accelerateCode << std::endl;
-    fid << std::endl;
+    fid << "Volume_Mesh (Xo Xf Yo Yf Zo Zf nX nY nZ)" << std::endl;
+    for (int i=0; i<volMeshBounds.size(); i++) {
+        fid << volMeshBounds[i] << " ";
+    }
+    for (int i=0; i<volMeshRes.size(); i++) {
+        fid << volMeshRes[i] << " ";
+    }
+    fid << "/n/n" <<std::flush;
     fid << "% Vortex Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;
     fid << timeStep << std::endl;

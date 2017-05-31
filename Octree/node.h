@@ -221,14 +221,14 @@ public:
             std::vector<type*> nParts = this->getMembers();
             for(int i=0; i<nParts.size(); i++)
             {
-                velInfl+=nParts[i]->partVelInfl(POI);
+                velInfl+=nParts[i]->velInflAlgSmooth(POI); // uses faster velocity formulation
             }
         }
         else
         {
             if(this->isFarField(POI))
             {
-                velInfl = this->multExp->partVelInfl(POI);
+                velInfl = this->multExp->velInflAlgSmooth(POI);
             }
             else
             {
@@ -253,7 +253,7 @@ public:
             {
                 if(part != nParts[i])
                 {
-                    velInfl += nParts[i]->partVelInfl(part);
+                    velInfl += nParts[i]->velInfl(part);
                 }
             }
         }
@@ -261,7 +261,7 @@ public:
         {
             if(this->isFarField(part->pos))
             {
-                velInfl = this->multExp->partVelInfl(part);
+                velInfl = this->multExp->velInfl(part);
             }
             else
             {

@@ -142,12 +142,6 @@ Eigen::Vector3d particleFMM::findExpPos(std::vector<particle*> parts)
 }
 
 
-
-
-
-
-
-
 Eigen::Vector3d particleFMM::findExpStrength(node<particle>* thisNode){
     std::vector<particle*> nodeParticles = thisNode->getMembers();
     
@@ -184,6 +178,17 @@ double particleFMM::findExpRadius(node<particle>* thisNode){
     return nodeRad;
 }
 
+double particleFMM::findExpRadius(std::vector<particle*> parts){
+    // Overloaded function does same as above, but intakes a vector of particles
+    
+    double nodeRad = 0;
+    
+    for (int i=0; i<parts.size(); i++) {
+        nodeRad+=parts[i]->radius;
+    }
+    
+    return nodeRad;
+}
 
 
 //write first here, then make a general case in a new folder above using a general type.
