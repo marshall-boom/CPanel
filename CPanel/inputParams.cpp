@@ -375,7 +375,14 @@ void inputParams::writeInputFile()
     fid << vortexParticles << std::endl;
     fid << "Accelerate_Code" << std::endl;
     fid << accelerateCode << std::endl;
-    fid << std::endl;
+    fid << "Volume_Mesh (Xo Xf Yo Yf Zo Zf nX nY nZ)" << std::endl;
+    for (int i=0; i<volMeshBounds.size(); i++) {
+        fid << volMeshBounds[i] << " ";
+    }
+    for (int i=0; i<volMeshRes.size(); i++) {
+        fid << volMeshRes[i] << " ";
+    }
+    fid << "/n/n" <<std::flush;
     fid << "% Vortex Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;
     fid << timeStep << std::endl;

@@ -68,7 +68,7 @@ class cpCaseVP : public cpCase{
     particleOctree partOctree;
     particleFMM FMM;
     Eigen::MatrixXd bodyKin;
-    
+        
     //    void moveGeometry();
     
     
@@ -88,6 +88,7 @@ public:
     
     
     void run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag);
+    
     
 };
 

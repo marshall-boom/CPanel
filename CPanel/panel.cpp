@@ -16,10 +16,6 @@ panel::panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vecto
     setGeom();
 }
 
-//panel::panel(const panel &copy) : ID(copy.ID), nodes(copy.nodes), pEdges(copy.pEdges)
-//{
-//    setGeom();
-//}
 
 void panel::setGeom()
 {
@@ -119,9 +115,7 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
         Eigen::Vector3d vec = POI-center;
         Eigen::Vector3d projVec = vec-(vec.dot(normal))*normal;
         projectedPnt = center + projVec;
-//        projectedPnt = points.row(nodes.size());
-//        projectedPnt(2) = 0; // Get point in panel plane.
-//        projectedPnt = local2global(projectedPnt, true);
+
         return true;
     }
     
@@ -130,12 +124,12 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
 }
 
 bool panel::onPanelCheck(const Eigen::Vector3d &POI){
-    // check to see if a point of interest lies on a panel. Will be using my completely arbitrary definition of 5% of the panel's longest side as the cutoff for 'in the panel'
+    // Check to see if a point of interest lies on a panel. Will be using my completely arbitrary definition of 5% of the panel's longest side as the cutoff for 'in the panel'
     
-    Eigen::Vector3d dummy = Eigen::Vector3d::Zero(); //isPanelProjection returns the projected point which is not needed for this application.
+    Eigen::Vector3d dummy = Eigen::Vector3d::Zero(); // Projected point which is not needed for this application.
     Eigen::Vector3d pointInLocal = global2local(POI, true);
     
-    // see if is in projection AND if point in local coords is within the distance of panel
+    // See if is in projection AND if point in local coords is within the distance of panel
     if(inPanelProjection(POI, dummy) && (pointInLocal.z() < 0.05*this->longSide))
     {
         return true;
@@ -247,11 +241,7 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
     Eigen::Vector3d vel = Eigen::Vector3d::Zero(3);
     Eigen::Vector3d pjk = POI-center;
     Eigen::Matrix3d local = getLocalSys();
-    //    if (pjk.norm() < 0.0000001)
-    //    {
-    //        vel << 0,0,0;
-    //        return vel;
-    //    }
+
     if (pjk.norm()/longSide > 5)
     {
         return pntDubV(local.row(2),pjk);
@@ -428,7 +418,7 @@ Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
         {
             // Only add the w gradint values, as u and v are zero on the panel. Katz
             velGradMat.col(2) += gradDoub(a,b,s).col(2);
-            std::cout << "particle is on Panel" << std::endl; // Also, convet the Katz values to VSaero by dividing(or mult) by 4pi. Do for both source and doublet.
+            std::cout << "Warning: particle is on panel..." << std::endl; // Not necessarily a bad thing if this panel is a wake panel. If it is a body panel, then a divergence free velocity field doesn't hold. Try increasing mesh resolution...
         }
     }
     
@@ -516,400 +506,3 @@ bool panel::nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &
     return isNear;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Eigen::Matrix3d panel::velocityGradientTriDoublet(Eigen::Vector3d POI){
-//    Eigen::Matrix3d velGradMat = Eigen::Matrix3d::Zero();
-//    // dudx  dvdx  dwdx
-//    // dudy  dvdy  dwdy
-//    // dudz  dvdz  dwdz
-//    
-//    Eigen::Vector3d n1global = this->getNodes()[0]->getPnt();
-//    Eigen::Vector3d n2global = this->getNodes()[1]->getPnt();
-//    Eigen::Vector3d n3global = this->getNodes()[2]->getPnt();
-//    
-//    Eigen::Vector3d n1 = global2local(n1global, true);
-//    Eigen::Vector3d n2 = global2local(n2global, true);
-//    Eigen::Vector3d n3 = global2local(n3global, true);
-//    Eigen::Vector3d POIloc = global2local(POI, true);
-//    
-//    double x1, y1, x2, y2, x3, y3;
-//    x1 = n1.x(); x2 = n2.x(); x3 = n3.x();
-//    y1 = n1.y(); y2 = n2.y(); y3 = n3.y();
-//    
-//    double x, y, z;
-//    x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
-//    
-//    double derConst = doubletStrength/(4*M_PI);
-//    
-//    double d12,d23,d31;
-//    d12 = pow((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1),0.5);
-//    d23 = pow((x3-x2)*(x3-x2) + (y3-y2)*(y3-y2),0.5);
-//    d31 = pow((x1-x3)*(x1-x3) + (y1-y3)*(y1-y3),0.5);
-//    
-//    double r1,r2,r3;
-//    r1 = pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    r2 = pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    r3 = pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    
-//    double dr1dx, dr2dx, dr3dx;
-//    dr1dx = (x-x1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    dr2dx = (x-x2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    dr3dx = (x-x3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    
-//    double dr1dy, dr2dy, dr3dy;
-//    dr1dy = (y-y1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    dr2dy = (y-y2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    dr3dy = (y-y3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    
-//    double dr1dz, dr2dz, dr3dz;
-//    dr1dz = (z)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    dr2dz = (z)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    dr3dz = (z)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    
-//    double m12,m23,m31;
-//    m12 = (y2-y1)/(x2-x1);
-//    m23 = (y3-y2)/(x3-x2);
-//    m31 = (y1-y3)/(x1-x3);
-//    
-//    double e1,e2,e3;
-//    e1 = (x-x1)*(x-x1) + z*z;
-//    e2 = (x-x2)*(x-x2) + z*z;
-//    e3 = (x-x3)*(x-x3) + z*z;
-//    
-//    double h1,h2,h3;
-//    h1 = (x-x1)*(y-y1);
-//    h2 = (x-x2)*(y-y2);
-//    h3 = (x-x3)*(y-y3);
-//    
-//    double de1dx,de2dx,de3dx;
-//    de1dx = 2*(x-x1);
-//    de2dx = 2*(x-x2);
-//    de3dx = 2*(x-x3);
-//    
-//    double dh1dx,dh2dx,dh3dx;
-//    dh1dx = (y-y1);
-//    dh2dx = (y-y2);
-//    dh3dx = (y-y3);
-//    
-//    double dh1dy,dh2dy,dh3dy;
-//    dh1dy = (x-x1);
-//    dh2dy = (x-x2);
-//    dh3dy = (x-x3);
-//    
-//    double de1dz,de2dz,de3dz;
-//    de1dz = 2*z;
-//    de2dz = 2*z;
-//    de3dz = 2*z;
-//    
-//    double beta1,beta2,beta3;
-//    beta1 = (r1*r2 - ((x-x1)*(x-x2) + (y-y1)*(y-y2) + z*z));
-//    beta2 = (r2*r3 - ((x-x2)*(x-x3) + (y-y2)*(y-y3) + z*z));
-//    beta3 = (r3*r1 - ((x-x3)*(x-x1) + (y-y3)*(y-y1) + z*z));
-//    
-//    double bot1,bot2,bot3;
-//    bot1 = (r1*r2*(r1*r2 - ((x-x1)*(x-x2) + (y-y1)*(y-y2) + z*z)));
-//    bot2 = (r2*r3*(r2*r3 - ((x-x2)*(x-x3) + (y-y2)*(y-y3) + z*z)));
-//    bot3 = (r3*r1*(r3*r1 - ((x-x3)*(x-x1) + (y-y3)*(y-y1) + z*z)));
-//    
-//    double top1, top2, top3;
-//    
-//    // w: Will do w first because in the case that the particle winds up on the panel, then the u and v terms will be zero and the function call can end.
-//    top1 = (((x-x2)*(y-y1) - (x-x1)*(y-y2))*(r1+r2));
-//    top2 = (((x-x3)*(y-y2) - (x-x2)*(y-y3))*(r2+r3));
-//    top3 = (((x-x1)*(y-y3) - (x-x3)*(y-y1))*(r3+r1));
-//    
-//    velGradMat(0,2)=
-//    (bot1*(((y-y1)-(y-y2))*(r1+r2)+((x-x2)*(y-y1)-(x-x1)*(y-y2))*(dr1dx+dr2dx))-top1*(dr1dx*r2*beta1+r1*dr2dx*beta1+r1*r2*(dr1dx*r2+r1*dr2dx-(x-x2)-(x-x1))))/((bot1*bot1)) +
-//    (bot2*(((y-y2)-(y-y3))*(r2+r3)+((x-x3)*(y-y2)-(x-x2)*(y-y3))*(dr2dx+dr3dx))-top2*(dr2dx*r3*beta2+r2*dr3dx*beta2+r2*r3*(dr2dx*r3+r2*dr3dx-(x-x3)-(x-x2))))/((bot2*bot2)) +
-//    (bot3*(((y-y3)-(y-y1))*(r3+r1)+((x-x1)*(y-y3)-(x-x3)*(y-y1))*(dr3dx+dr1dx))-top3*(dr3dx*r1*beta3+r3*dr1dx*beta3+r3*r1*(dr3dx*r1+r3*dr1dx-(x-x1)-(x-x3))))/((bot3*bot3));
-//    
-//    velGradMat(1,2)=
-//    (bot1*(((x-x2)-(x-x1))*(r1+r2)+((x-x2)*(y-y1)-(x-x1)*(y-y2))*(dr1dy+dr2dy))-top1*(dr1dy*r2*beta1+r1*dr2dy*beta1+r1*r2*(dr1dy*r2+r1*dr2dy-(y-y1)-(y-y2))))/((bot1*bot1)) +
-//    (bot2*(((x-x3)-(x-x2))*(r2+r3)+((x-x3)*(y-y2)-(x-x2)*(y-y3))*(dr2dy+dr3dy))-top2*(dr2dy*r3*beta2+r2*dr3dy*beta2+r2*r3*(dr2dy*r3+r2*dr3dy-(y-y2)-(y-y3))))/((bot2*bot2)) +
-//    (bot3*(((x-x1)-(x-x3))*(r3+r1)+((x-x1)*(y-y3)-(x-x3)*(y-y1))*(dr3dy+dr1dy))-top3*(dr3dy*r1*beta3+r3*dr1dy*beta3+r3*r1*(dr3dy*r1+r3*dr1dy-(y-y3)-(y-y1))))/((bot3*bot3));
-//    
-//    velGradMat(2,2)=(bot1*(((x-x2)*(y-y1)-(x-x1)*(y-y2))*(dr1dz+dr2dz)) - top1*(dr1dz*r2*beta1+r1*dr2dz*beta1 + r1*r2*(dr1dz*r2+r1*dr2dz-2*z)))/((bot1*bot1)) +
-//    (bot2*(((x-x3)*(y-y2)-(x-x2)*(y-y3))*(dr2dz+dr3dz))-top2*(dr2dz*r3*beta2 + r2*dr3dz*beta2 + r2*r3*(dr2dz*r3+r2*dr3dz-2*z)))/((bot2*bot2)) +
-//    (bot3*(((x-x1)*(y-y3)-(x-x3)*(y-y1))*(dr3dz+dr1dz))-top3*(dr3dz*r1*beta3 + r3*dr1dz*beta3 + r3*r1*(dr3dz*r1+r3*dr1dz-2*z)))/((bot3*bot3));
-//    
-//    
-//    // u
-//    top1 = (z*(y1-y2)*(r1+r2));
-//    top2 = (z*(y2-y3)*(r2+r3));
-//    top3 = (z*(y3-y1)*(r3+r1));
-//
-//    velGradMat(0,0)=(bot1*(z*(y1-y2)*(dr1dx+dr2dx))-top1*(dr1dx*r2*beta1+r1*dr2dx*beta1+r1*r2*(dr1dx*r2+r1*dr2dx-(x-x2)-(x-x1))))/(bot1*bot1) +
-//                    (bot2*(z*(y2-y3)*(dr2dx+dr3dx))-top2*(dr2dx*r3*beta2+r2*dr3dx*beta2+r2*r3*(dr2dx*r3+r2*dr3dx-(x-x3)-(x-x2))))/(bot2*bot2) +
-//                    (bot3*(z*(y3-y1)*(dr3dx+dr1dx))-top3*(dr3dx*r1*beta3+r3*dr1dx*beta3+r3*r1*(dr3dx*r1+r3*dr1dx-(x-x1)-(x-x3))))/(bot3*bot3);
-//
-//    velGradMat(1,0)=(bot1*(z*(y1-y2)*(dr1dy+dr2dy))-top1*(dr1dy*r2*beta1+r1*dr2dy*beta1+r1*r2*(dr1dy*r2+r1*dr2dy-(y-y2)-(y-y1))))/(bot1*bot1) +
-//                    (bot2*(z*(y2-y3)*(dr2dy+dr3dy))-top2*(dr2dy*r3*beta2+r2*dr3dy*beta2+r2*r3*(dr2dy*r3+r2*dr3dy-(y-y3)-(y-y2))))/(bot2*bot2) +
-//                    (bot3*(z*(y3-y1)*(dr3dy+dr1dy))-top3*(dr3dy*r1*beta3+r3*dr1dy*beta3+r3*r1*(dr3dy*r1+r3*dr1dy-(y-y1)-(y-y3))))/(bot3*bot3);
-//
-//    velGradMat(2,0)=(bot1*((y1-y2)*(z*(dr1dz+dr2dz)+(r1+r2)))-top1*(dr1dz*r2*beta1+r1*dr2dz*beta1+r1*r2*(dr1dz*r2+r1*dr2dz-2*z)))/(bot1*bot1) +
-//                    (bot2*((y2-y3)*(z*(dr2dz+dr3dz)+(r2+r3)))-top2*(dr2dz*r3*beta2+r2*dr3dz*beta2+r2*r3*(dr2dz*r3+r2*dr3dz-2*z)))/(bot2*bot2) +
-//                    (bot3*((y3-y1)*(z*(dr3dz+dr1dz)+(r3+r1)))-top3*(dr3dz*r1*beta3+r3*dr1dz*beta3+r3*r1*(dr3dz*r1+r3*dr1dz-2*z)))/(bot3*bot3);
-//    
-//    // v
-//    top1 = z*(x2-x1)*(r1+r2);
-//    top2 = z*(x3-x2)*(r2+r3);
-//    top3 = z*(x1-x3)*(r3+r1);
-//    
-//    velGradMat(0,1)=(bot1*(z*(x2-x1)*(dr1dx+dr2dx))-top1*(dr1dx*r2*beta1+r1*dr2dx*beta1+r1*r2*(dr1dx*r2+r1*dr2dx-(x-x2)-(x-x1))))/(bot1*bot1) +
-//                    (bot2*(z*(x3-x2)*(dr2dx+dr3dx))-top2*(dr2dx*r3*beta2+r2*dr3dx*beta2+r2*r3*(dr2dx*r3+r2*dr3dx-(x-x3)-(x-x2))))/(bot2*bot2) +
-//                    (bot3*(z*(x1-x3)*(dr3dx+dr1dx))-top3*(dr3dx*r1*beta3+r3*dr1dx*beta3+r3*r1*(dr3dx*r1+r3*dr1dx-(x-x1)-(x-x3))))/(bot3*bot3);
-//
-//    velGradMat(1,1)=(bot1*(z*(x2-x1)*(dr1dy+dr2dy))-top1*(dr1dy*r2*beta1+r1*dr2dy*beta1+r1*r2*(dr1dy*r2+r1*dr2dy-(y-y2)-(y-y1))))/(bot1*bot1) +
-//                    (bot2*(z*(x3-x2)*(dr2dy+dr3dy))-top2*(dr2dy*r3*beta2+r2*dr3dy*beta2+r2*r3*(dr2dy*r3+r2*dr3dy-(y-y3)-(y-y2))))/(bot2*bot2) +
-//                    (bot3*(z*(x1-x3)*(dr3dy+dr1dy))-top3*(dr3dy*r1*beta3+r3*dr1dy*beta3+r3*r1*(dr3dy*r1+r3*dr1dy-(y-y1)-(y-y3))))/(bot3*bot3);
-//    
-//    velGradMat(2,1)=(bot1*((x2-x1)*(z*(dr1dz+dr2dz)+(r1+r2)))-top1*(dr1dz*r2*beta1+r1*dr2dz*beta1+r1*r2*(dr1dz*r2+r1*dr2dz-2*z)))/(bot1*bot1) +
-//                    (bot2*((x3-x2)*(z*(dr2dz+dr3dz)+(r2+r3)))-top2*(dr2dz*r3*beta2+r2*dr3dz*beta2+r2*r3*(dr2dz*r3+r2*dr3dz-2*z)))/(bot2*bot2) +
-//                    (bot3*((x1-x3)*(z*(dr3dz+dr1dz)+(r3+r1)))-top3*(dr3dz*r1*beta3+r3*dr1dz*beta3+r3*r1*(dr3dz*r1+r3*dr1dz-2*z)))/(bot3*bot3);
-//    
-//
-//    velGradMat *= derConst;
-//    
-//    std::cout << velGradMat << "\n\n" << std::endl;
-//
-//    return velGradMat;
-//    
-//}
-//
-//Eigen::Matrix3d panel::velocityGradientQuadDoublet(Eigen::Vector3d POI){
-//    Eigen::Matrix3d velGradMat;
-//    // dudx  dvdx  dwdx
-//    // dudy  dvdy  dwdy
-//    // dudz  dvdz  dwdz
-//    
-//    Eigen::Vector3d n1global = this->getNodes()[0]->getPnt();
-//    Eigen::Vector3d n2global = this->getNodes()[1]->getPnt();
-//    Eigen::Vector3d n3global = this->getNodes()[2]->getPnt();
-//    Eigen::Vector3d n4global = this->getNodes()[3]->getPnt();
-//    
-//    Eigen::Vector3d n1 = global2local(n1global, true);
-//    Eigen::Vector3d n2 = global2local(n2global, true);
-//    Eigen::Vector3d n3 = global2local(n3global, true);
-//    Eigen::Vector3d n4 = global2local(n4global, true);
-//    Eigen::Vector3d POIloc = global2local(POI, true);
-//    
-//    bool onPanel = inPanelProjection(<#const Eigen::Vector3d &POI#>, <#Eigen::Vector3d &projectedPnt#>)
-//    double x1, y1, x2, y2, x3, y3, x4, y4;
-//    x1 = n1.x(); x2 = n2.x(); x3 = n3.x(), x4 = n4.x();
-//    y1 = n1.y(); y2 = n2.y(); y3 = n3.y(), y4 = n4.y();
-//    
-//    double x, y, z;
-//    x = POIloc.x(); y = POIloc.y(); z = POIloc.z();
-//    
-//    double derConst = doubletStrength/(4*M_PI);
-//    
-//    double d12,d23,d34,d41;
-//    d12 = pow((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1),0.5);
-//    d23 = pow((x3-x2)*(x3-x2) + (y3-y2)*(y3-y2),0.5);
-//    d34 = pow((x4-x3)*(x4-x3) + (y4-y3)*(y4-y3),0.5);
-//    d41 = pow((x1-x4)*(x1-x4) + (y1-y4)*(y1-y4),0.5);
-//    
-//    double r1,r2,r3,r4;
-//    r1 = pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    r2 = pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    r3 = pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    r4 = pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
-//    
-//    double dr1dx, dr2dx, dr3dx, dr4dx;
-//    dr1dx = (x-x1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    dr2dx = (x-x2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    dr3dx = (x-x3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    dr4dx = (x-x4)/pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
-//    
-//    double dr1dy, dr2dy, dr3dy, dr4dy;
-//    dr1dy = (y-y1)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    dr2dy = (y-y2)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    dr3dy = (y-y3)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    dr4dy = (y-y4)/pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
-//    
-//    double dr1dz, dr2dz, dr3dz, dr4dz;
-//    dr1dz = (z)/pow((x-x1)*(x-x1) + (y-y1)*(y-y1) + z*z,0.5);
-//    dr2dz = (z)/pow((x-x2)*(x-x2) + (y-y2)*(y-y2) + z*z,0.5);
-//    dr3dz = (z)/pow((x-x3)*(x-x3) + (y-y3)*(y-y3) + z*z,0.5);
-//    dr4dz = (z)/pow((x-x4)*(x-x4) + (y-y4)*(y-y4) + z*z,0.5);
-//    
-//    double m12,m23,m34,m41;
-//    m12 = (y2-y1)/(x2-x1);
-//    m23 = (y3-y2)/(x3-x2);
-//    m34 = (y4-y3)/(x4-x3);
-//    m41 = (y1-y4)/(x1-x4);
-//    
-//    double e1,e2,e3,e4;
-//    e1 = (x-x1)*(x-x1) + z*z;
-//    e2 = (x-x2)*(x-x2) + z*z;
-//    e3 = (x-x3)*(x-x3) + z*z;
-//    e4 = (x-x4)*(x-x4) + z*z;
-//    
-//    double h1,h2,h3,h4;
-//    h1 = (x-x1)*(y-y1);
-//    h2 = (x-x2)*(y-y2);
-//    h3 = (x-x3)*(y-y3);
-//    h4 = (x-x4)*(y-y4);
-//    
-//    double de1dx,de2dx,de3dx,de4dx;
-//    de1dx = 2*(x-x1);
-//    de2dx = 2*(x-x2);
-//    de3dx = 2*(x-x3);
-//    de4dx = 2*(x-x4);
-//    
-//    double dh1dx,dh2dx,dh3dx,dh4dx;
-//    dh1dx = (y-y1);
-//    dh2dx = (y-y2);
-//    dh3dx = (y-y3);
-//    dh4dx = (y-y4);
-//    
-//    double dh1dy,dh2dy,dh3dy,dh4dy;
-//    dh1dy = (x-x1);
-//    dh2dy = (x-x2);
-//    dh3dy = (x-x3);
-//    dh4dy = (x-x4);
-//    
-//    double de1dz,de2dz,de3dz,de4dz;
-//    de1dz = 2*z;
-//    de2dz = 2*z;
-//    de3dz = 2*z;
-//    de4dz = 2*z;
-//    
-//    double beta1,beta2,beta3,beta4;
-//    beta1 = (r1*r2 - ((x-x1)*(x-x2) + (y-y1)*(y-y2) + z*z));
-//    beta2 = (r2*r3 - ((x-x2)*(x-x3) + (y-y2)*(y-y3) + z*z));
-//    beta3 = (r3*r4 - ((x-x3)*(x-x4) + (y-y3)*(y-y4) + z*z));
-//    beta4 = (r4*r1 - ((x-x4)*(x-x1) + (y-y4)*(y-y1) + z*z));
-//    
-//    double bot1,bot2,bot3,bot4;
-//    bot1 = (r1*r2*(r1*r2 - ((x-x1)*(x-x2) + (y-y1)*(y-y2) + z*z)));
-//    bot2 = (r2*r3*(r2*r3 - ((x-x2)*(x-x3) + (y-y2)*(y-y3) + z*z)));
-//    bot3 = (r3*r4*(r3*r4 - ((x-x3)*(x-x4) + (y-y3)*(y-y4) + z*z)));
-//    bot4 = (r4*r1*(r4*r1 - ((x-x4)*(x-x1) + (y-y4)*(y-y1) + z*z)));
-//    
-//    double top1, top2, top3, top4;
-//    
-//    // u
-//    top1 = (z*(y1-y2)*(r1+r2));
-//    top2 = (z*(y2-y3)*(r2+r3));
-//    top3 = (z*(y3-y4)*(r3+r4));
-//    top4 = (z*(y4-y1)*(r4+r1));
-//    
-//    velGradMat(0,0)=(bot1*(z*(y1-y2)*(dr1dx+dr2dx))-top1*(dr1dx*r2*beta1+r1*dr2dx*beta1+r1*r2*(dr1dx*r2+r1*dr2dx-(x-x2)-(x-x1))))/(bot1*bot1) +
-//    (bot2*(z*(y2-y3)*(dr2dx+dr3dx))-top2*(dr2dx*r3*beta2+r2*dr3dx*beta2+r2*r3*(dr2dx*r3+r2*dr3dx-(x-x3)-(x-x2))))/(bot2*bot2) +
-//    (bot3*(z*(y3-y4)*(dr3dx+dr4dx))-top3*(dr3dx*r4*beta3+r3*dr4dx*beta3+r3*r4*(dr3dx*r4+r3*dr4dx-(x-x4)-(x-x3))))/(bot3*bot3) +
-//    (bot4*(z*(y4-y1)*(dr4dx+dr1dx))-top4*(dr4dx*r1*beta4+r4*dr1dx*beta4+r4*r1*(dr4dx*r1+r4*dr1dx-(x-x1)-(x-x4))))/(bot4*bot4);
-//    
-//    velGradMat(1,0)=(bot1*(z*(y1-y2)*(dr1dy+dr2dy))-top1*(dr1dy*r2*beta1+r1*dr2dy*beta1+r1*r2*(dr1dy*r2+r1*dr2dy-(y-y2)-(y-y1))))/(bot1*bot1) +
-//    (bot2*(z*(y2-y3)*(dr2dy+dr3dy))-top2*(dr2dy*r3*beta2+r2*dr3dy*beta2+r2*r3*(dr2dy*r3+r2*dr3dy-(y-y3)-(y-y2))))/(bot2*bot2) +
-//    (bot3*(z*(y3-y4)*(dr3dy+dr4dy))-top3*(dr3dy*r4*beta3+r3*dr4dy*beta3+r3*r4*(dr3dy*r4+r3*dr4dy-(y-y4)-(y-y3))))/(bot3*bot3) +
-//    (bot4*(z*(y4-y1)*(dr4dy+dr1dy))-top4*(dr4dy*r1*beta4+r4*dr1dy*beta4+r4*r1*(dr4dy*r1+r4*dr1dy-(y-y1)-(y-y4))))/(bot4*bot4);
-//    
-//    velGradMat(2,0)=(bot1*((y1-y2)*(z*(dr1dz+dr2dz)+(r1+r2)))-top1*(dr1dz*r2*beta1+r1*dr2dz*beta1+r1*r2*(dr1dz*r2+r1*dr2dz-2*z)))/(bot1*bot1) +
-//    (bot2*((y2-y3)*(z*(dr2dz+dr3dz)+(r2+r3)))-top2*(dr2dz*r3*beta2+r2*dr3dz*beta2+r2*r3*(dr2dz*r3+r2*dr3dz-2*z)))/(bot2*bot2) +
-//    (bot3*((y3-y4)*(z*(dr3dz+dr4dz)+(r3+r4)))-top3*(dr3dz*r4*beta3+r3*dr4dz*beta3+r3*r4*(dr3dz*r4+r3*dr4dz-2*z)))/(bot3*bot3) +
-//    (bot4*((y4-y1)*(z*(dr4dz+dr1dz)+(r4+r1)))-top4*(dr4dz*r1*beta4+r4*dr1dz*beta4+r4*r1*(dr4dz*r1+r4*dr1dz-2*z)))/(bot4*bot4);
-//    
-//    // v
-//    top1 = z*(x2-x1)*(r1+r2);
-//    top2 = z*(x3-x2)*(r2+r3);
-//    top3 = z*(x4-x3)*(r3+r4);
-//    top4 = z*(x1-x4)*(r4+r1);
-//    
-//    velGradMat(0,1)=(bot1*(z*(x2-x1)*(dr1dx+dr2dx))-top1*(dr1dx*r2*beta1+r1*dr2dx*beta1+r1*r2*(dr1dx*r2+r1*dr2dx-(x-x2)-(x-x1))))/(bot1*bot1) +
-//    (bot2*(z*(x3-x2)*(dr2dx+dr3dx))-top2*(dr2dx*r3*beta2+r2*dr3dx*beta2+r2*r3*(dr2dx*r3+r2*dr3dx-(x-x3)-(x-x2))))/(bot2*bot2) +
-//    (bot3*(z*(x4-x3)*(dr3dx+dr4dx))-top3*(dr3dx*r4*beta3+r3*dr4dx*beta3+r3*r4*(dr3dx*r4+r3*dr4dx-(x-x4)-(x-x3))))/(bot3*bot3) +
-//    (bot4*(z*(x1-x4)*(dr4dx+dr1dx))-top4*(dr4dx*r1*beta4+r4*dr1dx*beta4+r4*r1*(dr4dx*r1+r4*dr1dx-(x-x1)-(x-x4))))/(bot4*bot4);
-//    
-//    velGradMat(1,1)=(bot1*(z*(x2-x1)*(dr1dy+dr2dy))-top1*(dr1dy*r2*beta1+r1*dr2dy*beta1+r1*r2*(dr1dy*r2+r1*dr2dy-(y-y2)-(y-y1))))/(bot1*bot1) +
-//    (bot2*(z*(x3-x2)*(dr2dy+dr3dy))-top2*(dr2dy*r3*beta2+r2*dr3dy*beta2+r2*r3*(dr2dy*r3+r2*dr3dy-(y-y3)-(y-y2))))/(bot2*bot2) +
-//    (bot3*(z*(x4-x3)*(dr3dy+dr4dy))-top3*(dr3dy*r4*beta3+r3*dr4dy*beta3+r3*r4*(dr3dy*r4+r3*dr4dy-(y-y4)-(y-y3))))/(bot3*bot3) +
-//    (bot4*(z*(x1-x4)*(dr4dy+dr1dy))-top4*(dr4dy*r1*beta4+r4*dr1dy*beta4+r4*r1*(dr4dy*r1+r4*dr1dy-(y-y1)-(y-y4))))/(bot4*bot4);
-//    
-//    velGradMat(2,1)=(bot1*((x2-x1)*(z*(dr1dz+dr2dz)+(r1+r2)))-top1*(dr1dz*r2*beta1+r1*dr2dz*beta1+r1*r2*(dr1dz*r2+r1*dr2dz-2*z)))/(bot1*bot1) +
-//    (bot2*((x3-x2)*(z*(dr2dz+dr3dz)+(r2+r3)))-top2*(dr2dz*r3*beta2+r2*dr3dz*beta2+r2*r3*(dr2dz*r3+r2*dr3dz-2*z)))/(bot2*bot2) +
-//    (bot3*((x4-x3)*(z*(dr3dz+dr4dz)+(r3+r4)))-top3*(dr3dz*r4*beta3+r3*dr4dz*beta3+r3*r4*(dr3dz*r4+r3*dr4dz-2*z)))/(bot3*bot3) +
-//    (bot4*((x1-x4)*(z*(dr4dz+dr1dz)+(r4+r1)))-top4*(dr4dz*r1*beta4+r4*dr1dz*beta4+r4*r1*(dr4dz*r1+r4*dr1dz-2*z)))/(bot4*bot4);
-//    
-//    // w
-//    top1 = (((x-x2)*(y-y1) - (x-x1)*(y-y2))*(r1+r2));
-//    top2 = (((x-x3)*(y-y2) - (x-x2)*(y-y3))*(r2+r3));
-//    top3 = (((x-x4)*(y-y3) - (x-x3)*(y-y4))*(r3+r4));
-//    top4 = (((x-x1)*(y-y4) - (x-x4)*(y-y1))*(r4+r1));
-//    
-//    velGradMat(0,2)=(bot1*(((y-y1)-(y-y2))*(r1+r2) + ((x-x2)*(y-y1) - (x-x1)*(y-y2))*(dr1dx + dr2dx)) - top1*(dr1dx*r2*beta1+r1*dr2dx*beta1+r1*r2*(dr1dx*r2 + r1*dr2dx - (x-x2) - (x-x1))))/((bot1*bot1)) +
-//    (bot2*(((y-y2)-(y-y3))*(r2+r3) + ((x-x3)*(y-y2) - (x-x2)*(y-y3))*(dr2dx + dr3dx)) - top2*(dr2dx*r3*beta2+r2*dr3dx*beta2 + r2*r3*(dr2dx*r3 + r2*dr3dx - (x-x3) - (x-x2))))/((bot2*bot2)) +
-//    (bot3*(((y-y3)-(y-y4))*(r3+r4) + ((x-x4)*(y-y3) - (x-x3)*(y-y4))*(dr3dx + dr4dx)) - top3*(dr3dx*r4*beta3+r3*dr4dx*beta3 + r3*r4*(dr3dx*r4 + r3*dr4dx - (x-x4) - (x-x3))))/((bot3*bot3)) +
-//    (bot4*(((y-y4)-(y-y1))*(r4+r1) + ((x-x1)*(y-y4) - (x-x4)*(y-y1))*(dr4dx + dr1dx)) - top4*(dr4dx*r1*beta4+r4*dr1dx*beta4 + r4*r1*(dr4dx*r1 + r4*dr1dx - (x-x1) - (x-x4))))/((bot4*bot4));
-//    
-//    velGradMat(1,2)=(bot1*(((x-x2)-(x-x1))*(r1+r2)+((x-x2)*(y-y1)-(x-x1)*(y-y2))*(dr1dy + dr2dy))-top1*(dr1dy*r2*beta1 + r1*dr2dy*beta1 + r1*r2*(dr1dy*r2 + r1*dr2dy - (y-y1) - (y-y2))))/((bot1*bot1)) +
-//    (bot2*(((x-x3)-(x-x2))*(r2+r3)+((x-x3)*(y-y2)-(x-x2)*(y-y3))*(dr2dy + dr3dy))-top2*(dr2dy*r3*beta2 + r2*dr3dy*beta2 + r2*r3*(dr2dy*r3 + r2*dr3dy - (y-y2) - (y-y3))))/((bot2*bot2)) +
-//    (bot3*(((x-x4)-(x-x3))*(r3+r4)+((x-x4)*(y-y3)-(x-x3)*(y-y4))*(dr3dy + dr4dy))-top3*(dr3dy*r4*beta3 + r3*dr4dy*beta3 + r3*r4*(dr3dy*r4 + r3*dr4dy - (y-y3) - (y-y4))))/((bot3*bot3)) +
-//    (bot4*(((x-x1)-(x-x4))*(r4+r1)+((x-x1)*(y-y4)-(x-x4)*(y-y1))*(dr4dy + dr1dy))-top4*(dr4dy*r1*beta4 + r4*dr1dy*beta4 + r4*r1*(dr4dy*r1 + r4*dr1dy - (y-y4) - (y-y1))))/((bot4*bot4));
-//    
-//    velGradMat(2,2)=(bot1*(((x-x2)*(y-y1)-(x-x1)*(y-y2))*(dr1dz+dr2dz)) - top1*(dr1dz*r2*beta1 + r1*dr2dz*beta1 + r1*r2*(dr1dz*r2+r1*dr2dz-2*z)))/((bot1*bot1)) +
-//    (bot2*(((x-x3)*(y-y2)-(x-x2)*(y-y3))*(dr2dz+dr3dz))-top2*(dr2dz*r3*beta2 + r2*dr3dz*beta2 + r2*r3*(dr2dz*r3+r2*dr3dz-2*z)))/((bot2*bot2)) +
-//    (bot3*(((x-x4)*(y-y3)-(x-x3)*(y-y4))*(dr3dz+dr4dz))-top3*(dr3dz*r4*beta3 + r3*dr4dz*beta3 + r3*r4*(dr3dz*r4+r3*dr4dz-2*z)))/((bot3*bot3)) +
-//    (bot4*(((x-x1)*(y-y4)-(x-x4)*(y-y1))*(dr4dz+dr1dz))-top4*(dr4dz*r1*beta4 + r4*dr1dz*beta4 + r4*r1*(dr4dz*r1+r4*dr1dz-2*z)))/((bot4*bot4));
-//    
-//    velGradMat *= derConst;
-//    
-//    return velGradMat;
-//}
-//

@@ -55,9 +55,7 @@ class bodyPanel : public panel
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID);
-    
-    //    bodyPanel(const bodyPanel &copy);
-    
+        
     void addNeighbor(bodyPanel* p);
     void setUpper();
     void setLower();

@@ -141,15 +141,15 @@ void caseMgr::writeCase(int caseNumber, cpCase* c, std::ofstream &outStream)
     if (p->unsteady) {
         outStream << "\n\t--Time Dependent Forces and Moments--\n" << std::endl;
         
-        outStream << "\t\t" << std::setw(9) << "Time" << std::setw(12) << "CL_Trefftz" << std::setw(13) << "CDi_Trefftz" << std::setw(10) << "CN_body" << std::setw(10) << "CA_body" << std::setw(10) << "CY_body" <<  std::setw(10) << "CL_wind" << std::setw(10) << "CD_wind" << std::setw(10) << "CY_wind" << std::setw(12) << "Cm (pitch)" << std::setw(12) << "Cl (roll)" << std::setw(12) << "Cn (yaw)" << std::endl;
+        outStream << "\t\t" << std::setw(9) << "Time" << std::setw(10) << "CN_body" << std::setw(10) << "CA_body" << std::setw(10) << "CY_body" <<  std::setw(10) << "CL_wind" << std::setw(10) << "CD_wind" << std::setw(10) << "CY_wind" << std::setw(12) << "Cm (pitch)" << std::setw(12) << "Cl (roll)" << std::setw(12) << "Cn (yaw)" << std::endl;
         
         
-//        Eigen::MatrixXd resMat = c->get_soln_mat();999
-//        for (int i=0; i<resMat.rows(); i++) {
-//            outStream << "\t\t" << std::setw(9) << resMat(i,0) << std::setw(12) << resMat(i,1) << std::setw(13) << resMat(i,2) << std::setw(10) << resMat(i,5) << std::setw(10) << resMat(i,3) << std::setw(10) << resMat(i,4) <<  std::setw(10) << resMat(i,8) << std::setw(10) << resMat(i,6) << std::setw(10) << resMat(i,7) << std::setw(12) << resMat(i,10) << std::setw(12) << resMat(i,9) << std::setw(12) << resMat(i,11) << std::endl;
-//        }
+        Eigen::MatrixXd resMat = c->get_soln_mat();
+        for (int i=0; i<resMat.rows(); i++) {
+            outStream << "\t\t" << std::setw(9) << resMat(i,0) << std::setw(10) << resMat(i,1) << std::setw(10) << resMat(i,2) << std::setw(10) << resMat(i,3) << std::setw(10) << resMat(i,4) << std::setw(10) << resMat(i,5) <<  std::setw(10) << resMat(i,6) << std::setw(12) << resMat(i,7) << std::setw(12) << resMat(i,8) << std::setw(12) << resMat(i,9) << std::endl;
+        }
         
-        //   | CL_tr | CDi_tr | CN | CA | CY | CL | CD | CY | Cm | Cl | Cn |
+        //  timestep | CN | CA | CY | CL | CD | CY | Cm | Cl | Cn |
     }
     
 }

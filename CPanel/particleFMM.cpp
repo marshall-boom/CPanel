@@ -147,22 +147,6 @@ Eigen::Vector3d particleFMM::findExpPos(std::vector<particle*> parts)
 }
 
 
-//Eigen::Vector3d particleFMM::findExpPos(node<particle>* thisNode){
-//    std::vector<particle*> nParts = thisNode->getMembers();
-//    
-//    Eigen::Vector3d nodePos = Eigen::Vector3d::Zero();
-//    
-//    for (int i=0; i<nParts.size(); i++) {
-//        nodePos+=nParts[i]->pos;
-//    }
-//    
-//    return nodePos/=nParts.size();
-//}
-
-
-
-
-
 Eigen::Vector3d particleFMM::findExpStrength(node<particle>* thisNode){
     std::vector<particle*> nodeParticles = thisNode->getMembers();
     
@@ -196,7 +180,6 @@ double particleFMM::findExpRadius(node<particle>* thisNode){
         nodeRad+=nodeParticles[i]->radius;
     }
     
-//    return nodeRad/=nodeParticles.size();
     return nodeRad;
 }
 
@@ -209,7 +192,6 @@ double particleFMM::findExpRadius(std::vector<particle*> parts){
         nodeRad+=parts[i]->radius;
     }
     
-    //    return nodeRad/=nodeParticles.size();
     return nodeRad;
 }
 

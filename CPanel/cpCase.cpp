@@ -565,7 +565,7 @@ void cpCase::createVolMesh(){
     hy = (yf-y0)/nY;
     hz = (zf-z0)/nZ;
     
-    // Add one for number of points
+    // Add one for number of points (nodes)
     int nXp = nX+1;
     int nYp = nY+1;
     int nZp = nZ+1;
@@ -624,7 +624,6 @@ void cpCase::createVolMesh(){
 
 void cpCase::populateVolMesh(){
     
-    
     // Clear Past Timestep Mesh
     volMeshDat.velocity.clear();
     volMeshDat.coef_press.clear();
@@ -642,6 +641,4 @@ void cpCase::populateVolMesh(){
     
 }
 
-
-//**//
 

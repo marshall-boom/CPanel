@@ -724,13 +724,14 @@
 					"/Users/C_Man/code/cpptest-1.1.2",
 					/Users/C_Man/code/eigen,
 				);
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/Users/C_Man/code/boost_1_57_0,
+				);
 				OTHER_LDFLAGS = (
-					"-lcpptest",
-					"-L/Users/C_Man/code/cpptest-1.1.2/libs",
-					"-lboost_filesystem",
-					"-lboost_system",
 					"-L/Users/C_Man/code/boost_1_57_0/stage/lib",
+					"-lboost_system",
+					"-lboost_filesystem",
 				);
 				PRODUCT_NAME = CPanel;
 			};
@@ -747,10 +748,12 @@
 					"/Users/C_Man/code/cpptest-1.1.2",
 					/Users/C_Man/code/eigen,
 				);
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				OTHER_LDFLAGS = (
-					"-lcpptest",
-					"-L/Users/C_Man/code/cpptest-1.1.2/libs",
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/Users/C_Man/code/boost_1_57_0,
+				);
+				OTHER_LDFLAGS = "";
+				"OTHER_LDFLAGS[arch=*]" = (
 					"-lboost_filesystem",
 					"-lboost_system",
 					"-L/Users/C_Man/code/boost_1_57_0/stage/lib",
@@ -770,14 +773,11 @@
 					"/Users/C_Man/code/cpptest-1.1.2",
 					/Users/C_Man/code/eigen,
 				);
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				OTHER_LDFLAGS = (
-					"-lcpptest",
-					"-L/Users/C_Man/code/cpptest-1.1.2/libs",
-					"-lboost_filesystem",
-					"-lboost_system",
-					"-L/Users/C_Man/code/boost_1_57_0/stage/lib",
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/Users/C_Man/code/boost_1_57_0,
 				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = CPanel;
 			};
 			name = Release;

@@ -50,7 +50,7 @@ class wake
     
     double particlePntInWakeY(Eigen::Vector3d Spts , particle* SptsP1 , particle* SptsP2);
     double dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2);
-    double stretchFactor(Eigen::Vector3d pt , particle* P1 , particle* P2);
+    double stretchFactor( particle* P1 , particle* P2 );
 
 
     

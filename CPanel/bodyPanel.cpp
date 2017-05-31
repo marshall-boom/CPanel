@@ -23,8 +23,6 @@ bodyPanel::bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eige
     }
 }
 
-//bodyPanel::bodyPanel(const bodyPanel &copy) : panel(copy), sourceStrength(copy.sourceStrength), tipFlag(copy.tipFlag) {}
-
 void bodyPanel::addNeighbor(bodyPanel* p)
 {
     neighbors.push_back(p);
@@ -83,7 +81,7 @@ void bodyPanel::setTipFlag()
 
 void bodyPanel::setSigma(Eigen::Vector3d Vinf, double Vnorm)
 {
-    sourceStrength = (-Vinf.dot(normal)+Vnorm); // CS: I think the Vnorm would be something emminating from the panel, not influencing it.
+    sourceStrength = (-Vinf.dot(normal)+Vnorm); // CS: Vnorm is eminating from the panel
 }
 
 void bodyPanel::setMu(double dubStrength)
@@ -182,7 +180,7 @@ void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eige
     double PN = pjk.dot(local.row(2));
     if (pjk.norm()/longSide > 5)
     {
-        vSrc = -pntSrcV(pjk); // Connor added this becuase I believe this number should be negative. Figure 10.17 shows a positive velocity influence from pnt source. CPanel matches this in tests, however, sign convention for CPanel/VSaero is opposite of Katz
+        vSrc = -pntSrcV(pjk); // Connor added this negative. Figure 10.17 (Katz) shows a positive velocity influence from pnt source. CPanel matches this in tests, however, sign convention for CPanel/VSaero is opposite of Katz
         vDub = pntDubV(local.row(2),pjk);
     }
     else
@@ -218,14 +216,12 @@ void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eige
     }
 }
 
-Eigen::Vector3d bodyPanel::pntVInf(const Eigen::Vector3d &POI)
-{
+Eigen::Vector3d bodyPanel::pntVInf(const Eigen::Vector3d &POI){
     // Function should only be used for CPanel test function.
     
     // VSAero source and doublet velocity influence formulation
     Eigen::Vector3d pjk = POI-center;
     Eigen::Matrix3d local = getLocalSys();
-    double PN = pjk.dot(local.row(2));
     
     return sourceStrength*pntSrcV(pjk) + doubletStrength*pntDubV(local.row(2),pjk); //pntDubVinf
 }
@@ -464,8 +460,7 @@ void bodyPanel::computeCp(double Vinf)
     Cp = (1-pow(velocity.norm()/Vinf,2));
 }
 
-void bodyPanel::computeCp(double Vinf,double dt)
-{
+void bodyPanel::computeCp(double Vinf,double dt){
     double dPhi_dt = ( prevPotential - potential ) / dt;
     
     Cp = 1 - pow( velocity.norm()/Vinf , 2) - 2/(Vinf*Vinf) * dPhi_dt; // Katz 13.168

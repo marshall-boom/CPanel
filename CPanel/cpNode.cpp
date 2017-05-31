@@ -13,11 +13,6 @@
 
 cpNode::cpNode(Eigen::Vector3d pnt,int index) : pnt(pnt), index(index), TEnode(false) {}
 
-//cpNode::cpNode(const cpNode& copy) : pnt(copy.pnt), index(copy.index),TEnode(copy.TEnode)
-//{
-//    
-//}
-
 Eigen::Vector3d cpNode::operator-=(const cpNode &rhs)
 {
     return pnt-rhs.getPnt();
@@ -87,29 +82,6 @@ std::vector<edge*> cpNode::getTrailingEdges(){
     }
     return trailingEdges;
 }
-
-
-//double cpNode::nodeWakeProjAngle(){
-//    std::vector<edge*> tedges = this->getTrailingEdges();
-//    
-//    double bisect = 0;
-//    for (int j = 0; j < tedges.size(); j++) {
-//        std::vector<bodyPanel*> tempPan = tedges[j]->getBodyPans();
-//        
-//        // Get normal of top and bottom surfaces
-//        Eigen::Vector3d nVec1 = tempPan[0]->getNormal();
-//        Eigen::Vector3d nVec2 = tempPan[1]->getNormal();
-//        
-//        // unit vec to angle
-//        double thetaTop = acos(nVec1.x()/nVec1.norm());
-//        double thetaBot = acos(nVec2.x()/nVec2.norm());
-//        bisect += (thetaTop+thetaBot)/2-1.570796; //Something weird going on with the acos() maybe that needs this pi/2
-//        
-//    }
-//    bisect = bisect/tedges.size();
-//    
-//    return bisect;
-//}
 
 Eigen::Vector3d cpNode::nodeWakeProjAngle(){
     

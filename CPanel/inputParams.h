@@ -45,8 +45,6 @@ struct inputParams
     bool vortexParticles;
     bool volMeshFlag;
     
-    double meshXo;
-    double meshXf;
     std::vector<double> volMeshBounds;
     std::vector<int> volMeshRes;
     

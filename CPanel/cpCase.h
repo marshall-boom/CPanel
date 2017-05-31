@@ -78,7 +78,6 @@ protected:
     void writeBodyStreamlines(boost::filesystem::path path);
     
     
-    Eigen::MatrixXd solnMat;
     
     
     struct meshDat {
@@ -95,6 +94,7 @@ protected:
     void populateVolMesh();
     void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
     
+    Eigen::MatrixXd solnMat; // For unsteady sims, but needs to be in parent class for simple output
     
     
     

@@ -24,15 +24,12 @@ class cpNode
     std::vector<edge*> edges;
     std::vector<bodyPanel*> bodyPans;
     double c_w = 1.3; //vpp
-//    double c_w = 1000; //vpp
     
     bool TEnode;
     
 public:
     cpNode(Eigen::Vector3d pnt,int index);
-    
-//    cpNode(const cpNode& copy);
-    
+        
     Eigen::Vector3d operator-=(const cpNode &rhs);
     
     Eigen::Vector3d operator+=(const cpNode &rhs);
@@ -56,7 +53,6 @@ public:
     edge* getOtherTrailEdge(edge* current);
     std::vector<edge*> getTrailingEdges();
     
-//    double nodeWakeProjAngle();
     Eigen::Vector3d nodeWakeProjAngle();
     Eigen::Vector3d firstProjNode(double dt, double inputV);
     Eigen::Vector3d secProjNode(double dt, double inputV);

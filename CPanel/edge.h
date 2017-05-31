@@ -45,7 +45,7 @@ public:
     bool isTE();
     double length();
     double distToEdge(const Eigen::Vector3d &pnt);
-    Eigen::Vector3d edgeVelocity(const Eigen::Vector3d &Vinf);
+    Eigen::Vector3d edgeVelocity();
     
     Eigen::Vector3d TEgamma();
     
@@ -62,7 +62,6 @@ public:
     Eigen::Vector3d getVector();
     Eigen::Vector3d getMidPoint();
     Eigen::Vector3d getNormal();
-//    double neighbPanMu(wakePanel* currentPan);
     
     bool containsNode(cpNode* node);
 };
