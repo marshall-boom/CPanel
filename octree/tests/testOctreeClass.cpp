@@ -6,4 +6,6 @@
 //  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
 //
 
+#if 0
 #include "testOctreeClass.h"
+#endif

@@ -9,7 +9,6 @@
 #ifndef __CPanel__testObj__
 #define __CPanel__testObj__
 
-#include <iostream>
 #include <array>
 
 class testObj
@@ -17,9 +16,9 @@ class testObj
     std::array<double,3> center;
 public:
     testObj(std::array<double,3> point) : center(point) {}
-    
+
     std::array<double,3> getCenter() const {return center;}
-    
+
 };
 
 #endif /* defined(__CPanel__testObj__) */

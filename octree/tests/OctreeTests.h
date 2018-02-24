@@ -9,8 +9,6 @@
 #ifndef __CPanel__OctreeTests__
 #define __CPanel__OctreeTests__
 
-#include <iostream>
-#include "cpptest/cpptest.h"
 #include "octree.h"
 #include "node.h"
 #include "testOctreeClass.h"
@@ -18,15 +16,15 @@
 class OctreeTests : public Test::Suite
 {
     std::vector<testObj*> data;
-    
+
     void test_constructor();
     void test_setMaxMembers();
     void test_addData();
 //    void test_findNodeContainingMember();
-    
+
 public:
     OctreeTests();
-    
+
     ~OctreeTests()
     {
         for (int i=0; i<data.size(); i++)
@@ -34,7 +32,7 @@ public:
             delete data[i];
         }
     }
-    
+
 };
 
 #endif /* defined(__CPanel__OctreeTests__) */

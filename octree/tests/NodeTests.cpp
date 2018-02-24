@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
 //
 
+#if 0
 #include "NodeTests.h"
 
 
@@ -31,7 +32,7 @@ void NodeTests::test_constructor()
         }
     }
     TEST_ASSERT(flag);
-    
+
     // Test halfDimension is set correctly
     flag = true;
     for (int i=0; i<3; i++)
@@ -43,7 +44,7 @@ void NodeTests::test_constructor()
         }
     }
     TEST_ASSERT(flag);
-    
+
     // Test children are NULL
     flag = true;
     for (int i=0; i<8; i++)
@@ -54,7 +55,7 @@ void NodeTests::test_constructor()
         }
     }
     TEST_ASSERT(flag);
-    
+
     // Test level set
     TEST_ASSERT(testNode.getLevel() == 1);
 }
@@ -68,7 +69,7 @@ void NodeTests::test_addMember()
 {
     int maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
-    
+
     int nX = 3;
     int nY = 3;
     int nZ = 3;
@@ -99,7 +100,7 @@ void NodeTests::test_addMember()
                 TEST_ASSERT(testNode.getMembers().size() == counter);
             }
         }
-    } 
+    }
 }
 
 void NodeTests::test_getNodeContainingMember()
@@ -112,49 +113,49 @@ void NodeTests::test_getNodeContainingMember()
     member<point> member0(&obj,obj);
     testNode.addMember(member0);
     TEST_ASSERT(testNode.getChildContainingMember(member0) == 0)
-    
+
     obj[0] = origin[0]-1;
     obj[1] = origin[1]-1;
     obj[2] = origin[2]+1;
     member<point> member1(&obj,obj);
     testNode.addMember(member1);
     TEST_ASSERT(testNode.getChildContainingMember(member1) == 1)
-    
+
     obj[0] = origin[0]-1;
     obj[1] = origin[1]+1;
     obj[2] = origin[2]-1;
     member<point> member2(&obj,obj);
     testNode.addMember(member2);
     TEST_ASSERT(testNode.getChildContainingMember(member2) == 2)
-    
+
     obj[0] = origin[0]-1;
     obj[1] = origin[1]+1;
     obj[2] = origin[2]+1;
     member<point> member3(&obj,obj);
     testNode.addMember(member3);
     TEST_ASSERT(testNode.getChildContainingMember(member3) == 3)
-    
+
     obj[0] = origin[0]+1;
     obj[1] = origin[1]-1;
     obj[2] = origin[2]-1;
     member<point> member4(&obj,obj);
     testNode.addMember(member4);
     TEST_ASSERT(testNode.getChildContainingMember(member4) == 4)
-    
+
     obj[0] = origin[0]+1;
     obj[1] = origin[1]-1;
     obj[2] = origin[2]+1;
     member<point> member5(&obj,obj);
     testNode.addMember(member5);
     TEST_ASSERT(testNode.getChildContainingMember(member5) == 5)
-    
+
     obj[0] = origin[0]+1;
     obj[1] = origin[1]+1;
     obj[2] = origin[2]-1;
     member<point> member6(&obj,obj);
     testNode.addMember(member6);
     TEST_ASSERT(testNode.getChildContainingMember(member6) == 6)
-    
+
     obj[0] = origin[0]+1;
     obj[1] = origin[1]+1;
     obj[2] = origin[2]+1;
@@ -169,4 +170,4 @@ void NodeTests::test_createParent()
     TEST_ASSERT(testNode.getChild(7) != nullptr);
     TEST_ASSERT(testNode.getLevel() == 2);
 }
-
+#endif

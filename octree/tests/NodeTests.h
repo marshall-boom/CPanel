@@ -9,8 +9,8 @@
 #ifndef __CPanel__NodeTests__
 #define __CPanel__NodeTests__
 
-#include <iostream>
-#include "cpptest/cpptest.h"
+#include <array>
+
 #include "node.h"
 #include "member.h"
 

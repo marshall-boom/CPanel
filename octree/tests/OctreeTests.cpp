@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
 //
 
+#if 0
+
 #include "OctreeTests.h"
 
 OctreeTests::OctreeTests()
@@ -53,9 +55,9 @@ void OctreeTests::test_addData()
     }
     testOctreeClass testOctree;
     testOctree.addData(data);
-    
+
     TEST_ASSERT(testOctree.getMembers().size()==nX*nY*nZ);
-    
+
     bool flag = true;
     for (int i=0; i<3; i++)
     {
@@ -66,16 +68,17 @@ void OctreeTests::test_addData()
     }
     TEST_ASSERT(flag)
     TEST_ASSERT(testOctree.getRootNode()->getParent() == NULL);
-    
+
     node<testObj>* oldRoot = testOctree.getRootNode();
-    
+
     testObj* newData;
     std::array<double,3> newPoint = {-2,-2,-2};
     newData = new testObj(newPoint);
     data.push_back(newData);
     testOctree.addData(newData);
-    
+
     TEST_ASSERT(testOctree.getMembers().size()==nX*nY*nZ+1);
     TEST_ASSERT(testOctree.getRootNode() != oldRoot);
-    
+
 }
+#endif
