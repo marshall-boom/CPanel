@@ -10,9 +10,11 @@
 //#include "NodeTests.h"
 
 #include <array>
+#include <memory>
 
 #include "node.h"
 #include "member.h"
+#include "octree.h"
 
 #include "gtest/gtest.h"
 namespace
@@ -267,16 +269,141 @@ namespace
     EXPECT_FALSE(testNode.getChild(7) == nullptr);
     EXPECT_EQ(testNode.getLevel(), 2);
   }
-}
 
+  class test_object
+  {
+    public:
+      test_object(Eigen::Vector3d point) : center(point) {}
+
+      Eigen::Vector3d getCenter() const {return center;}
+
+    private:
+      Eigen::Vector3d center;
+  };
+
+  class test_octree_class : public octree<test_object>
+  {
+    public:
+      Eigen::Vector3d findRefPoint(const test_object &member) {return member.getCenter();}
+
+      test_octree_class() : octree() {}
+  };
+
+  TEST(OctreeTest, Construction)
+  {
+    test_octree_class testOctree;
+    EXPECT_EQ(testOctree.getMaxMembersPerNode(), 10);
+  }
+
+  TEST(OctreeTest, MaxMembers)
+  {
+    int max = 5;
+    test_octree_class testOctree;
+
+    testOctree.setMaxMembers(max);
+    EXPECT_EQ(testOctree.getMaxMembersPerNode(), max);
+  }
+
+  TEST(OctreeTest, AddData)
+  {
+    test_octree_class testOctree;
+    int nX = 3;
+    int nY = 3;
+    int nZ = 3;
+
+    std::vector<test_object *> data;
+
+    test_object *obj;
+    for (int i=0; i<nX; i++)
+    {
+      for (int j=0; j<nY; j++)
+      {
+        for (int k=0; k<nZ; k++)
+        {
+          Eigen::Vector3d center;
+          center[0] = i;
+          center[1] = j;
+          center[2] = k;
+          data.push_back(new test_object(center));
+        }
+      }
+    }
+    testOctree.addData(data);
+    for (int i=0; i<nX*nY*nZ; ++i)
+    {
+      delete data[i];
+      data[i] = nullptr;
+    }
+
+    EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ);
+
+    bool flag = true;
+    for (int i=0; i<3; i++)
+    {
+      EXPECT_EQ(testOctree.getRootNode()->getOrigin()[i], 1);
+    }
+    EXPECT_TRUE(testOctree.getRootNode()->getParent() == NULL);
+
+    node<test_object> * oldRoot = testOctree.getRootNode();
+
+    test_object *newData;
+    Eigen::Vector3d newPoint; newPoint << -2,-2,-2;
+    newData = new test_object(newPoint);
+    testOctree.addData(newData);
+
+    EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ+1);
+    EXPECT_FALSE(testOctree.getRootNode() == oldRoot);
+  }
+
+}
 #if 0
 
-int main()
+void OctreeTests::test_addData()
 {
-    Test::Suite tests;
-    tests.add(std::auto_ptr<Test::Suite>(new NodeTests));
+    int nX = 3;
+    int nY = 3;
+    int nZ = 3;
+    testObj* obj;
+    for (int i=0; i<nX; i++)
+    {
+        for (int j=0; j<nY; j++)
+        {
+            for (int k=0; k<nZ; k++)
+            {
+                std::array<double,3> center;
+                center[0] = i;
+                center[1] = j;
+                center[2] = k;
+                obj = new testObj(center);
+                data.push_back(obj);
+            }
+        }
+    }
+    testOctreeClass testOctree;
+    testOctree.addData(data);
 
-    Test::TextOutput output(Test::TextOutput::Verbose);
-    return tests.run(output);
+    TEST_ASSERT(testOctree.getMembers().size()==nX*nY*nZ);
+
+    bool flag = true;
+    for (int i=0; i<3; i++)
+    {
+        if (testOctree.getRootNode()->getOrigin()[i] != 1)
+        {
+            flag = false;
+        }
+    }
+    TEST_ASSERT(flag)
+    TEST_ASSERT(testOctree.getRootNode()->getParent() == NULL);
+
+    node<testObj>* oldRoot = testOctree.getRootNode();
+
+    testObj* newData;
+    std::array<double,3> newPoint = {-2,-2,-2};
+    newData = new testObj(newPoint);
+    data.push_back(newData);
+    testOctree.addData(newData);
+
+    TEST_ASSERT(testOctree.getMembers().size()==nX*nY*nZ+1);
+    TEST_ASSERT(testOctree.getRootNode() != oldRoot);
+}
 #endif // 0
-

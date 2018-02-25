@@ -12,14 +12,8 @@ set(_OCTREE_TESTS_LIBRARIES_LIST gtest_main)
 
 # add the octree test
 set (OCTREE_TEST_EXE octree_test)
-set (OCTREE_TEST_SOURCE ${PROJECT_SOURCE_DIR}/octree_test.cpp
-                        ${PROJECT_SOURCE_DIR}/OctreeTests.cpp
-                        ${PROJECT_SOURCE_DIR}/testObj.cpp
-                        ${PROJECT_SOURCE_DIR}/testOctreeClass.cpp)
-set (OCTREE_TEST_HEADER ${PROJECT_SOURCE_DIR}/OctreeTests.h
-                        ${PROJECT_SOURCE_DIR}/testObj.h
-                        ${PROJECT_SOURCE_DIR}/testOctreeClass.h
-                        ${OCTREE_INCLUDE_DIR}/member.h
+set (OCTREE_TEST_SOURCE ${PROJECT_SOURCE_DIR}/octree_test.cpp)
+set (OCTREE_TEST_HEADER ${OCTREE_INCLUDE_DIR}/member.h
                         ${OCTREE_INCLUDE_DIR}/node.h
                         ${OCTREE_INCLUDE_DIR}/octree.h)
 
