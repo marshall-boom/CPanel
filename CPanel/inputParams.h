@@ -14,10 +14,6 @@
 #include <fstream>
 #include <string>
 #include <Eigen/Dense>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <iomanip>
-#include <limits>
 #include "cpFile.h"
 
 struct inputParams
@@ -38,7 +34,7 @@ struct inputParams
     
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
-    
+
     bool surfStreamFlag;
     bool stabDerivFlag;
     bool writeCoeffFlag;
@@ -50,12 +46,12 @@ struct inputParams
     
     
     inputParams(cpFile* inFile) : inputFile(inFile) {}
-    
+
     ~inputParams()
     {
         delete geomFile;
     }
-    
+
     bool set();
     void print(std::ostream &stream);
     

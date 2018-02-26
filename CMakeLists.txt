@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 project(CPANEL
-        VERSION 1996.0.0
+        VERSION 1.0.0
         LANGUAGES CXX)
 
 # prevent in source builds
@@ -31,7 +31,9 @@ math(EXPR CPANEL_NUMBER_VERSION "10000*${CPANEL_VERSION_MAJOR}
 configure_file(${CPANEL_SOURCE_DIR}/cmake/cpanel_versions.hpp.in
                ${CPANEL_BINARY_DIR}/include/cpanel/versions.h @ONLY)
 
-include_directories(${CPANEL_SOURCE_DIR}/include)
+set(CPANEL_INCLUDE_DIR ${CPANEL_SOURCE_DIR}/CPanel)
+
+include_directories(${CPANEL_INCLUDE_DIR})
 include_directories(${CPANEL_BINARY_DIR}/include)
 
 ################################################################################
@@ -81,9 +83,11 @@ include(${CPANEL_SOURCE_DIR}/cmake/googletest-setup.cmake)
 ################################################################################
 
 add_subdirectory(octree)
-##add_subdirectory(src)
-##add_subdirectory(examples)
-##add_subdirectory(tests)
+set(OCTREE_INCLUDE_DIR ${CPANEL_SOURCE_DIR}/octree/include)
+include_directories(${OCTREE_INCLUDE_DIR})
+
+add_subdirectory(CPanelTests)
+add_subdirectory(CPanel)
 
 ################################################################################
 # Configure doxygen

@@ -166,8 +166,6 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <array>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 #include "panelOctree.h"
 #include "surface.h"
 #include "liftingSurf.h"
@@ -218,10 +216,10 @@ class geometry
     void correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity);
     double shortestEdge(const Eigen::MatrixXi &connectivity);
     liftingSurf* getParentSurf(int wakeID);
-    
+
     void setInfCoeff();
     Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
-    
+
     bool infCoeffFileExists();
     void readInfCoeff();
     void writeInfCoeff();
@@ -241,21 +239,21 @@ public:
         inputV = p->velocities(0);
         
         readTri(p->geomFile->file, p->normFlag);
-        
+
     }
-    
+
     virtual ~geometry();
-    
+
     geometry(const geometry& copy);
-    
+
     geometry& operator=(const geometry &rhs);
-    
+
     double pntPotential(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf);
     double wakePotential(const Eigen::Vector3d &pnt);
     Eigen::Vector3d pntVelocity(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf, double PG);
-    
+
     void clusterCheck();
-    
+
     short getNumberOfNodes() {return nNodes;}
     short getNumberOfTris() {return nTris;}
     std::vector<cpNode*> getNodes() {return nodes;}

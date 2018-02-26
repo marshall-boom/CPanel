@@ -7,6 +7,8 @@
 //
 
 #include "geometry.h"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 // Destructor //
 
@@ -74,7 +76,7 @@ geometry& geometry::operator=(const geometry &rhs)
     {
         return (*this);
     }
-    
+
     pOctree = rhs.pOctree;
     nNodes = rhs.nNodes;
     nTris = rhs.nTris;
@@ -107,7 +109,7 @@ geometry& geometry::operator=(const geometry &rhs)
     {
         edges[i] = new edge(*rhs.edges[i]);
     }
-    
+
     return *this;
 }
 
@@ -124,7 +126,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::vector<int> surfIDs;
         std::vector<int> wakeIDs;
         std::vector<int> surfTypes;
-        
+
         // Read XYZ Locations of Nodes
         Eigen::Vector3d pnt;
         cpNode* n;
@@ -134,15 +136,15 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             n = new cpNode(pnt,i);
             nodes.push_back(n);
         }
-        
+
         // Temporarily Store Connectivity
         for (int i=0; i<nTris; i++)
         {
             fid >> connectivity(i,0) >> connectivity(i,1) >> connectivity(i,2);
         }
-        
+
         connectivity = connectivity.array()-1; //Adjust for 0 based indexing
-        
+
         // Scan Surface IDs and collect Unique IDs
         int wakeNodeStart = nNodes;
         int wakeTriStart = nTris;
@@ -166,12 +168,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 wakeTriStart = i;
             }
         }
-        
+
         if (wakeIDs.size() > 0)
         {
             correctWakeConnectivity(wakeNodeStart, wakeTriStart, connectivity);
         }
-        
+
         // Read in Normals if included in input file
         Eigen::MatrixXd norms = Eigen::MatrixXd::Zero(nTris,3);
         if (normFlag)
@@ -182,7 +184,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 fid >> norms(i,0) >> norms(i,1) >> norms(i,2);
             }
         }
-        
+
         std::cout << "Generating Panel Geometry..." << std::endl;
         
         createSurfaces(connectivity,norms,allID);
@@ -329,29 +331,29 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::cout << "\tNodes : " << nodes.size() << std::endl;
         std::cout << "\tEdges : " << edges.size() << std::endl;
         std::cout << "\tPanels : " << nTris << std::endl;
-        
+
         // Erase duplicate node pointers
         std::sort( nodes.begin(), nodes.end() );
         nodes.erase( std::unique( nodes.begin(), nodes.end() ), nodes.end() );
-        
+
         for (int i=0; i<nodes.size(); i++)
         {
             nodes[i]->setIndex(i);
         }
-        
+
         std::cout << "Building Octree..." << std::endl;
         
         createOctree();
-        
+
         // Set neighbors
         std::cout << "Finding Panel Neighbors..." << std::endl;
-        
+
         for (int i=0; i<edges.size(); i++)
         {
             edges[i]->setNeighbors();
         }
-        
-        
+
+
         bool wakeMergeFlag = false;
         if (wakes.size() > 1)
         {
@@ -374,10 +376,10 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 wakes = newWakes;
             }
         }
-        
-        
+
+
         // Collect all panels in geometry
-        
+
         std::vector<bodyPanel*> tempB;
         std::vector<wakePanel*> tempW;
         for (int i=0; i<surfaces.size(); i++)
@@ -410,9 +412,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         
         
         // Calculate influence coefficient matrices
-        
+
         bool read = false;
-        
+
         if (infCoeffFileExists())
         {
             std::string in;
@@ -428,7 +430,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 std::cout << "take this out" << std::endl;
             }
         }
-        
+
         if (!read)
         {
             std::cout << "Building Influence Coefficient Matrix..." << std::endl;
@@ -455,7 +457,7 @@ void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen:
             vec = nodes[i]->getPnt()-nodes[j]->getPnt();
             if (vec.lpNorm<Eigen::Infinity>() < tol)
             {
-                
+
                 nodes[j] = nodes[i];
                 count++;
                 indReps.conservativeResize(count,2);
@@ -464,7 +466,7 @@ void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen:
             }
         }
     }
-    
+
     for (int i=wakeTriStart; i<nTris; i++)
     {
         for (int j=0; j<connectivity.cols(); j++)
@@ -591,7 +593,7 @@ edge* geometry::findEdge(cpNode* n1,cpNode* n2)
             return edges[i];
         }
     }
-    
+
     // If edge doesn't exist, create one
     edge* e = new edge(n1,n2,this);
     edges.push_back(e);
@@ -623,7 +625,7 @@ void geometry::setInfCoeff()
     int nBodyPans = (int)bPanels.size();
     int nWakePans = (int)wPanels.size();
     int nPans = nBodyPans+nWakePans;
-    
+
     A.resize(nBodyPans,nBodyPans);
     B.resize(nBodyPans,nBodyPans);
     C.resize(nBodyPans,w2Panels.size());
@@ -631,7 +633,7 @@ void geometry::setInfCoeff()
     
     Eigen::VectorXi percentage(9);
     percentage << 10,20,30,40,50,60,70,80,90;
-    
+
     for (int j=0; j<nBodyPans; j++)
     {
         for (int i=0; i<nBodyPans; i++)
@@ -646,17 +648,17 @@ void geometry::setInfCoeff()
             }
         }
     }
-    
+
     for (int i=0; i<nBodyPans; i++)
     {
         bPanels[i]->setIndex(i);
     }
-    
+
     std::vector<bodyPanel*> interpPans(4); // [Upper1 Lower1 Upper2 Lower2]  Panels that start the bounding wakelines of the wake panel.  Doublet strength is constant along wakelines (muUpper-muLower) and so the doublet strength used for influence of wake panel is interpolated between wakelines.
     double interpCoeff;
     double influence;
     Eigen::Vector4i indices;
-    
+
     for (int j=0; j<nWakePans; j++)
     {
         wPanels[j]->interpPanels(interpPans,interpCoeff);
@@ -676,7 +678,7 @@ void geometry::setInfCoeff()
                 std::cout << percentage(i) << "%\t" << std::flush;
             }
         }
-        
+
     }
     
     // Construct doublet influence coefficient matrices for bufferWake panels
@@ -751,14 +753,14 @@ bool geometry::infCoeffFileExists()
         }
         return true;
     }
-    
+
     return false;
 }
 
 void geometry::readInfCoeff()
 {
     std::cout << "Reading Influence Coefficients from " << infCoeffFile << "..." << std::endl;
-    
+
     std::ifstream fid;
     fid.open(infCoeffFile);
     int nPans, nW2pans;
@@ -880,7 +882,7 @@ Eigen::Vector3d geometry::pntVelocity(const Eigen::Vector3d &pnt, const Eigen::V
         vel += wPanels[i]->panelV(pnt);
     }
     vel += Vinf;
-    
+
     vel(0) /= PG; // Prandtl-Glauert Correction
     return vel;
 }

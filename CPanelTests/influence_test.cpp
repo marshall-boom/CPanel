@@ -6,8 +6,14 @@
 //  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
 //
 
-#include <iostream>
-#include "geometryTests.h"
+#if 1
+int main()
+{
+
+  return 0;
+}
+#else
+
 #include "influenceTests.h"
 #include "geometry.h"
 #include "cpFile.h"

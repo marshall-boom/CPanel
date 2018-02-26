@@ -17,6 +17,7 @@
 #include "octree.h"
 
 #include "gtest/gtest.h"
+
 namespace
 {
   class OctreeNodeTest : public ::testing::Test
@@ -30,6 +31,7 @@ namespace
       {
       }
 
+    protected:
       node<point_type> testNode;
   };
 
