@@ -1,0 +1,45 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/finalStudy/5334al10/5334al10.tri
+             Reference Area -> 6 ft^2
+             Reference Span -> 6 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.416 0 0.03] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> 10 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> OFF
+       Vortex Particle Wake -> ON
+            Accelerate Code -> ON
+         High Accuracy Mode -> OFF
+              Unsteady Mode -> OFF
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  10.000  0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 1.07575	CDi = 0.06402
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               1.06198   -0.11859  -0.00030  
+			Wind Axis      CL        CD        CY        
+			               1.06644   0.06762   -0.00030  
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.11512     -0.00263    0.00017     

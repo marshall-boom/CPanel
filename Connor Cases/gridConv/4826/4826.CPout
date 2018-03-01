@@ -1,0 +1,45 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/gridConv/4826/4826.tri
+             Reference Area -> 6 ft^2
+             Reference Span -> 6 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.416 0 0.03] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> 5 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> OFF
+       Vortex Particle Wake -> ON
+            Accelerate Code -> ON
+         High Accuracy Mode -> OFF
+              Unsteady Mode -> OFF
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  5.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.71067	CDi = 0.02508
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.72906   -0.02795  -0.00008  
+			Wind Axis      CL        CD        CY        
+			               0.72872   0.03570   -0.00008  
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.04232     -0.00149    0.00002     

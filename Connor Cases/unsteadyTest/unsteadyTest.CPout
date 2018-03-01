@@ -1,0 +1,54 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/unsteadyTest/unsteadyTest.tri
+             Reference Area -> 6 ft^2
+             Reference Span -> 6 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.25 0 0] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> 0 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> ON
+       Vortex Particle Wake -> ON
+            Accelerate Code -> ON
+              Unsteady Mode -> ON
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  0.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.64251	CDi = 0.00764
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.40234   -0.04430  -0.00000  
+			Wind Axis      CL        CD        CY        
+			               0.40234   -0.04430  -0.00000  
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.02417     0.00093     -0.00009    
+
+	--Time Dependent Forces and Moments--
+
+		Time     CN_body   CA_body   CY_body   CL_wind   CD_wind   CY_wind   Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.00000  -0.17758  -0.84530  0.00000   -0.17758  -0.84530  0.00000   0.10740     -0.00101    0.00026     
+		0.21429  0.10785   0.01414   0.00000   0.10785   0.01414   0.00000   -0.03211    0.00009     0.00017     
+		0.42857  -0.52669  -0.03098  -0.00000  -0.52669  -0.03098  -0.00000  0.24792     0.00041     0.00003     
+		0.64286  0.23624   -0.02643  0.00001   0.23624   -0.02643  0.00001   0.04008     0.00057     -0.00001    
+		0.85714  0.35261   -0.03325  0.00001   0.35261   -0.03325  0.00001   0.01950     0.00077     -0.00005    
+		1.07143  0.40234   -0.04430  -0.00000  0.40234   -0.04430  -0.00000  0.02417     0.00093     -0.00009    

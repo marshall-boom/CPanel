@@ -1,0 +1,32 @@
+%% CPanel Input File %%
+
+% Reference Geometry %
+GeomFile =	/Users/C_Man/Desktop/baseCPanelTest/4412CoarseNoWake/4412CoarseNoWake.tri
+S_ref =	4
+b_ref =	4
+c_ref =	1
+X_cg =	0.25
+Y_cg =	0
+Z_cg =	0
+
+% Cases %
+Velocity (ft/s)
+1
+100
+Angle_of_Attack (degrees)
+1
+5
+Angle_of_Sideslip (degrees)
+1
+0
+Mach_Number
+1
+0.1
+
+% Solver Options (0 = OFF, 1 = ON) %
+Surface_Streamlines
+0
+Stability_Derivatives
+0
+Write_Influence_Coefficients
+0

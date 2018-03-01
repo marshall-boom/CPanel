@@ -1,0 +1,41 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/baseCPanelTest/4412ReallyFineNoWake/4412ReallyFineNoWake.tri
+             Reference Area -> 4 ft^2
+             Reference Span -> 4 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.25 0 0] ft
+                   Velocity -> 100 ft/s
+                      Alpha -> 5 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> ON
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		100.000    0.100  5.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.00000	CDi = 0.00000
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.09034   -0.02489  0.00002   
+			Wind Axis      CL        CD        CY        
+			               0.09216   -0.01692  0.00002   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.06529     0.00025     -0.00002    
