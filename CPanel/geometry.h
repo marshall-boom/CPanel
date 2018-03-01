@@ -38,7 +38,7 @@
 //    std::vector<wakePanel*> w2Panels; // Buffer wake row two
 //    double c_w;
 //    double inputV;
-//    
+//
 //    panelOctree pOctree;
 //    std::vector<cpNode*> nodes;
 //    std::vector<edge*> edges;
@@ -46,17 +46,17 @@
 //    short nTris;
 //    double dt; //making public so cpCase can access it
 //
-//    
+//
 //    Eigen::MatrixXd B; // Source Influence Coefficient Matrix
 //    Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
-//    
+//
 //    Eigen::MatrixXd C; // Wake Doublet Influence Coefficient Matrix
-//    
+//
 //    bool writeCoeffFlag;
 //    std::string infCoeffFile;
 //    bool vortPartFlag;
 //    std::vector<bool> isFirstPanel;
-//    
+//
 //    void readTri(std::string tri_file, bool normFlag);
 //    std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
 //    edge* findEdge(cpNode* n1,cpNode* n2);
@@ -74,24 +74,24 @@
 //    void correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity);
 //    double shortestEdge(const Eigen::MatrixXi &connectivity);
 //    liftingSurf* getParentSurf(int wakeID);
-//    
+//
 //    void setInfCoeff();
 //
 //    Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
-//    
+//
 //    bool infCoeffFileExists();
 //    void readInfCoeff();
 //    void writeInfCoeff();
-//    
+//
 //    bool unsteadySim;
-//    
+//
 //    std::string bodyKinFile;
 //    Eigen::VectorXd bodyKin;
-//    
+//
 //    void readBodyKinFile();
 //    Eigen::Vector3d Vinf(Eigen::Vector3d POI);
 //
-//    
+//
 //public:
 //
 //    geometry(inputParams* p)
@@ -110,20 +110,20 @@
 //        }
 //        readTri(p->geomFile->file, p->normFlag);
 //    }
-//    
+//
 //    virtual ~geometry();
-//    
+//
 //    geometry(const geometry& copy);
-//    
+//
 //    geometry& operator=(const geometry &rhs);
-//    
+//
 //    double getDt() { return dt;}
 //    double pntPotential(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf);
 //    double wakePotential(const Eigen::Vector3d &pnt);
 //    Eigen::Vector3d pntVelocity(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf, double PG);
-//    
+//
 //    void clusterCheck();
-//    
+//
 //    short getNumberOfNodes() {return nNodes;}
 //    short getNumberOfTris() {return nTris;}
 //    std::vector<cpNode*> getNodes() {return nodes;}
@@ -141,8 +141,8 @@
 //    Eigen::MatrixXd* getA() {return &A;}
 //    Eigen::MatrixXd* getB() {return &B;}
 //    Eigen::MatrixXd* getC() {return &C;} // bw2
-//    
-//    
+//
+//
 //};
 //
 //
@@ -166,8 +166,6 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <array>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 #include "panelOctree.h"
 #include "surface.h"
 #include "liftingSurf.h"
@@ -185,28 +183,28 @@ class geometry
     std::vector<bodyPanel*> bPanels;
     std::vector<wakePanel*> wPanels;
     std::vector<wakePanel*> w2Panels; // Buffer wake row two
-    
+
     std::vector<bool> isFirstPanel;
-    
+
     panelOctree pOctree;
     std::vector<cpNode*> nodes;
     std::vector<edge*> edges;
 //    std::vector<cpNode*> TEnodes;
     short nNodes;
     short nTris;
-    
+
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
     Eigen::MatrixXd C; // 2nd Row Buffer Wake Doublet Influence Coefficient Matrix
-    
-    
-    
+
+
+
     bool writeCoeffFlag;
     bool vortPartFlag;
     std::string infCoeffFile;
     double dt;
     double inputV;
-    
+
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
@@ -218,17 +216,17 @@ class geometry
     void correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity);
     double shortestEdge(const Eigen::MatrixXi &connectivity);
     liftingSurf* getParentSurf(int wakeID);
-    
+
     void setInfCoeff();
     Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
-    
+
     bool infCoeffFileExists();
     void readInfCoeff();
     void writeInfCoeff();
-    
+
     void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<bool> isFirstPanel);
     void calcTimeStep();
-    
+
 public:
     geometry(inputParams* p)
     {
@@ -239,28 +237,28 @@ public:
         vortPartFlag = p->vortexParticles;
         dt = p->timeStep;
         inputV = p->velocities(0);
-        
+
         readTri(p->geomFile->file, p->normFlag);
-        
+
     }
-    
+
     virtual ~geometry();
-    
+
     geometry(const geometry& copy);
-    
+
     geometry& operator=(const geometry &rhs);
-    
+
     double pntPotential(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf);
     double wakePotential(const Eigen::Vector3d &pnt);
     Eigen::Vector3d pntVelocity(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf, double PG);
-    
+
     void clusterCheck();
-    
+
     short getNumberOfNodes() {return nNodes;}
     short getNumberOfTris() {return nTris;}
     std::vector<cpNode*> getNodes() {return nodes;}
     Eigen::MatrixXd getNodePnts();
-    
+
     std::vector<surface*> getSurfaces();
     panelOctree* getOctree() {return &pOctree;}
     std::vector<panel*> getPanels();
@@ -272,9 +270,7 @@ public:
     Eigen::MatrixXd* getB() {return &B;}
     Eigen::MatrixXd* getC() {return &C;}
     double getDt() {return dt;}
-    
-    void moveGeom( std::vector<double> bodyKin );
-    
+
     void moveGeom( std::vector<double> bodyKin );
 
 };

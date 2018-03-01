@@ -1,0 +1,44 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/threeElementWing/threeElementWing.tri
+             Reference Area -> 6 ft^2
+             Reference Span -> 6 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.25 0 0] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> 5 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> ON
+       Vortex Particle Wake -> OFF
+            Accelerate Code -> OFF
+              Unsteady Mode -> OFF
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  5.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 4.14549	CDi = 4.06118
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               3.55738   0.73612   0.00307   
+			Wind Axis      CL        CD        CY        
+			               3.47969   1.04336   0.00307   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		-1.56530    0.01842     -0.01334    

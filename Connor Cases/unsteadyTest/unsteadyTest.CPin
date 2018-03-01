@@ -1,0 +1,48 @@
+%% CPanel Input File %%
+
+% Reference Geometry %
+GeomFile =	/Users/C_Man/Desktop/CPanelCases/unsteadyTest/unsteadyTest.tri
+S_ref =	6
+b_ref =	6
+c_ref =	1
+X_cg =	0.25
+Y_cg =	0
+Z_cg =	0
+
+% Cases %
+Velocity (ft/s)
+1
+1
+Angle_of_Attack (degrees)
+1
+0
+Angle_of_Sideslip (degrees)
+1
+0
+Mach_Number
+1
+0.1
+
+% Solver Options (0 = OFF, 1 = ON) %
+Surface_Streamlines
+0
+Stability_Derivatives
+0
+Write_Influence_Coefficients
+1
+Vortex_Particle_Wake
+1
+Accelerate_Code
+1
+Volume_Mesh (Xo Xf Yo Yf Zo Zf nX nY nZ)
+0
+-0.5 6.5 -8 8 -0.5 1.25 50 1 10
+
+% Vortex Particle Wake Options %
+Time_Step
+0
+Number_of_Timesteps
+6
+Unsteady_Mode
+1
+/Users/C_Man/Desktop/CPanelCases/unsteadyTest/unsteadyTest.bKin

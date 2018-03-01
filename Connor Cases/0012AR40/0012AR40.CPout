@@ -1,0 +1,54 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/0012AR40/0012AR40.tri
+             Reference Area -> 40 ft^2
+             Reference Span -> 40 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.25 0 0] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> 0 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> ON
+       Vortex Particle Wake -> ON
+            Accelerate Code -> ON
+              Unsteady Mode -> ON
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  0.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.57166	CDi = 0.00700
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.41616   -0.03174  0.00005   
+			Wind Axis      CL        CD        CY        
+			               0.41616   -0.03174  0.00005   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.05863     -0.00147    -0.00048    
+
+	--Time Dependent Forces and Moments--
+
+		Time     CN_body   CA_body   CY_body   CL_wind   CD_wind   CY_wind   Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.00000  -0.03207  -0.44540  0.00000   -0.03207  -0.44540  0.00000   0.01173     -0.00051    -0.00012    
+		0.38462  -0.00770  0.01416   0.00000   -0.00770  0.01416   0.00000   0.00902     -0.00070    -0.00016    
+		0.76923  -0.34976  -0.00240  0.00002   -0.34976  -0.00240  0.00002   0.22539     -0.00113    -0.00032    
+		1.15385  0.23190   -0.01161  0.00003   0.23190   -0.01161  0.00003   0.07063     -0.00128    -0.00037    
+		1.53846  0.34474   -0.02076  0.00004   0.34474   -0.02076  0.00004   0.05667     -0.00138    -0.00042    
+		1.92308  0.41616   -0.03174  0.00005   0.41616   -0.03174  0.00005   0.05863     -0.00147    -0.00048    

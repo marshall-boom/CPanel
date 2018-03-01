@@ -26,21 +26,21 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     {
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
-    
+
     compVelocity();
-    
+
     if (printFlag)
     {
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
-    
+
     trefftzPlaneAnalysis();
-    
+
     if (printFlag)
     {
         std::cout << std::setw(18) << std::left << check << std::flush;
     }
-    
+
     if (surfStreamFlag)
     {
         createStreamlines();
@@ -56,7 +56,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
             std::cout << std::setw(14) << std::left << "X" << std::flush;
         }
     }
-    
+
     if (stabDerivFlag)
     {
         stabilityDerivatives();
@@ -72,7 +72,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
             std::cout << std::setw(24) << std::left << "X" << std::flush;
         }
     }
-    
+
     if (params->volMeshFlag) {
         createVolMesh();
         populateVolMesh();
@@ -88,13 +88,13 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
             std::cout << std::setw(23) << std::left << "X" << std::endl;
         }
     }
-    
-    
+
+
     if (!converged && printFlag)
     {
         std::cout << "*** Warning : Solution did not converge ***" << std::endl;;
     }
-    
+
     if (printFlag)
     {
         writeFiles();
@@ -105,7 +105,7 @@ Eigen::Vector3d cpCase::windToBody(double V, double alpha, double beta)
 {
     alpha *= M_PI/180;
     beta *= M_PI/180;
-    
+
     Eigen::Matrix3d T;
     T(0,0) = cos(alpha)*cos(beta);
     T(0,1) = cos(alpha)*sin(beta);
@@ -120,9 +120,9 @@ Eigen::Vector3d cpCase::windToBody(double V, double alpha, double beta)
     Eigen::Vector3d Vel;
     Vt << V,0,0;
     transform = T;
-    
+
     Vel = transform*Vt;
-    
+
     return Vel;
 }
 
@@ -147,14 +147,14 @@ void cpCase::setSourceStrengths()
 bool cpCase::solveMatrixEq()
 {
     bool converged = true;
-    
+
     // Solve matrix equations and set potential for all panels;
     Eigen::MatrixXd* A = geom->getA();
     Eigen::MatrixXd* B = geom->getB();
     Eigen::VectorXd RHS = -(*B)*sigmas;
     Eigen::VectorXd doubletStrengths(bPanels->size());
-    
-    
+
+
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
     res.compute((*A));
     doubletStrengths = res.solve(RHS);
@@ -162,7 +162,7 @@ bool cpCase::solveMatrixEq()
     {
         converged = false;
     }
-    
+
     for (int i=0; i<bPanels->size(); i++)
     {
         (*bPanels)[i]->setMu(doubletStrengths(i));
@@ -220,7 +220,7 @@ void cpCase::createStreamlines()
     std::vector<surface*> surfs = geom->getSurfaces();
     std::vector<std::pair<Eigen::Vector3d,bodyPanel*>> streamPnts;
     bodyStreamline* s;
-    
+
     for (int i=0; i<surfs.size(); i++)
     {
         streamPnts = surfs[i]->getStreamlineStartPnts(Vinf,PG); // will need to modify this in order to find the stagnation points for a moving body...
@@ -230,7 +230,7 @@ void cpCase::createStreamlines()
             bStreamlines.push_back(s);
         }
     }
-    
+
     //    // Off Body Streamline (Temporary)
     //    std::vector<streamline*> sLines;
     //    streamline* sline;
@@ -300,30 +300,30 @@ void cpCase::stabilityDerivatives()
     double dRad = delta*M_PI/180;
     cpCase dA(geom,Vmag,alpha+delta,beta,mach,params);
     cpCase dB(geom,Vmag,alpha,beta+delta,mach,params);
-    
+
     dA.run(false,false,false);
     dB.run(false,false,false);
-    
+
     Eigen::Vector3d FA = dA.getWindForces();
     FA(2) = dA.getCL();
     FA(0) = dA.getCD();
-    
+
     Eigen::Vector3d FB = dB.getWindForces();
     FB(2) = dB.getCL();
     FB(0) = dB.getCD();
-    
+
     Eigen::Vector3d F = Fwind;
     F(2) = CL_trefftz;
     F(0) = CD_trefftz;
-    
+
     // Finish calculating stability derivatives
     dF_dAlpha = (FA-F)/dRad;
     dF_dBeta = (FB-F)/dRad;
-    
+
     dM_dAlpha = (dA.getMoment()-CM)/dRad;
     dM_dBeta = (dB.getMoment()-CM)/dRad;
-    
-    
+
+
 }
 
 void cpCase::writeFiles()
@@ -342,19 +342,19 @@ void cpCase::writeFiles()
         writeWakeData(subdir,nodeMat);
         writeSpanwiseData(subdir);
     }
-    
-    
+
+
     if (params->volMeshFlag)
     {
         writeVolMeshData(subdir, pts, cells);
     }
-    
-    
+
+
     if (params->surfStreamFlag)
     {
         writeBodyStreamlines(subdir);
     }
-    
+
 }
 
 void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat)
@@ -371,7 +371,7 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
     x.data.resize(bPanels->size(),1);
     y.data.resize(bPanels->size(),1);
     z.data.resize(bPanels->size(),1);
-    
+
     for (int i=0; i<bPanels->size(); i++)
     {
         mu.data(i,0) = (*bPanels)[i]->getMu();
@@ -385,7 +385,7 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
         y.data(i,0) = (*bPanels)[i]->getCenter().y();
         z.data(i,0) = (*bPanels)[i]->getCenter().z();
     }
-    
+
     data.push_back(mu);
     data.push_back(sigma);
     data.push_back(pot);
@@ -395,12 +395,12 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
     data.push_back(x);
     data.push_back(y);
     data.push_back(z);
-    
+
     piece body;
     body.pnts = nodeMat;
     body.connectivity = con;
     body.cellData = data;
-    
+
     std::string fname = path.string()+"/surfaceData.vtu";
     VTUfile bodyFile(fname,body);
 }
@@ -421,7 +421,7 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
     }
     data.push_back(mu);
     data.push_back(pot);
-    
+
     piece wake;
     wake.pnts = nodeMat;
     wake.connectivity = con;
@@ -440,7 +440,7 @@ void cpCase::writeSpanwiseData(boost::filesystem::path path)
         spanLoc = 2*wakes[i]->getSpanwisePnts()/params->bref;
         Cl = wakes[i]->getSpanwiseCl()/PG;
         Cd = wakes[i]->getSpanwiseCd()/pow(PG,2);
-        
+
         std::stringstream ss;
         ss << path.string() << "/spanwiseData_Wake" << i+1 << ".csv";
         std::string fname = ss.str();
@@ -467,7 +467,7 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
     Eigen::MatrixXi con;
     Eigen::MatrixXd pntMat;
     std::vector<Eigen::Vector3d> pnts,velocities;
-    
+
     for (int i=0; i<bStreamlines.size(); i++)
     {
         pnts = bStreamlines[i]->getPnts();
@@ -489,11 +489,11 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
         p.pnts = pntMat;
         p.connectivity = con;
         p.pntData = data;
-        
+
         pieces.push_back(p);
         data.clear();
     }
-    
+
     std::string fname = path.string()+"/streamlines.vtu";
     VTUfile wakeFile(fname,pieces);
 }
@@ -501,7 +501,7 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
 
 void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells){
     int nCells = (int)cells.size();
-    
+
     std::vector<cellDataArray> data;
     cellDataArray vel("Velocity"), Cp("Cp");
     Eigen::MatrixXi con;
@@ -516,7 +516,7 @@ void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nod
     }
     data.push_back(vel);
     data.push_back(Cp);
-    
+
     piece volMesh;
     volMesh.pnts = nodeMat;
     volMesh.connectivity = con;
@@ -527,24 +527,24 @@ void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nod
 
 
 Eigen::Vector3d cpCase::velocityAtPoint(Eigen::Vector3d POI){
-    
+
     Eigen::Vector3d vel = Eigen::Vector3d::Zero();
-    
+
     for(int i=0; i<(*bPanels).size(); i++){
         vel += (*bPanels)[i]->panelV(POI);
     }
-    
+
     for (int i=0; i<(*wPanels).size(); i++) {
         vel += (*wPanels)[i]->panelV(POI);
     }
-    
+
     return vel;
-    
+
 }
 
 
 void cpCase::createVolMesh(){
-    
+
     // Retrieve mesh limits
     double x0, xf, y0, yf, z0, zf;
     x0 = params->volMeshBounds[0];
@@ -553,24 +553,24 @@ void cpCase::createVolMesh(){
     yf = params->volMeshBounds[3];
     z0 = params->volMeshBounds[4];
     zf = params->volMeshBounds[5];
-    
+
     // Retrieve mesh resolution
     int nX, nY, nZ;
     nX = params->volMeshRes[0];
     nY = params->volMeshRes[1];
     nZ = params->volMeshRes[2];
-    
+
     double hx, hy, hz;
     hx = (xf-x0)/nX;
     hy = (yf-y0)/nY;
     hz = (zf-z0)/nZ;
-    
+
     // Add one for number of points (nodes)
     int nXp = nX+1;
     int nYp = nY+1;
     int nZp = nZ+1;
     int numPts = nXp * nYp * nZp;
-    
+
     // Creating pnt vector
     pts.resize(numPts, 3);
     int count = 0;
@@ -584,8 +584,8 @@ void cpCase::createVolMesh(){
             }
         }
     }
-    
-    
+
+
     // Create cells
     for (int i=0; i<nX; i++) {
         for (int j=0; j<nY; j++) {
@@ -593,24 +593,24 @@ void cpCase::createVolMesh(){
                 Eigen::VectorXi cell_pts(8);
                 cell_pts[0] = (k*(nXp*nYp) + j*(nXp) + i);
                 cell_pts[1] = (k*(nXp*nYp) + j*(nXp) + i) + 1;
-                
+
                 cell_pts[2] = (k*(nXp*nYp) + (j+1)*(nXp) + i);
                 cell_pts[3] = (k*(nXp*nYp) + (j+1)*(nXp) + i) + 1;
-                
+
                 cell_pts[4] = ((k+1)*(nXp*nYp) + j*(nXp) + i);
                 cell_pts[5] = ((k+1)*(nXp*nYp) + j*(nXp) + i) + 1;
-                
+
                 cell_pts[6] = ((k+1)*(nXp*nYp) + (j+1)*(nXp) + i);
                 cell_pts[7] = ((k+1)*(nXp*nYp) + (j+1)*(nXp) + i) + 1;
-                
+
                 cells.push_back(cell_pts);
-                
+
                 // Find cell center
                 Eigen::MatrixXd cellCorners(8,3);
                 for (int m=0; m<cellCorners.rows(); m++) {
                     cellCorners.row(m) = pts.row(cell_pts[m]);
                 }
-                
+
                 Eigen::Vector3d center;
                 for (int m=0; m<cellCorners.cols(); m++) {
                     center(m) = cellCorners.col(m).mean();
@@ -619,27 +619,26 @@ void cpCase::createVolMesh(){
             }
         }
     }
-    
+
 }
 
 void cpCase::populateVolMesh(){
-    
+
     // Clear Past Timestep Mesh
     volMeshDat.velocity.clear();
     volMeshDat.coef_press.clear();
-    
+
     for (int i=0; i<cells.size(); i++) {
         Eigen::Vector3d velInCell = velocityAtPoint(volMeshDat.cellCenter[i]) + Vinf;
         volMeshDat.velocity.push_back(velInCell);
     }
-    
+
     for (int i=0; i<cells.size(); i++) {
         // Incompressible Bernoulli equation
         double Cp = pow( volMeshDat.velocity[i].norm() / Vmag , 2 );
         volMeshDat.coef_press.push_back(Cp);
     }
-    
-}
 
 }
+
 

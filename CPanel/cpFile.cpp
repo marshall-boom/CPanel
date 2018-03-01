@@ -8,6 +8,13 @@
 
 #include "cpFile.h"
 
+#include <stdio.h>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 cpFile::cpFile(std::string filename) : file(filename)
 {
     parsefile();
@@ -31,7 +38,7 @@ void cpFile::parsefile()
     // Get extension
     ext = file.substr(nameEnd,file.size()-nameEnd);
     name = file.substr(pathEnd,nameEnd-pathEnd);
-    
+
     if (!relPath)
     {
         path = file.substr(0,pathEnd);
@@ -40,7 +47,7 @@ void cpFile::parsefile()
     {
         std::string relativePath = file.substr(0,pathEnd);
         std::string currentPath = boost::filesystem::current_path().string();
-        
+
         std::stringstream ss;
         ss << currentPath << "/" << relativePath;
         path = ss.str();

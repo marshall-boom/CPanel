@@ -1,0 +1,44 @@
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/steadyTest/steadyTest.tri
+             Reference Area -> 6 ft^2
+             Reference Span -> 6 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.416 0 0.03] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> 10 degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> ON
+       Vortex Particle Wake -> ON
+            Accelerate Code -> ON
+              Unsteady Mode -> OFF
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  10.000  0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 1.10020	CDi = 0.06869
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               1.11715   -0.10571  0.00034   
+			Wind Axis      CL        CD        CY        
+			               1.11853   0.08989   0.00034   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.11546     -0.00117    -0.00052    

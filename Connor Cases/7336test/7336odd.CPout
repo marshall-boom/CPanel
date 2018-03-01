@@ -1,0 +1,138 @@
+
+-----------INPUTS-----------
+
+              Geometry File -> /Users/C_Man/Desktop/CPanelCases/7336/7336.tri
+             Reference Area -> 6 ft^2
+             Reference Span -> 6 ft
+            Reference Chord -> 1 ft
+          Center of Gravity -> [0.416 0 0.03] ft
+                   Velocity -> 1 ft/s
+                      Alpha -> [1 3 5 7 9] degrees
+                       Beta -> 0 degrees
+                     Mach # -> 0.1 
+        Surface Streamlines -> OFF
+      Stability Derivatives -> OFF
+    Write Inf Coeff to File -> OFF
+       Vortex Particle Wake -> ON
+            Accelerate Code -> ON
+         High Accuracy Mode -> OFF
+              Unsteady Mode -> OFF
+
+
+-----------RESULTS-----------
+
+
+---Case #1---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  1.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.36907	CDi = 0.00707
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.38606   0.00795   0.00002   
+			Wind Axis      CL        CD        CY        
+			               0.38586   0.01469   0.00002   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		-0.01392    0.00085     -0.00011    
+
+---Case #2---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  3.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.53104	CDi = 0.01244
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.55280   -0.00550  0.00001   
+			Wind Axis      CL        CD        CY        
+			               0.55233   0.02344   0.00001   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.01587     0.00047     -0.00008    
+
+---Case #3---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  5.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.69170	CDi = 0.02054
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.71440   -0.02696  -0.00003  
+			Wind Axis      CL        CD        CY        
+			               0.71403   0.03540   -0.00003  
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.04512     0.00003     -0.00006    
+
+---Case #4---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  7.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.84377	CDi = 0.03350
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               0.87147   -0.05566  -0.00002  
+			Wind Axis      CL        CD        CY        
+			               0.87176   0.05096   -0.00002  
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.07415     -0.00025    -0.00008    
+
+---Case #5---
+
+	--Flow Conditions--
+
+		Velocity   Mach   Alpha   Beta    
+		1.000      0.100  9.000   0.000   
+
+	--Force Coefficients--
+
+		-Trefftz Plane-
+			CL = 0.99774	CDi = 0.04369
+
+		-Surface Integrated Force Coefficients-
+			Body Axis      CN        CA        CY        
+			               1.03293   -0.09396  0.00015   
+			Wind Axis      CL        CD        CY        
+			               1.03491   0.06878   0.00015   
+
+	--Moment Coefficients--
+
+		Cm (pitch)  Cl (roll)   Cn (yaw)    
+		0.10349     -0.00047    -0.00013    

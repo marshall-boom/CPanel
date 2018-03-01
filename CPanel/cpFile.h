@@ -9,13 +9,7 @@
 #ifndef __CPanel___Unstructured_Panel_Code__cpFile__
 #define __CPanel___Unstructured_Panel_Code__cpFile__
 
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
 #include <string>
-#include <sstream>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 
 struct cpFile
 {
@@ -23,12 +17,12 @@ struct cpFile
     std::string path;
     std::string name;
     std::string ext;
-    
+
     cpFile(std::string filename);
     cpFile(const char* filename);
-    
+
     void changePath(std::string newPath);
-    
+
 private:
     void parsefile();
 };

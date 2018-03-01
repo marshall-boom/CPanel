@@ -8,6 +8,11 @@
 
 #include "inputParams.h"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <iomanip>
+#include <limits>
+
 bool inputParams::set()
 {
     // Set Default Parameters;
@@ -23,7 +28,7 @@ bool inputParams::set()
     alphas(0) = 0;
     betas(0) = 0;
     machs(0) = 0.1;
-    
+
     // Read parameters from input file
     std::ifstream fid;
     fid.open(inputFile->file);
@@ -32,7 +37,7 @@ bool inputParams::set()
         std::string s1,s2,s3;
         int n;
         std::getline(fid,s1);
-        while (!fid.eof())
+        while (!fid.eof() && !fid.fail())
         {
             fid >> s1;
             if (s1.compare("%") == 0)
@@ -209,59 +214,59 @@ void inputParams::print(std::ostream &stream)
     stream << std::setw(nChars) << "Reference Span " << "-> " << bref << " ft" << std::endl;
     stream << std::setw(nChars) << "Reference Chord " << "-> " << cref << " ft" << std::endl;
     stream << std::setw(nChars) << "Center of Gravity " << "-> [" << cg(0) << " " << cg(1) << " " << cg(2) << "] ft" << std::endl;
-    
+
     stream << std::setw(nChars) << "Velocity " << "-> ";
     printVec(velocities,stream);
     stream << "ft/s" << std::endl;
-    
+
     stream << std::setw(nChars) << "Alpha " << "-> ";
     printVec(alphas,stream);
     stream << "degrees" << std::endl;
-    
+
     stream << std::setw(nChars) << "Beta " << "-> ";
     printVec(betas,stream);
     stream << "degrees" << std::endl;
-    
+
     stream << std::setw(nChars) << "Mach # " << "-> ";
     printVec(machs,stream);
     stream << std::endl;
-    
+
     stream << std::setw(nChars) << "Surface Streamlines " << "-> ";
     if (surfStreamFlag)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Stability Derivatives " << "-> ";
     if (stabDerivFlag)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Write Inf Coeff to File " << "-> ";
     if (writeCoeffFlag)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Vortex Particle Wake " << "-> ";
     if (vortexParticles)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Accelerate Code " << "-> ";
     if (accelerateCode)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Unsteady Mode " << "-> ";
     if (unsteady)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
 }
 
 void inputParams::printVec(Eigen::VectorXd &vec,std::ostream &stream)
@@ -294,10 +299,10 @@ void inputParams::makeWorkingDir()
 {
     std::string inPath = inputFile->path;
     inPath = inPath.substr(0,inPath.size()-1); // Remove trailing slash;
-    
+
     std::size_t folderStart = inPath.find_last_of("/")+1;
     std::string inFolder = inPath.substr(folderStart,inPath.size()-folderStart);
-    
+
     if (inFolder != inputFile->name)
     {
         std::stringstream subdir;
@@ -327,7 +332,7 @@ void inputParams::writeInputFile()
     std::stringstream newInFile;
     newInFile << inputFile->name << inputFile->ext;
     fid.open(newInFile.str());
-    
+
     fid << "%% CPanel Input File %%\n" << std::endl;
     fid << "% Reference Geometry %" << std::endl;
     fid << "GeomFile =\t" << geomFile->file << std::endl;
@@ -391,7 +396,7 @@ void inputParams::writeInputFile()
     fid << "Unsteady_Mode" << std::endl;
     fid << unsteady << std::endl;
     fid << bodyKinFileLoc << std::endl;
-    
-    
+
+
     fid.close();
 }
