@@ -226,5 +226,5 @@ void createTestPanel(DoubVelData* d,geometry* dGeom){
 //
 //    Test::TextOutput output(Test::TextOutput::Verbose);
 //    return tests.run(output);
-
+#endif
 

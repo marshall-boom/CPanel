@@ -27,7 +27,7 @@ namespace
 
     protected:
       OctreeNodeTest()
-        : testNode(nullptr, point_type(1, 1, 1), point_type(1, 1, 1), 0, 10)
+        : testNode(nullptr, point_type(1, 1, 1), point_type(1, 1, 1), 0, 10, 0.1)
       {
       }
 
