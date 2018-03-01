@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <Eigen/Dense>
 #include "cpFile.h"
 
@@ -31,20 +32,20 @@ struct inputParams
     bool accelerateCode = false;
     bool unsteady = false;
     std::string bodyKinFileLoc;
-    
+
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
 
-    bool surfStreamFlag;
-    bool stabDerivFlag;
-    bool writeCoeffFlag;
-    bool vortexParticles;
-    bool volMeshFlag;
-    
+    bool surfStreamFlag = false;
+    bool stabDerivFlag = false;
+    bool writeCoeffFlag = false;
+    bool vortexParticles = false;
+    bool volMeshFlag = false;
+
     std::vector<double> volMeshBounds;
     std::vector<int> volMeshRes;
-    
-    
+
+
     inputParams(cpFile* inFile) : inputFile(inFile) {}
 
     ~inputParams()
@@ -54,7 +55,7 @@ struct inputParams
 
     bool set();
     void print(std::ostream &stream);
-    
+
 private:
     bool checkGeomFile();
     void makeWorkingDir();

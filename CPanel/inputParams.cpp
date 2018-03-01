@@ -37,7 +37,7 @@ bool inputParams::set()
         std::string s1,s2,s3;
         int n;
         std::getline(fid,s1);
-        while (!fid.eof())
+        while (!fid.eof() && !fid.fail())
         {
             fid >> s1;
             if (s1.compare("%") == 0)
@@ -248,25 +248,25 @@ void inputParams::print(std::ostream &stream)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Vortex Particle Wake " << "-> ";
     if (vortexParticles)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Accelerate Code " << "-> ";
     if (accelerateCode)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
     stream << std::setw(nChars) << "Unsteady Mode " << "-> ";
     if (unsteady)
         stream << "ON" << std::endl;
     else
         stream << "OFF" << std::endl;
-    
+
 }
 
 void inputParams::printVec(Eigen::VectorXd &vec,std::ostream &stream)
@@ -396,7 +396,7 @@ void inputParams::writeInputFile()
     fid << "Unsteady_Mode" << std::endl;
     fid << unsteady << std::endl;
     fid << bodyKinFileLoc << std::endl;
-    
-    
+
+
     fid.close();
 }
