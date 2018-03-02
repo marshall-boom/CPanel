@@ -10,7 +10,7 @@ project(OCTREE)
 set(OCTREE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 # include common test header files
-include_directories(${OCTREE_INCLUDE_DIR})
+include_directories(${OCTREE_INCLUDE_DIR} ${GTEST_INCLUDE_DIRS})
 
 
 add_subdirectory(tests)

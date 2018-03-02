@@ -76,7 +76,11 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 ################################################################################
 # Setup Google Test
 ################################################################################
-include(${CPANEL_SOURCE_DIR}/cmake/googletest-setup.cmake)
+find_package(GTest_Local 1.8.0 REQUIRED)
+include(CTest)
+
+
+#########include(${CPANEL_SOURCE_DIR}/cmake/googletest-setup.cmake)
 
 ################################################################################
 # Add subdirectories
