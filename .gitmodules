@@ -1,0 +1,3 @@
+[submodule "cmake-util"]
+	path = cmake-util
+	url = https://github.com/ddmarshall/eli-cmake-util.git

@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 project(CPANEL
-        VERSION 1.0.0
+        VERSION 0.2.1
         LANGUAGES CXX)
 
 # prevent in source builds
@@ -19,7 +19,9 @@ if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 endif ()
 
 # add the project specific cmake files to module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+                      ${PROJECT_SOURCE_DIR}/cmake-util
+                      ${PROJECT_SOURCE_DIR}/cmake)
 
 ################################################################################
 # Setup CPanel with version numbers
@@ -44,39 +46,11 @@ include_directories(${CPANEL_BINARY_DIR}/include)
 ################################################################################
 # Find Dependencies
 ################################################################################
-####find_package(<package-name>)
-
-################################################################################
-# Find and configure Eigen3
-################################################################################
-
-# figure out what the user wants
-if (DEFINED  EIGEN3_VERSION_REQ)
-  CHECK_VERSION_REQ(_eli_eigen3_use ${ELI_EIGEN3_VERSION_REQ})
-else()
-  set(_eli_eigen3_use 0)
-endif()
-
-# get the information for CPPTest
-if (_eli_eigen3_use EQUAL 0)
-  find_package(Eigen3 REQUIRED)
-  add_custom_target(Eigen3) # using system version means need to add empty target for dependencies
-elseif (_eli_eigen3_use EQUAL 1)
-  find_package(Eigen3_Local REQUIRED)
-elseif (_eli_eigen3_use EQUAL 2)
-  find_package(Eigen3_Local ${ELI_EIGEN3_VERSION_REQ} REQUIRED)
-else()
-  message(FATAL_ERROR " Unknown Eigen flag ->${ELI_EIGEN3_VERSION_REQ}<- requested.")
-endif()
-message(STATUS "Eigen3 Variables:\n\tEIGEN3_FOUND=${EIGEN3_FOUND}\n\tEIGEN3_INCLUDE=${EIGEN3_INCLUDE_DIR}\n\tEIGEN3_VERSION=${EIGEN3_VERSION}\n\tEIGEN3_VERSION_OK=${EIGEN3_VERSION_OK}")
-
-# add the Eigen3 include directories
+find_package(Eigen3_Local REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
-
-################################################################################
-# Setup Google Test
-################################################################################
-include(${CPANEL_SOURCE_DIR}/cmake/googletest-setup.cmake)
+find_package(GTest_Local 1.8.0 REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+include(CTest)
 
 ################################################################################
 # Add subdirectories
