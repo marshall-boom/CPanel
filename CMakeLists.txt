@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 project(CPANEL
-        VERSION 1.0.0
+        VERSION 0.2.1
         LANGUAGES CXX)
 
 # prevent in source builds
