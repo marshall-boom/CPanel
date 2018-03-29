@@ -6,6 +6,9 @@
 //  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
 //
 
+#include <iostream>
+#include <iomanip>
+
 #include "CPanelMgr.h"
 
 void caseMgr::setCases()

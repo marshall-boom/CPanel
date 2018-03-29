@@ -8,10 +8,12 @@
 
 #include "inputParams.h"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+#include <iostream>
 #include <iomanip>
 #include <limits>
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 bool inputParams::set()
 {

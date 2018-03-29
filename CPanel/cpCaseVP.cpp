@@ -6,6 +6,9 @@
 //  Copyright (c) 2017 Chris Satterwhite. All rights reserved.
 //
 
+#include <iostream>
+#include <iomanip>
+
 #include "cpCaseVP.h"
 
 void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
