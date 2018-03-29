@@ -20,11 +20,7 @@ streamline::streamline(const Eigen::Vector3d &startPnt, double xMax, double tol,
     
     while (nextPnt(0) < xMax)
     {
-        if (error == 0)
-        {
-            dt = dt;
-        }
-        else
+        if (error > 0)
         {
             dt = dt*pow((tol*dt/(2*error)),0.25);
         }
