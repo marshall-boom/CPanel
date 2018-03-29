@@ -19,7 +19,7 @@ void particleFMM::build(particleOctree* tree){
 }
 
 void particleFMM::computeMultExp(){
-    for(int i=levels+1; i>1; i--)
+    for(short i=static_cast<short>(levels+1); i>1; i--)
     { // Ignore root node. 1 based indexing for tree
         std::vector<node<particle> *> nodes = partTree->getLevelNodes(i);
         

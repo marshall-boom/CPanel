@@ -109,7 +109,7 @@ public:
             children[i] = NULL;
         }
 
-        level = parent_level+static_cast<short>(1);
+        level = static_cast<short>(parent_level+1);
     }
 
     node(const node<type>& copy)
@@ -173,7 +173,7 @@ public:
         {
             tempHalfDimension[i] = 2*halfDimension[i];
         }
-        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers,maxTheta);
+        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,static_cast<short>(level-1),maxMembers,maxTheta);
 
         int child = 0;
         for (int i=0; i<3; i++)
