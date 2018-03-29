@@ -499,8 +499,8 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
 }
 
 
-void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells){
-    int nCells = (int)cells.size();
+void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> ccells){
+    size_t nCells = ccells.size();
 
     std::vector<cellDataArray> data;
     cellDataArray vel("Velocity"), Cp("Cp");
