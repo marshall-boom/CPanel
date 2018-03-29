@@ -13,7 +13,7 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
   :  Vinf(Vinf), PG(PG)
 {
     Vmag = Vinf.norm();
-    
+
     // Propogate streamline forwards or in reverse
     if (marchFwd)
     {
@@ -23,7 +23,7 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
     {
         marchDir = -1;
     }
-    
+
     // Allocate variables used in propogation
     Eigen::Vector3d pnt,vel,pntAbove,pntOnEdge;
     double tEdge, dt, pntPot;
@@ -34,19 +34,19 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
     edge* lastEdge = nullptr;
     int pntsLeft = pntsPerPanel;
     edge* e = nullptr;
-    
+
     std::vector<bodyPanel*> possiblePans;
 
     pnt = startPnt;
     possiblePans.push_back(startPan);
-    
+
     pntAbove = pnt+eps*possiblePans[0]->getNormal(); // Ensure streamline is visible on exterior of panel for visualization
-    
+
     pntPot = geom->pntPotential(pntAbove, Vinf);
-    
+
     int i = 0;
     maxAngle = angleTol;
-    
+
     while (i < possiblePans.size())
     {
         e = edgeIntersection(possiblePans[i], pnt, pntPot, vel, tEdge, pntOnEdge, maxAngle, lastEdge,stagPnt);
@@ -65,9 +65,9 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
                 pnt = pntOnEdge;
                 possiblePans = e->getBodyPans();
                 pntAbove = pnt + eps*e->getNormal();
-                
+
                 pntsLeft = pntsPerPanel; // Reset counter for next panel
-                
+
                 maxAngle = 2*angleTol+safeInvCos(possiblePans[0]->getNormal(), possiblePans[1]->getNormal());
                 lastEdge = e;
             }
@@ -76,7 +76,7 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
                 dt = tEdge/(pntsLeft);
                 pnt += vel*dt;
                 pntAbove = pnt+eps*possiblePans[i]->getNormal();
-                
+
                 if (possiblePans.size() > 1)
                 {
                     // Remove other possible panel from vector
@@ -88,11 +88,11 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
                         }
                     }
                 }
-                
+
                 maxAngle = angleTol;
             }
             pntPot = geom->pntPotential(pntAbove, Vinf);
-            
+
             i = 0;
             continue;
         }
@@ -107,18 +107,18 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
 edge* bodyStreamline::edgeIntersection(bodyPanel* pan,const Eigen::Vector3d &pnt, double pntPot, Eigen::Vector3d &vel, double &dt, Eigen::Vector3d &pntOnEdge, double maxAngle,edge* lastEdge, bool &stagFlag)
 {
     //Algorithm for 3D line intersection can be found at mathworld.wolfram.com/Line-LineIntersection.html and comes from Goldman, R. "Intersection of Two Lines in Three-Space." Graphics Gems I. San Diego: Academic Press, p. 304, 1990.
-    
+
     // dt and pntOnEdge should only be used if a non-null edge is returned, otherwise their behavior is undefined.
     edge* e = nullptr;
-    
+
     Eigen::Vector3d p1,p2,p3,p4,a,c;
     double s;
     dt = -1;
     std::vector<edge*> edges = pan->getEdges();
-    
+
     vel = marchDir*pan->pntVelocity(pnt, pntPot, PG, Vinf);
     vel = vel-(vel.dot(pan->getNormal()))*pan->getNormal();
-    
+
     // Check for Stagnation Point
     if (velocities.size() > 0)
     {
@@ -128,7 +128,7 @@ edge* bodyStreamline::edgeIntersection(bodyPanel* pan,const Eigen::Vector3d &pnt
             return nullptr;
         }
     }
-    
+
     for (int i=0; i<edges.size(); i++)
     {
         if (edges[i] == lastEdge)
@@ -139,7 +139,7 @@ edge* bodyStreamline::edgeIntersection(bodyPanel* pan,const Eigen::Vector3d &pnt
         p2 = edges[i]->getNodes()[1]->getPnt();
         p3 = pnt;
         p4 = pnt + vel;
-        
+
         a = p2-p1;
         // b in algorithm is equal to vel;
         c = p3-p1;
@@ -183,7 +183,7 @@ double bodyStreamline::safeInvCos(const Eigen::Vector3d &v1, const Eigen::Vector
     {
         dot = -1;
     }
-    
+
     return acos(dot);
 
 }

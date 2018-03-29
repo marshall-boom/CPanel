@@ -54,11 +54,11 @@ class convexHull
     bool boundary;
     // TRUE : Points on boundary consider inside hull and therefore not included in hull vector.
     // FALSE : Points on boundary considered outside of hull and therefore included in hull vector
-    
+
     Eigen::Vector3d makeVector(member* p1, member* p2);
-    
+
 public:
-    
+
     convexHull(Eigen::MatrixXd points, bool boundary);
     ~convexHull()
     {
@@ -68,7 +68,7 @@ public:
         }
     }
     std::vector<member*> getHull() {return hull;}
-    
+
     bool compareNodes(std::vector<Eigen::Vector3d> nodesLocal);
 };
 

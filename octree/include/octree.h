@@ -22,13 +22,13 @@ class octree
     std::vector<member<type>> members;
     short numLevels;
     double maxTheta = 0.5;
-    
+
     void boundingBox(Eigen::Vector3d &boxMin, Eigen::Vector3d &boxMax)
     {
         // Initialize min and max with first data point
         boxMin = members[0].getRefPoint();
         boxMax = members[0].getRefPoint();
-        
+
         for (int i=0; i<members.size(); i++)
         {
             Eigen::Vector3d pnt = members[i].getRefPoint();;
@@ -46,19 +46,19 @@ class octree
         }
 
     }
-    
+
     void setDimensions(Eigen::Vector3d &center, Eigen::Vector3d &halfDimension)
     {
         halfDimension << 1,1,1;
         Eigen::Vector3d boxMin;
         Eigen::Vector3d boxMax;
         boundingBox(boxMin,boxMax);
-        
+
         center = 0.5*(boxMin+boxMax);
         double maxD = (boxMax-boxMin).maxCoeff();
         halfDimension *= 0.51*maxD; // Added 1% to half dimension to handle unique cases where floating point error leaves a node outside the octree.
     }
-    
+
     int findCorner(const member<type> &member)
     {
         // Corner   0 1 2 3 4 5 6 7
@@ -81,28 +81,28 @@ class octree
         }
         return corner;
     }
-    
+
     member<type> createMember(type* obj)
     {
         Eigen::Vector3d refPoint = findRefPoint(*obj);
         member<type> newMember(obj,refPoint);
         return newMember;
     }
-    
+
 public:
-    
+
     octree() : root_node(NULL), maxMembersPerNode(10), numLevels(-1) {}
 
     virtual ~octree()
     {
         delete root_node;
     }
-    
+
     octree(const octree& copy) : maxMembersPerNode(copy.maxMembersPerNode), members(copy.members), numLevels(copy.numLevels)
     {
         root_node = new node<type>(*copy.root_node);
     }
-    
+
     octree<type>& operator=(const octree<type> &rhs)
     {
         if (this == &rhs)
@@ -114,27 +114,27 @@ public:
         root_node = new node<type>(*rhs.root_node);
         return *this;
     }
-    
+
     void setMaxMembers(const int &maxMembers)
     {
         maxMembersPerNode = maxMembers;
     }
-    
+
     void setMaxTheta(double theta)
     {
         maxTheta = theta;
     }
 
     void removeData(){
-        
+
         if(root_node){
             members.clear();
             root_node->getSubNodes().clear();
             root_node = nullptr;
         }
-        
+
     }
-    
+
     void addData(const std::vector<type*> &newData)
     {
         size_t iter = 0;
@@ -142,20 +142,20 @@ public:
         {
             iter = members.size();
         }
-        
+
         for (int i=0; i<newData.size(); i++)
         {
             members.push_back(createMember(newData[i]));
         }
-        
+
         if (root_node == NULL)  // If octree hasn't been created, add data and create octree containing data
         {
             Eigen::Vector3d center;
             Eigen::Vector3d halfDimension;
             setDimensions(center,halfDimension);
-            
+
             root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
-            
+
             for (int i=0; i<members.size(); i++)
             {
                 root_node->addMember(members[i]);
@@ -179,7 +179,7 @@ public:
             }
         }
     }
-    
+
     void addData(type* newData)
     {
         member<type> newMember = createMember(newData);
@@ -190,9 +190,9 @@ public:
             Eigen::Vector3d center;
             Eigen::Vector3d halfDimension;
             setDimensions(center,halfDimension);
-            
+
             root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
-            
+
             root_node->addMember(newMember);
         }
         else  // If octree exists, check point to see if it is inside octree.  If not, expand octree to contain point by giving root_node a parent.
@@ -201,7 +201,7 @@ public:
             {
                 root_node->createParent(findCorner(newMember));
                 root_node = root_node->getParent(); //Update root_node to be parent just created
-                
+
                 root_node->addMember(newMember);
             }
             else
@@ -210,7 +210,7 @@ public:
             }
         }
     }
-    
+
     node<type>* findNodeContainingPnt(const Eigen::Vector3d pnt)
     {
         node<type>* current_node = root_node;
@@ -218,23 +218,23 @@ public:
         {
             current_node = current_node->getChild(current_node->getChildContainingPnt(pnt));
         }
-        
+
         return current_node;
     }
-    
+
     node<type>* findNodeContainingPnt(const Eigen::Vector3d pnt, short level)
     {
         node<type>* current_node = root_node;
         int treeLevel = 1;
-        
+
         while(treeLevel < level){
             current_node = current_node->getChild(current_node->getChildContainingPnt(pnt));
             treeLevel++;
         }
-        
+
         return current_node;
     }
-    
+
     short numTreeLevels()
     {
         short levels = 0;
@@ -248,19 +248,19 @@ public:
         }
         return levels;
     }
-    
+
     node<type>* findNodeContainingMember(type* obj)
     {
         member<type> temp = createMember(obj);
         Eigen::Vector3d pnt = temp.getRefPoint();
         return findNodeContainingPnt(pnt);
     }
-                                                                                          
+
     bool isInsideOctree(const member<type> &member)
     {
         return isInsideOctree(member.getRefPoint());
     }
-    
+
     bool isInsideOctree(const Eigen::Vector3d &pnt)
     {
         Eigen::Vector3d center = root_node->getOrigin();
@@ -274,20 +274,20 @@ public:
         }
         return true;
     }
-    
+
     std::vector<node<type>*> getLevelNodes(short level){
         std::vector<node<type>*> nodes = this->getNodes();
         std::vector<node<type>*> levelNodes;
-        
+
         for(int i=0; i<nodes.size(); i++){
             if(nodes[i]->getLevel() == level){
                 levelNodes.push_back(nodes[i]);
             }
         }
-        
+
         return levelNodes;
     }
-    
+
     void deleteExpansions(){
         if(root_node){
         std::vector<node<type>*> nodes = root_node->getSubNodes();
@@ -297,16 +297,16 @@ public:
         }
         }
     }
-    
-    
+
+
     std::vector<node<type>*> getNodes()
     {
         return root_node->getSubNodes();
     }
-    
+
     virtual Eigen::Vector3d findRefPoint(const type &obj) = 0;
     // Returns 3 element array of X,Y,Z locations of point used to determine which node the member belongs to. i.e. (return center of triangle for unstructured grid)
-    
+
     int getMaxMembersPerNode() {return maxMembersPerNode;}
     std::vector<member<type>> getMembers() {return members;}
     node<type> *getRootNode() {return root_node;}
