@@ -360,9 +360,9 @@ Eigen::Matrix3d panel::velocityGradientPointDoublet(Eigen::Vector3d POI){
     // dudy  dvdy  dwdy
     // dudz  dvdz  dwdz
 
-    double x, y, z, x0, y0, z0;
+    double x, y, z, x0, y0;
     x = this->getCenter().x(); y = this->getCenter().y(); z = this->getCenter().z();
-    x0 = POI.x(); y0 = POI.y(); z0 = POI.z();
+    x0 = POI.x(); y0 = POI.y();
     
     double ddd = pow(pow(x-x0,2) + pow(y-y0,2) + z*z,3.5); // doublet deriv denom
     double uvConst = 3*doubletStrength*area/(4*M_PI);

@@ -42,7 +42,6 @@ namespace
   {
 
     // Test origin is set correctly
-    bool flag = true;
     for (int i=0; i<3; i++)
     {
       // Test origin is set correctly
@@ -52,7 +51,6 @@ namespace
     }
 
     // Test children are NULL
-    flag = true;
     for (int i=0; i<8; i++)
     {
       EXPECT_EQ(testNode.getChild(i), nullptr);
