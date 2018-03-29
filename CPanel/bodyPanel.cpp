@@ -286,8 +286,8 @@ void bodyPanel::setCluster()
         dim = 3;
     }
     
-    double nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))-1+buffer; // Binomial Coefficient
-    double nPanels = std::ceil(nObs/2);
+    size_t nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))-1+buffer; // Binomial Coefficient
+    size_t nPanels = (nObs+1)/2; // ceil(nObs/2) for integers
     bodyPanels_index_type oldSize = cluster.size();
     cluster.push_back(this);
     bool upFlag = upper;
@@ -336,7 +336,7 @@ void bodyPanel::setCluster()
                 // Do Something to fix error when cluster can't be found.
                 
                 nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder)) + buffer; // Binomial Coefficient
-                nPanels = ceil(nObs/2);
+                nPanels = (nObs+1)/2; // ceil(nObs/2) for integers
                 
             }
             

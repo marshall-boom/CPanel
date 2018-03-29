@@ -26,7 +26,7 @@ struct inputParams
     double bref;
     double cref;
     double timeStep;
-    double numSteps;
+    int numSteps;
     bool stepsSetManually;
     double streamSpacing;
     bool accelerateCode = false;
