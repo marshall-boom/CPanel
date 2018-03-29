@@ -13,7 +13,7 @@
 
 particle::particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate, int shedTime)
   : previousVelInfl(previousVelInfl), previousStrengthUpdate(previousStrengthUpdate), pos(pos), strength(strength), radius(radius),
-	shedTime(shedTime), parentPanel(nullptr) {};
+	shedTime(shedTime), parentPanel(nullptr) {}
 
 Eigen::Vector3d particle::velInflAlgSmooth(const Eigen::Vector3d &POI){
        
@@ -22,7 +22,7 @@ Eigen::Vector3d particle::velInflAlgSmooth(const Eigen::Vector3d &POI){
     
     // ** High algebraic smoothing ** //
     return -1/(4*M_PI)*(pow(dist.norm(),2) + 2.5*pow(sigma,2))/(pow(pow(dist.norm(),2) + pow(sigma,2),2.5)) * dist.cross(strength);
-};
+}
 
 
 
@@ -42,7 +42,7 @@ Eigen::Vector3d particle::velInfl(particle* part){
     double K = (1/(4*M_PI*rho)*erf(rho/pow(2,0.5))-1/(pow(2*M_PI,1.5))*exp(-0.5*rho*rho))/(rho*rho);
     
     return -1/pow(sigma,3)*K*dist.cross(strength);
-};
+}
 
 Eigen::Vector3d particle::velInfl(const Eigen::Vector3d &POI){
     
@@ -61,7 +61,7 @@ Eigen::Vector3d particle::velInfl(const Eigen::Vector3d &POI){
     return -1/pow(sigma,3)*K*dist.cross(strength);
     
     
-};
+}
 
 
 Eigen::Vector3d particle::vortexStretching(particle* part){

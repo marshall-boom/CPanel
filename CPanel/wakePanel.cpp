@@ -226,7 +226,7 @@ double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
     }
     
     return std::accumulate(dist.begin(), dist.end(), 0.0)/dist.size();
-};
+}
 
 
 std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {

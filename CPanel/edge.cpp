@@ -49,18 +49,20 @@ void edge::checkTE()
             theta1 = acos(v1.dot(normal)/(v1.norm()*normal.norm()));
             theta2 = acos(v2.dot(normal)/(v2.norm()*normal.norm()));
             
-            // By comparing the angle instead of just z location, distinction of upper and lower will be consistent even in the case of a wake shed from a vertical tail.
-            //
-            // \ upper
-            //  \
-            //   .p1   n
-            //    \   /|\
-            //     \___|___wake
-            //     /
-            //    /
-            //   .p2
-            //  /
-            // / lower
+            /* By comparing the angle instead of just z location, distinction of upper and lower will be consistent even in the case of a wake shed from a vertical tail.
+             *
+             * \ upper
+             *  \
+             *   .p1   n
+             *    \   /|\
+             *     \___|___wake
+             *     /
+             *    /
+             *   .p2
+             *  /
+             * / lower
+             *
+             */
             
             if (theta1 < theta2)
             {
