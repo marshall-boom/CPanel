@@ -11,8 +11,8 @@
 #include "edge.h"
 #include "surface.h"
 
-panel::panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, int surfID)
-  : nodes(nodes), pEdges(pEdges), bezNormal(bezNorm), ID(surfID)
+panel::panel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm, int surfID)
+  : nodes(nnodes), pEdges(ppEdges), bezNormal(bbezNorm), ID(surfID)
 {
     setGeom();
 }

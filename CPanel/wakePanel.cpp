@@ -12,9 +12,10 @@
 #include "edge.h"
 
 
-wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake,int surfID)
-  : panel(nodes,pEdges,bezNorm,surfID), upperPan(nullptr), lowerPan(nullptr),
-	TEpanel(false), parentWake(parentWake), vortFil(nullptr), bufferParent(nullptr)
+wakePanel::wakePanel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm,
+		             wake* pparentWake, int surfID)
+  : panel(nnodes,ppEdges,bbezNorm,surfID), upperPan(nullptr), lowerPan(nullptr),
+	TEpanel(false), parentWake(pparentWake), vortFil(nullptr), bufferParent(nullptr)
 {
     for (size_t i=0; i<pEdges.size(); i++)
     {
@@ -281,15 +282,15 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
     //           2
     
     
-    std::vector<edge*> pEdges = this->edgesInOrder();
+    std::vector<edge*> ppEdges = this->edgesInOrder();
     std::vector<cpNode*> ptsIO(4);
     
     // Look at points on the trailing edge first
-    cpNode* n1 = pEdges[0]->getN1();
-    cpNode* n2 = pEdges[0]->getN2();
+    cpNode* n1 = ppEdges[0]->getN1();
+    cpNode* n2 = ppEdges[0]->getN2();
     
     // If n1 shares a node with edge3, then it is node0
-    if(pEdges[3]->containsNode(n1))
+    if(ppEdges[3]->containsNode(n1))
     {
         ptsIO[0] = n1;
         ptsIO[1] = n2;
@@ -300,11 +301,11 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
     }
     
     // Now look at other edge
-    n1 = pEdges[2]->getN1();
-    n2 = pEdges[2]->getN2();
+    n1 = ppEdges[2]->getN1();
+    n2 = ppEdges[2]->getN2();
     
     // If n1 shares a node with edge1 then it is node 2
-    if(pEdges[1]->containsNode(n1))
+    if(ppEdges[1]->containsNode(n1))
     {
         ptsIO[2] = n1;
         ptsIO[3] = n2;
@@ -333,33 +334,33 @@ std::vector<edge*> wakePanel::edgesInOrder(){
     //
     
     std::vector<edge *> edgesIO(4);
-    std::vector<edge*> pEdges = this->getEdges();
+    std::vector<edge*> ppEdges = this->getEdges();
     
     // The trailing edge is built first and the parallel downstream edge is always built third
-    edgesIO[0] = pEdges[0];
-    edgesIO[2] = pEdges[2];
+    edgesIO[0] = ppEdges[0];
+    edgesIO[2] = ppEdges[2];
     
     
     // Find the vectors in the drawing
-    Eigen::Vector3d a = pEdges[0]->getMidPoint() - this->getCenter();
+    Eigen::Vector3d a = ppEdges[0]->getMidPoint() - this->getCenter();
     Eigen::Vector3d b = this->getNormal();
     
     Eigen::Vector3d c = a.cross(b);
     Eigen::Vector3d d = center+c;
     
     // See if edge1 midpoint or edge 3 midpoint is closer to the point d;
-    double distToE1 = (pEdges[1]->getMidPoint() - d).norm();
-    double distToE3 = (pEdges[3]->getMidPoint() - d).norm();
+    double distToE1 = (ppEdges[1]->getMidPoint() - d).norm();
+    double distToE3 = (ppEdges[3]->getMidPoint() - d).norm();
     
     if(distToE3 < distToE1)
     {
-        edgesIO[3] = pEdges[3];
-        edgesIO[1] = pEdges[1];
+        edgesIO[3] = ppEdges[3];
+        edgesIO[1] = ppEdges[1];
     }
     else
     {
-        edgesIO[3] = pEdges[1];
-        edgesIO[1] = pEdges[3];
+        edgesIO[3] = ppEdges[1];
+        edgesIO[1] = ppEdges[3];
     }
     
     

@@ -95,9 +95,9 @@ void VTUfile::write()
     }
 }
 
-void VTUfile::printDoubleArray(std::ofstream &f,std::string name,Eigen::MatrixXd array)
+void VTUfile::printDoubleArray(std::ofstream &f,std::string nname,Eigen::MatrixXd array)
 {
-    f << "\t\t\t\t<DataArray type=\"Float64\" Name=\"" << name << "\" NumberOfComponents=\"" << array.cols() << "\" Format=\"ascii\">\n";
+    f << "\t\t\t\t<DataArray type=\"Float64\" Name=\"" << nname << "\" NumberOfComponents=\"" << array.cols() << "\" Format=\"ascii\">\n";
     for (int i=0; i<array.rows(); i++)
     {
         for (int j=0; j<array.cols(); j++)
@@ -109,9 +109,9 @@ void VTUfile::printDoubleArray(std::ofstream &f,std::string name,Eigen::MatrixXd
     f << "\t\t\t\t</DataArray>\n";
 }
 
-void VTUfile::printIntArray(std::ofstream &f,std::string name,Eigen::MatrixXi array)
+void VTUfile::printIntArray(std::ofstream &f,std::string nname,Eigen::MatrixXi array)
 {
-    f << "\t\t\t\t<DataArray type=\"Int32\" Name=\"" << name << "\" Format=\"ascii\">\n";
+    f << "\t\t\t\t<DataArray type=\"Int32\" Name=\"" << nname << "\" Format=\"ascii\">\n";
     for (int i=0; i<array.rows(); i++)
     {
         for (int j=0; j<array.cols(); j++)

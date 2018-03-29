@@ -11,7 +11,8 @@
 #include "bodyStreamline.h"
 
 
-surface::surface(const int &surfaceID,geometry* geom) : geom(geom), surfID(surfaceID), TEflag(false), LSflag(false) {}
+surface::surface(const int &ssurfaceID,geometry* ggeom)
+  : geom(ggeom), surfID(ssurfaceID), TEflag(false), LSflag(false) {}
 //==== Destructor ====//
 //surface::~surface()
 //{

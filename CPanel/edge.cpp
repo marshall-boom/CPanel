@@ -12,7 +12,7 @@
 #include "cpNode.h"
 
 
-edge::edge(cpNode* n1,cpNode* n2) : n1(n1), n2(n2), TE(false)
+edge::edge(cpNode* nn1,cpNode* nn2) : n1(nn1), n2(nn2), TE(false)
 {
     n1->addEdge(this);
     n2->addEdge(this);

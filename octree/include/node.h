@@ -99,8 +99,10 @@ private:
     }
 
 public:
-    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers, double maxTheta)
-      : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers),maxTheta(maxTheta),multExp(nullptr)
+    node(node<type>* parent_ptr,Eigen::Vector3d oorigin,Eigen::Vector3d hhalfDimension, short parent_level,
+         short mmaxMembers, double mmaxTheta)
+      : parent(parent_ptr),origin(oorigin),halfDimension(hhalfDimension),maxMembers(mmaxMembers),
+		maxTheta(mmaxTheta),multExp(nullptr)
     {
         for (int i=0; i<8; i++)
         {
@@ -241,10 +243,10 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(size_t i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    velInfl += children[i]->calcVel(POI);
+                    velInfl += cchildren[i]->calcVel(POI);
                 }
             }
         }
@@ -274,10 +276,10 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(size_t i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    velInfl += children[i]->calcVel(part);
+                    velInfl += cchildren[i]->calcVel(part);
                 }
             }
         }
@@ -307,10 +309,10 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(size_t i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    stretchInfl += children[i]->calcStretch(part);
+                    stretchInfl += cchildren[i]->calcStretch(part);
                 }
             }
         }
@@ -341,10 +343,10 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(size_t i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    diffInfl += children[i]->calcDiff(part);
+                    diffInfl += cchildren[i]->calcDiff(part);
                 }
             }
         }
@@ -531,26 +533,26 @@ public:
 
     std::vector<node<type>*> getChildren()
     {
-        std::vector<node<type>*> children;
+        std::vector<node<type>*> cchildren;
         for(int i=0; i<8; i++)
         {
             node<type>* subNode = this->getChild(i);
             if(subNode)
             {
-                children.push_back(subNode);
+                cchildren.push_back(subNode);
             }
         }
-        return children;
+        return cchildren;
     }
 
     std::vector<type*> getChildExpans()
     {
-        std::vector<node<type>*> children = this->getChildren();
+        std::vector<node<type>*> cchildren = this->getChildren();
         std::vector<type*> childExps;
 
-        for(size_t i=0; i<children.size(); i++)
+        for(size_t i=0; i<cchildren.size(); i++)
         {
-            childExps.push_back(children[i]->multExp);
+            childExps.push_back(cchildren[i]->multExp);
         }
 
         return childExps;

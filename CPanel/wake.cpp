@@ -406,11 +406,11 @@ double wake::dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2){
 
 
 
-Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yLoc)
+Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yyLoc)
 {
     // Sort by y position
     std::sort(TEpanels.begin(), TEpanels.end(), [](wakePanel* w1, wakePanel* w2) {return w1->getCenter()(1) < w2->getCenter()(1);});
-    yLoc.resize(TEpanels.size()+2);
+    yyLoc.resize(TEpanels.size()+2);
     edge* TE = TEpanels[0]->getTE();
     
     if (TE->getN1()->getPnt()(1) > TE->getN2()->getPnt()(1))
@@ -423,7 +423,7 @@ Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yLoc)
     Eigen::MatrixXd sectForces = Eigen::MatrixXd::Zero(TEpanels.size()+2,3);
     while (TE != nullptr)
     {
-        yLoc(i) = TE->getMidPoint()(1);
+        yyLoc(i) = TE->getMidPoint()(1);
         vel = TE->edgeVelocity();
         circ = TE->TEgamma();
         sectForces.row(i) = vel.cross(circ);
@@ -439,7 +439,7 @@ Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yLoc)
     {
         sectF1 = sectForces.row(i);
         sectF2 = sectForces.row(i+1);
-        F = F + 0.5*(yLoc(i+1)-yLoc(i))*(sectF1+sectF2);
+        F = F + 0.5*(yyLoc(i+1)-yyLoc(i))*(sectF1+sectF2);
         i++;
     }
     
@@ -572,11 +572,11 @@ double wake::Vradial(Eigen::Vector3d pWake)
     
     Eigen::MatrixXd Xb(0,3),Vb(0,3);
     Eigen::Vector3d V0 = Eigen::Vector3d::Zero();
-    Eigen::Matrix<double,1,1> x0;
-    x0.setZero();
-    chtlsnd weightsY(x0,dY,3,Xb,Vb,V0);
+    Eigen::Matrix<double,1,1> xx0;
+    xx0.setZero();
+    chtlsnd weightsY(xx0,dY,3,Xb,Vb,V0);
     double v = weightsY.getF().row(0)*dPhiy;
-    chtlsnd weightsZ(x0,dZ,3,Xb,Vb,V0);
+    chtlsnd weightsZ(xx0,dZ,3,Xb,Vb,V0);
     double w = weightsZ.getF().row(0)*dPhiz;
     Vr = sqrt(pow(v,2)+pow(w,2));
     return Vr;
@@ -597,13 +597,13 @@ Eigen::Vector3d wake::pntInWake(double x, double y)
     {
         if (wpanels[i]->isTEpanel())
         {
-            std::vector<edge*> edges = wpanels[i]->getUpper()->getEdges();
-            for (size_t j=0; j<edges.size(); j++)
+            std::vector<edge*> eedges = wpanels[i]->getUpper()->getEdges();
+            for (size_t j=0; j<eedges.size(); j++)
             {
-                if (edges[j]->isTE())
+                if (eedges[j]->isTE())
                 {
-                    p1 = edges[j]->getNodes()[0]->getPnt();
-                    p2 = edges[j]->getNodes()[1]->getPnt();
+                    p1 = eedges[j]->getNodes()[0]->getPnt();
+                    p2 = eedges[j]->getNodes()[1]->getPnt();
                     if ((p1(1) <= y && p2(1) >= y) || (p1(1) >= y && p2(1) <= y))
                     {
                         t = (y-p1(1))/(p2(1)-p1(1));

@@ -11,7 +11,7 @@
 #include "bodyPanel.h"
 
 
-cpNode::cpNode(Eigen::Vector3d pnt,int index) : pnt(pnt), index(index), TEnode(false) {}
+cpNode::cpNode(Eigen::Vector3d ppnt,int iindex) : pnt(ppnt), index(iindex), TEnode(false) {}
 
 Eigen::Vector3d cpNode::operator-=(const cpNode &rhs)
 {
@@ -94,8 +94,8 @@ Eigen::Vector3d cpNode::nodeWakeProjAngle(){
         // In the case that a side patch is included with the top and bottom panels,
         // the displacement in the z direction will work, but not the y. CPanel seems
         // to exclude these from the node values though...
-        for (bodyPanels_index_type j=0; j<bPans.size(); j++) {
-            avgNorm += bPans[j]->getNormal();
+        for (bodyPanels_index_type i=0; i<bPans.size(); i++) {
+            avgNorm += bPans[i]->getNormal();
         }
         
         avgNorm = avgNorm/avgNorm.size(); // Sum to average

@@ -8,7 +8,8 @@
 
 #include "wakeLine.h"
 
-wakeLine::wakeLine(bodyPanel* upper, bodyPanel* lower,Eigen::Vector3d normal) : upper(upper), lower(lower), normal(normal)
+wakeLine::wakeLine(bodyPanel* uupper, bodyPanel* llower, Eigen::Vector3d nnormal)
+  : upper(uupper), lower(llower), normal(nnormal)
 {
     setDimensions();
 }

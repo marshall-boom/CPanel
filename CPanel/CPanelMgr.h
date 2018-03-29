@@ -34,7 +34,7 @@ class caseMgr
     void writeSummary();
     void writeCase(int caseNumber, cpCase* c, std::ofstream &outStream);
 public:
-    caseMgr(inputParams* p,geometry* geom) : p(p), geom(geom)
+    caseMgr(inputParams* pp,geometry* ggeom) : p(pp), geom(ggeom)
     {
         setCases();
         runCases();

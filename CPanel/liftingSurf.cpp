@@ -8,7 +8,7 @@
 
 #include "liftingSurf.h"
 
-liftingSurf::liftingSurf(int surfID,geometry* geom) : surface(surfID,geom)
+liftingSurf::liftingSurf(int ssurfID,geometry* ggeom) : surface(ssurfID,ggeom), wakeSurf(nullptr)
 {
 //    wakeSurf = new wake;
 }

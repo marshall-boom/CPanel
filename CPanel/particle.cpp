@@ -11,9 +11,10 @@
 #include "math.h"
 
 
-particle::particle(Eigen::Vector3d pos, Eigen::Vector3d strength, double radius, Eigen::Vector3d previousVelInfl, Eigen::Vector3d previousStrengthUpdate, int shedTime)
-  : previousVelInfl(previousVelInfl), previousStrengthUpdate(previousStrengthUpdate), pos(pos), strength(strength), radius(radius),
-	shedTime(shedTime), parentPanel(nullptr) {}
+particle::particle(Eigen::Vector3d ppos, Eigen::Vector3d sstrength, double rradius,
+		           Eigen::Vector3d ppreviousVelInfl, Eigen::Vector3d ppreviousStrengthUpdate, int sshedTime)
+  : previousVelInfl(ppreviousVelInfl), previousStrengthUpdate(ppreviousStrengthUpdate),
+	pos(ppos), strength(sstrength), radius(rradius), shedTime(sshedTime), parentPanel(nullptr) {}
 
 Eigen::Vector3d particle::velInflAlgSmooth(const Eigen::Vector3d &POI){
        

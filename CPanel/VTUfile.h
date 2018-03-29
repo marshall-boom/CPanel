@@ -22,7 +22,7 @@ struct cellDataArray
     std::string name;
     Eigen::MatrixXd data;
     
-    cellDataArray(std::string name) : name(name) {}
+    cellDataArray(std::string nname) : name(nname) {}
 };
 
 struct pntDataArray
@@ -30,7 +30,7 @@ struct pntDataArray
     std::string name;
     Eigen::MatrixXd data;
     
-    pntDataArray(std::string name) : name(name) {}
+    pntDataArray(std::string nname) : name(nname) {}
 };
 
 struct piece
@@ -56,13 +56,13 @@ class VTUfile
     void write();
     
 public:
-    VTUfile(std::string name, piece p) : name(name)
+    VTUfile(std::string nname, piece p) : name(nname)
     {
         pieces.push_back(p);
         write();
     }
     
-    VTUfile(std::string name, std::vector<piece> pieces) : pieces(pieces), name(name)
+    VTUfile(std::string nname, std::vector<piece> ppieces) : pieces(ppieces), name(nname)
     {
         write();
     }

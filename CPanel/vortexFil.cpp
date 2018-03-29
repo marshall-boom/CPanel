@@ -8,7 +8,8 @@
 
 #include "vortexFil.h"
 
-vortexFil::vortexFil(Eigen::Vector3d p1, Eigen::Vector3d p2, double strength, wakePanel* parentPan) : p1(p1), p2(p2), strength(strength), parentPan(parentPan) {}
+vortexFil::vortexFil(Eigen::Vector3d pp1, Eigen::Vector3d pp2, double sstrength, wakePanel* pparentPan)
+  : p1(pp1), p2(pp2), strength(sstrength), parentPan(pparentPan) {}
 
 Eigen::Vector3d vortexFil::velInfl(Eigen::Vector3d POI){
     

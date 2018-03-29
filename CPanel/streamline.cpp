@@ -8,7 +8,9 @@
 
 #include "streamline.h"
 
-streamline::streamline(const Eigen::Vector3d &startPnt, double xMax, double tol, const Eigen::Vector3d &Vinf, double PG, geometry* geom) : Vinf(Vinf), PG(PG), geom(geom)
+streamline::streamline(const Eigen::Vector3d &startPnt, double xMax, double tol,
+		               const Eigen::Vector3d &VVinf, double PPG, geometry* ggeom)
+  : Vinf(VVinf), PG(PPG), geom(ggeom)
 {
     coeff5 << 16.0/135 , 0 , 6656.0/12825 , 28561.0/56430 , -9.0/50 , 2.0/55;
     coeff4 << 25.0/216 , 0 , 1408.0/2565 , 2197.0/4104 , -0.2 , 0;

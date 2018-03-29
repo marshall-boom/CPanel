@@ -101,21 +101,21 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     }
 }
 
-Eigen::Vector3d cpCase::windToBody(double V, double alpha, double beta)
+Eigen::Vector3d cpCase::windToBody(double V, double aalpha, double bbeta)
 {
-    alpha *= M_PI/180;
-    beta *= M_PI/180;
+    aalpha *= M_PI/180;
+    bbeta *= M_PI/180;
 
     Eigen::Matrix3d T;
-    T(0,0) = cos(alpha)*cos(beta);
-    T(0,1) = cos(alpha)*sin(beta);
-    T(0,2) = -sin(alpha);
-    T(1,0) = -sin(beta);
-    T(1,1) = cos(beta);
+    T(0,0) = cos(aalpha)*cos(bbeta);
+    T(0,1) = cos(aalpha)*sin(bbeta);
+    T(0,2) = -sin(aalpha);
+    T(1,0) = -sin(bbeta);
+    T(1,1) = cos(bbeta);
     T(1,2) = 0;
-    T(2,0) = sin(alpha)*cos(beta);
-    T(2,1) = sin(alpha)*sin(beta);
-    T(2,2) = cos(alpha);
+    T(2,0) = sin(aalpha)*cos(bbeta);
+    T(2,1) = sin(aalpha)*sin(bbeta);
+    T(2,2) = cos(aalpha);
     Eigen::Vector3d Vt;
     Eigen::Vector3d Vel;
     Vt << V,0,0;
@@ -436,10 +436,10 @@ void cpCase::writeSpanwiseData(boost::filesystem::path path)
     std::vector<wake*> wakes = geom->getWakes();
     for (wakePanels_index_type i=0; i<wakes.size(); i++)
     {
-        Eigen::VectorXd spanLoc,Cl,Cd;
-        spanLoc = 2*wakes[i]->getSpanwisePnts()/params->bref;
-        Cl = wakes[i]->getSpanwiseCl()/PG;
-        Cd = wakes[i]->getSpanwiseCd()/pow(PG,2);
+        Eigen::VectorXd sspanLoc,CCl,CCd;
+        sspanLoc = 2*wakes[i]->getSpanwisePnts()/params->bref;
+        CCl = wakes[i]->getSpanwiseCl()/PG;
+        CCd = wakes[i]->getSpanwiseCd()/pow(PG,2);
 
         std::stringstream ss;
         ss << path.string() << "/spanwiseData_Wake" << i+1 << ".csv";
@@ -449,9 +449,9 @@ void cpCase::writeSpanwiseData(boost::filesystem::path path)
         if (fout)
         {
             fout << "2y/b,Cl,Cdi" << std::endl;
-            for (int i=0; i<spanLoc.size(); i++)
+            for (int j=0; j<sspanLoc.size(); j++)
             {
-                fout << spanLoc(i) << "," << Cl(i) << "," << Cd(i) << std::endl;
+                fout << sspanLoc(j) << "," << CCl(j) << "," << CCd(j) << std::endl;
             }
         }
         fout.close();

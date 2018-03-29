@@ -60,7 +60,8 @@ class wake
 
     
 public:
-    wake(int wakeID, geometry* geom) : ID(wakeID), geom(geom), x0(0), xf(0), z0(0), zf(0), yMin(0), yMax(0), CL(0), CD(0) {}
+    wake(int wakeID, geometry* ggeom)
+      : ID(wakeID), geom(ggeom), x0(0), xf(0), z0(0), zf(0), yMin(0), yMax(0), CL(0), CD(0) {}
     
     ~wake();
     

@@ -393,11 +393,11 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         for (wakes_index_type i=0; i<wakes.size(); i++)
         {
             tempW = wakes[i]->getPanels();
-            for (size_t i=0; i<tempW.size(); i++)
+            for (size_t j=0; j<tempW.size(); j++)
             {
-                if (tempW[i]->isSecondRow == false)
+                if (tempW[j]->isSecondRow == false)
                 {
-                    wPanels.push_back(tempW[i]);
+                    wPanels.push_back(tempW[j]);
                 }
             }
         }
@@ -943,7 +943,7 @@ void geometry::calcTimeStep(){
 }
 
 
-void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> isFirstPanel){
+void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> iisFirstPanel){
     
     wake* w = nullptr;
     wakePanel* wPan;
@@ -966,7 +966,7 @@ void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, con
         wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w,VPwakeID[i]);
         w->addPanel(wPan);
         
-        if( isFirstPanel[i] )
+        if( iisFirstPanel[i] )
         {
             firstPan = wPan;
             wPan->isSecondRow = false;

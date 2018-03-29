@@ -9,8 +9,9 @@
 #include "bodyStreamline.h"
 #include "geometry.h"
 
-bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, const Eigen::Vector3d &Vinf, double PG, geometry* geom, int pntsPerPanel, bool marchFwd)
-  :  Vinf(Vinf), PG(PG)
+bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, const Eigen::Vector3d &VVinf,
+		                       double PPG, geometry* geom, int pntsPerPanel, bool marchFwd)
+  :  Vinf(VVinf), PG(PPG)
 {
     Vmag = Vinf.norm();
 

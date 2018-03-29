@@ -79,7 +79,8 @@ class cpCaseVP : public cpCase
     
     
 public:
-    cpCaseVP( geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams ) : cpCase( geom, V, alpha, beta, mach, inParams )
+    cpCaseVP( geometry *ggeom, double V, double aalpha, double bbeta, double mmach, inputParams* inParams )
+      : cpCase( ggeom, V, aalpha, bbeta, mmach, inParams )
     {
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
