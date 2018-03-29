@@ -11,7 +11,7 @@
 #include "bodyStreamline.h"
 
 
-surface::surface(const int &surfaceID,geometry* geom) : surfID(surfaceID), geom(geom), TEflag(false), LSflag(false) {}
+surface::surface(const int &surfaceID,geometry* geom) : geom(geom), surfID(surfaceID), TEflag(false), LSflag(false) {}
 //==== Destructor ====//
 //surface::~surface()
 //{
@@ -20,6 +20,10 @@ surface::surface(const int &surfaceID,geometry* geom) : surfID(surfaceID), geom(
 //        delete panels[i];
 //    }
 //}
+
+surface::~surface()
+{
+}
 
 void surface::addPanel(bodyPanel* bPan)
 {

@@ -94,7 +94,8 @@ class node
     }
     
 public:
-    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers, double maxTheta) : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers),maxTheta(maxTheta)
+    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers, double maxTheta)
+      : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers),maxTheta(maxTheta),multExp(nullptr)
     {
         for (int i=0; i<8; i++)
         {
@@ -102,6 +103,17 @@ public:
         }
         
         level = parent_level+1;
+    }
+
+    node(const node<type>& copy)
+      : parent(copy.parent), origin(copy.origin), halfDimension(copy.halfDimension),
+		members(copy.members), level(copy.level), maxMembers(copy.maxMembers),
+		maxTheta(copy.maxTheta), multExp(copy.multExp)
+    {
+        for (int i=0; i<8; i++)
+        {
+            children[i] = new node<type>(*copy.children[i]);
+        }
     }
     
     ~node()
@@ -115,14 +127,6 @@ public:
                     delete children[i];
                 }
             }
-        }
-    }
-    
-    node(const node<type>& copy) : parent(copy.parent), origin(copy.origin), halfDimension(copy.halfDimension), members(copy.members), level(copy.level), maxMembers(copy.maxMembers)
-    {
-        for (int i=0; i<8; i++)
-        {
-            children[i] = new node<type>(*copy.children[i]);
         }
     }
     

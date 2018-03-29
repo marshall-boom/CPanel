@@ -11,7 +11,9 @@
 #include "cpNode.h"
 #include "surface.h"
 
-bodyPanel::bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID) : panel(nodes,pEdges,bezNorm,surfID), upper(false), lower(false), streamFlag(false), parentSurf(parentSurf), TEpanel(false), TSorder(3), tipFlag(false)
+bodyPanel::bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID)
+  : panel(nodes,pEdges,bezNorm,surfID), parentSurf(parentSurf), TSorder(3), upper(false), lower(false),
+	TEpanel(false), TE(nullptr), tipFlag(false), streamFlag(false), index(-1)
 {
     for (int i=0; i<pEdges.size(); i++)
     {

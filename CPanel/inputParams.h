@@ -46,7 +46,9 @@ struct inputParams
     std::vector<int> volMeshRes;
 
 
-    inputParams(cpFile* inFile) : inputFile(inFile) {}
+    inputParams(cpFile* inFile)
+      : inputFile(inFile), geomFile(nullptr), normFlag(false), Sref(1), bref(1), cref(1),
+		timeStep(0), numSteps(0), stepsSetManually(false), streamSpacing(0) {}
 
     ~inputParams()
     {

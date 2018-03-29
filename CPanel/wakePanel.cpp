@@ -12,7 +12,9 @@
 #include "edge.h"
 
 
-wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake,int surfID) : panel(nodes,pEdges,bezNorm,surfID), TEpanel(false), parentWake(parentWake), upperPan(nullptr), lowerPan(nullptr)
+wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake,int surfID)
+  : panel(nodes,pEdges,bezNorm,surfID), upperPan(nullptr), lowerPan(nullptr),
+	TEpanel(false), parentWake(parentWake), vortFil(nullptr), bufferParent(nullptr)
 {
     for (int i=0; i<pEdges.size(); i++)
     {
@@ -20,7 +22,9 @@ wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eige
     }
 }
 
-wakePanel::wakePanel(const wakePanel &copy) : panel(copy), upperPan(copy.upperPan), lowerPan(copy.lowerPan), TEpanel(copy.TEpanel), parentWake(copy.parentWake) {}
+wakePanel::wakePanel(const wakePanel &copy)
+  : panel(copy), upperPan(copy.upperPan), lowerPan(copy.lowerPan), TEpanel(copy.TEpanel),
+	parentWake(copy.parentWake), vortFil(copy.vortFil), bufferParent(copy.bufferParent) {}
 
 void wakePanel::setTEpanel()
 {

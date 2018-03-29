@@ -237,6 +237,8 @@ public:
         vortPartFlag = p->vortexParticles;
         dt = p->timeStep;
         inputV = p->velocities(0);
+        nNodes=0;
+        nTris=0;
 
         readTri(p->geomFile->file, p->normFlag);
 

@@ -99,7 +99,8 @@ protected:
     
     
 public:
-    cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
+    cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams)
+      : geom(geom), params(inParams), Vmag(V), mach(mach), alpha(alpha), beta(beta)
     {
         Vinf = windToBody(V,alpha,beta);
         bPanels = geom->getBodyPanels();

@@ -40,7 +40,10 @@ geometry::~geometry()
 
 // Copy Constructor //
 
-geometry::geometry(const geometry& copy) : pOctree(copy.pOctree), nNodes(copy.nNodes), nTris(copy.nTris), A(copy.A), B(copy.B), infCoeffFile(copy.infCoeffFile)
+geometry::geometry(const geometry& copy)
+  : pOctree(copy.pOctree), nNodes(copy.nNodes), nTris(copy.nTris), A(copy.A), B(copy.B), C(copy.C),
+	writeCoeffFlag(false), vortPartFlag(false), infCoeffFile(copy.infCoeffFile), dt(copy.dt),
+	inputV(copy.inputV)
 {
     for (int i=0; i<copy.surfaces.size(); i++)
     {

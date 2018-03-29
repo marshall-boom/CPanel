@@ -91,9 +91,9 @@ class octree
     
 public:
     
-    octree() : maxMembersPerNode(10), root_node(NULL) {}
-    
-    ~octree()
+    octree() : root_node(NULL), maxMembersPerNode(10), numLevels(-1) {}
+
+    virtual ~octree()
     {
         delete root_node;
     }

@@ -59,7 +59,7 @@ public:
         write();
     }
     
-    VTUfile(std::string name, std::vector<piece> pieces) : name(name),pieces(pieces)
+    VTUfile(std::string name, std::vector<piece> pieces) : pieces(pieces), name(name)
     {
         write();
     }

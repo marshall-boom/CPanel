@@ -34,7 +34,7 @@ protected:
 public:
     surface(const int &surfaceID,geometry* geom);
     
-//    virtual ~surface();
+    virtual ~surface();
     
 //    surface(const surface& copy) : surfID(copy.surfID)
 //    {
