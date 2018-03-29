@@ -144,7 +144,7 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
 
 void cpCaseVP::convectBufferWake(){
     wake2Doublets.resize((*w2panels).size());
-    for (int i=0; i<(*w2panels).size(); i++)
+    for (int i=0; i<w2panels->size(); i++)
     {
         (*w2panels)[i]->setPrevStrength((*w2panels)[i]->getMu());
         double parentMu = (*w2panels)[i]->getBufferParent()->getMu();
@@ -301,7 +301,7 @@ void cpCaseVP::collapseBufferWake(){
     
     std::vector<edge*> usedEdges;
     
-    for(int i=0; i<(*w2panels).size(); i++)
+    for(int i=0; i<w2panels->size(); i++)
     {
         std::vector<edge*> pEdges = (*w2panels)[i]->edgesInOrder();
         
@@ -329,7 +329,7 @@ void cpCaseVP::collapseBufferWake(){
     // Create filament
     if(filaments.size() == 0)
     {
-        for(int i=0; i<(*w2panels).size(); i++)
+        for(int i=0; i<w2panels->size(); i++)
         {
             vortexFil* fil;
             Eigen::Vector3d p1,p2;
@@ -345,7 +345,7 @@ void cpCaseVP::collapseBufferWake(){
     }
     else
     {
-        for(int i=0; i<(*w2panels).size(); i++){
+        for(int i=0; i<w2panels->size(); i++){
             filaments[i]->setStrength(-(*w2panels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
         }
         
@@ -501,13 +501,13 @@ void cpCaseVP::particleStrengthUpdate(){
             }
             
             // Stretching from body panels
-            for(int j=0; j<(*bPanels).size(); j++)
+            for(int j=0; j<bPanels->size(); j++)
             {
                 dAlpha_diff += (*bPanels)[j]->partStretching(particles[i]);
             }
             
             // Stretching from wake panels
-            for(int j=0;j<(*wPanels).size(); j++)
+            for(int j=0;j<wPanels->size(); j++)
             {
                 dAlpha_diff += (*wPanels)[j]->partStretching(particles[i]);
             }
@@ -641,17 +641,17 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything( Eigen::Vector3d POI ){
     
     
     // Body panel influence
-    for(int j=0;j<(*bPanels).size();j++){
+    for(int j=0;j<bPanels->size();j++){
         velOnPart += (*bPanels)[j]->panelV(POI);
     }
     
     
     // Buffer wake influence
-    for(int j=0;j<(*wPanels).size();j++){
+    for(int j=0;j<wPanels->size();j++){
         velOnPart += (*wPanels)[j]->panelV(POI);
     }
     
-    for(int j=0;j<(*w2panels).size();j++){
+    for(int j=0;j<w2panels->size();j++){
         velOnPart += (*w2panels)[j]->panelV(POI);
     }
     
@@ -696,16 +696,16 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything(particle* part){
     
     
     // Body panel influence
-    for(int j=0;j<(*bPanels).size();j++){
+    for(int j=0;j<bPanels->size();j++){
         velOnPart += (*bPanels)[j]->panelV(pos);
     }
     
     
     // Buffer wake influence
-    for(int j=0;j<(*wPanels).size();j++){
+    for(int j=0;j<wPanels->size();j++){
         velOnPart += (*wPanels)[j]->panelV(pos);
     }
-    for(int j=0;j<(*w2panels).size();j++){
+    for(int j=0;j<w2panels->size();j++){
         velOnPart += (*w2panels)[j]->panelV(pos);
     }
     

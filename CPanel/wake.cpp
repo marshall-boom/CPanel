@@ -186,7 +186,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     
     // Collect these particles in a vector
     std::vector<particle*> unsortedParts;
-    for (int i=0; i<(*particles).size(); i++)
+    for (int i=0; i<particles->size(); i++)
     {
         if ((*particles)[i]->shedTime == partRow)
         {
@@ -284,7 +284,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         Eigen::Vector3d pWake = Spts[i];
         
         Eigen::Vector3d partV = Eigen::Vector3d::Zero();
-        for (int j=0; j<(*particles).size(); j++) {
+        for (int j=0; j<particles->size(); j++) {
             partV += (*particles)[j]->velInfl(pWake);
         }
         
