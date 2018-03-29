@@ -69,13 +69,13 @@ namespace
   // Test adding a member
   TEST_F(OctreeNodeTest, AddMember)
   {
-    node_index_type maxMembers = 10;
+    short maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    node_index_type counter = 0;
+    short counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -299,7 +299,7 @@ namespace
 
   TEST(OctreeTest, MaxMembers)
   {
-    int max = 5;
+    short max = 5;
     test_octree_class testOctree;
 
     testOctree.setMaxMembers(max);

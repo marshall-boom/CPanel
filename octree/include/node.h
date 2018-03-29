@@ -100,7 +100,7 @@ private:
 
 public:
     node(node<type>* parent_ptr,Eigen::Vector3d oorigin,Eigen::Vector3d hhalfDimension, short parent_level,
-         short mmaxMembers, double mmaxTheta)
+         member_index_type mmaxMembers, double mmaxTheta)
       : parent(parent_ptr),origin(oorigin),halfDimension(hhalfDimension),maxMembers(mmaxMembers),
 		maxTheta(mmaxTheta),multExp(nullptr)
     {

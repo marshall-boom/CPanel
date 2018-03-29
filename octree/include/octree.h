@@ -22,7 +22,7 @@ class octree
     using member_index_type = typename member_collection_type::size_type;
 
     node<type> *root_node;
-    member_index_type maxMembersPerNode;
+    short maxMembersPerNode;
     member_collection_type members;
     short numLevels;
     double maxTheta = 0.5;
@@ -119,7 +119,7 @@ public:
         return *this;
     }
 
-    void setMaxMembers(const int &maxMembers)
+    void setMaxMembers(const short &maxMembers)
     {
         maxMembersPerNode = maxMembers;
     }
