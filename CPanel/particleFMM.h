@@ -38,7 +38,7 @@ class particleFMM
 
 
 public:
-    particleFMM() {};
+    particleFMM() : partTree(nullptr), levels(0) {};
 
     void build(particleOctree* tree);
     Eigen::Vector3d barnesHutVel(Eigen::Vector3d POI);
