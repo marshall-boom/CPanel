@@ -315,7 +315,6 @@ namespace
 
     std::vector<test_object *> data;
 
-    test_object *obj;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -339,7 +338,6 @@ namespace
 
     EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ);
 
-    bool flag = true;
     for (int i=0; i<3; i++)
     {
       EXPECT_EQ(testOctree.getRootNode()->getOrigin()[i], 1);

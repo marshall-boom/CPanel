@@ -10,10 +10,9 @@
 #include "bodyPanel.h"
 #include "wakePanel.h"
 #include "cpNode.h"
-#include "geometry.h"
 
 
-edge::edge(cpNode* n1,cpNode* n2,geometry* geom) : n1(n1), n2(n2), TE(false), geom(geom)
+edge::edge(cpNode* n1,cpNode* n2) : n1(n1), n2(n2), TE(false)
 {
     n1->addEdge(this);
     n2->addEdge(this);

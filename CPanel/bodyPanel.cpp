@@ -155,7 +155,9 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
             Al = local.row(2).dot(s.cross(a));
             if (!itselfFlag)
             {
-                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+// Note: last parameter was not used
+//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1));
                 phiDub += phiV;
             }
             phiSrc += srcSidePhi(PN,Al,phiV,a,b,s);
@@ -254,7 +256,9 @@ Eigen::Vector3d bodyPanel::srcSideV(const double &PN,const double &Al, const Eig
     {
         GL = 1/S*log(std::abs((A+B+S)/(A+B-S)));
     }
-    double CJK = vortexPhi(PN,Al,a,b,s,l,m,n);
+// NOTE: last parameter is not used
+//    double CJK = vortexPhi(PN,Al,a,b,s,l,m,n);
+    double CJK = vortexPhi(PN,Al,a,b,s,l,m);
     return (GL*(s.dot(m)*l-s.dot(l)*m)+CJK*n);
 }
 

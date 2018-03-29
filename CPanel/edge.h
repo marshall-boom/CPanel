@@ -16,7 +16,6 @@
 class bodyPanel;
 class wakePanel;
 class cpNode;
-class geometry;
 class secondBufferWake;
 
 class edge
@@ -27,12 +26,11 @@ class edge
     std::vector<wakePanel*> wakePans;
     std::vector<secondBufferWake*> SBW2;
     bool TE; //Edge is at surface-wake junction
-    geometry* geom;
     
     void checkTE();
     
 public:
-    edge(cpNode* n1,cpNode* n2,geometry* geom);
+    edge(cpNode* n1,cpNode* n2);
     
     void addBodyPan(bodyPanel* b);
     void addWakePan(wakePanel* w);

@@ -98,7 +98,7 @@ public:
         delete root_node;
     }
     
-    octree(const octree& copy) : maxMembersPerNode(copy.maxMembersPerNode), members(copy.members)
+    octree(const octree& copy) : maxMembersPerNode(copy.maxMembersPerNode), members(copy.members), numLevels(copy.numLevels)
     {
         root_node = new node<type>(*copy.root_node);
     }

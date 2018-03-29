@@ -598,7 +598,9 @@ edge* geometry::findEdge(cpNode* n1,cpNode* n2)
     }
 
     // If edge doesn't exist, create one
-    edge* e = new edge(n1,n2,this);
+// NOTE: edge never used geometry that was linked to it
+//    edge* e = new edge(n1,n2,this);
+    edge* e = new edge(n1,n2);
     edges.push_back(e);
     return e;
 }

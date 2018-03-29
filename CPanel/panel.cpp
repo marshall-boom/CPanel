@@ -230,7 +230,9 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
             b = POI-p2;
             s = p2-p1;
             Al = local.row(2).dot(s.cross(a));
-            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+// NOTE: last paremeter is not used
+//            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1));
         }
         return phi/(4*M_PI);
     }
@@ -283,7 +285,7 @@ Eigen::Vector3d panel::vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &
     return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b))+pow(core*s.norm(),2)); // Connor: s is side length and was not included before. Excluding side length makes for an arbitrary core size for different geometry
 }
 
-double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m,const Eigen::Vector3d &n)
+double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m)
 {
     double eps = pow(10, -15);
     double PA,PB,num,denom;

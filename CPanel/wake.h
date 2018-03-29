@@ -71,7 +71,7 @@ public:
     
     void trefftzPlane(double Vinf,double Sref);
     void trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* particles, int numSimSteps);
-    Eigen::Vector3d lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc);
+    Eigen::Vector3d lambVectorInt(Eigen::VectorXd &yLoc);
     
     
     

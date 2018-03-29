@@ -406,7 +406,7 @@ double wake::dPhiWeighted(Eigen::Vector3d pt , particle* P1 , particle* P2){
 
 
 
-Eigen::Vector3d wake::lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc)
+Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yLoc)
 {
     // Sort by y position
     std::sort(TEpanels.begin(), TEpanels.end(), [](wakePanel* w1, wakePanel* w2) {return w1->getCenter()(1) < w2->getCenter()(1);});
