@@ -27,7 +27,7 @@ protected:
 
     geometry* geom;
     panels_type panels;
-    short surfID;
+    int surfID;
     bool TEflag; //Surface has sharp trailing edges
     bool LSflag; //Surface is a lifting surface
     std::vector<edge*> trailingEdges;
