@@ -21,7 +21,7 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     {
         constr = false;
     }
-    index_type N = static_cast<index_type>(X0.size()); // Problem Dimensionality
+    index_type N = static_cast<index_type>(X0.size()); // intProblem Dimensionality
     
     Eigen::MatrixXd dXf(nf,N);
     Eigen::MatrixXd dXb(nb,N);
@@ -198,7 +198,7 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
 
 }
 
-Eigen::MatrixXi chtlsnd::derivSequence(int q, int N)
+Eigen::MatrixXi chtlsnd::derivSequence(int q, size_t N)
 {
     // Builds the list of mixed partial derivatives to highest order q for a function of N dimensions. The algorithm used is recursive.
     Eigen::MatrixXi d(0,0);
