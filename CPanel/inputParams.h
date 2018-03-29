@@ -27,7 +27,7 @@ struct inputParams
     double cref;
     double timeStep;
     double numSteps;
-    bool stepsSetMaunally;
+    bool stepsSetManually;
     double streamSpacing;
     bool accelerateCode = false;
     bool unsteady = false;

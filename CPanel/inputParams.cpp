@@ -161,9 +161,9 @@ bool inputParams::set()
                     fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
                     fid >> numSteps;
                     if(numSteps != 0){
-                        stepsSetMaunally = true;
+                        stepsSetManually = true;
                     }else{
-                        stepsSetMaunally = false;
+                        stepsSetManually = false;
                     }
                 }
                 else if (s1.compare("Accelerate_Code") == 0)
