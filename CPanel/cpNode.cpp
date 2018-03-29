@@ -39,7 +39,7 @@ void cpNode::addBodyPanel(bodyPanel* p) {bodyPans.push_back(p);}
 
 edge* cpNode::getTE(edge* exception)
 {
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->isTE() && edges[i] != exception)
         {
@@ -59,7 +59,7 @@ void cpNode::setIndex(int i) {index = i;}
 
 edge* cpNode::getOtherTrailEdge(edge* current)
 {
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->isTE() && edges[i] != current)
         {
@@ -73,7 +73,7 @@ edge* cpNode::getOtherTrailEdge(edge* current)
 std::vector<edge*> cpNode::getTrailingEdges(){
     
     std::vector<edge*> trailingEdges;
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->isTE())
         {
@@ -88,13 +88,13 @@ Eigen::Vector3d cpNode::nodeWakeProjAngle(){
     std::vector<edge*> tedges = this->getTrailingEdges();
     Eigen::Vector3d avgNorm = Eigen::Vector3d::Zero();
 
-    for (int j = 0; j < tedges.size(); j++) {
+    for (size_t j = 0; j < tedges.size(); j++) {
         std::vector<bodyPanel*> bPans = tedges[j]->getBodyPans();
         
         // In the case that a side patch is included with the top and bottom panels,
         // the displacement in the z direction will work, but not the y. CPanel seems
         // to exclude these from the node values though...
-        for (int j=0; j<bPans.size(); j++) {
+        for (bodyPanels_index_type j=0; j<bPans.size(); j++) {
             avgNorm += bPans[j]->getNormal();
         }
         

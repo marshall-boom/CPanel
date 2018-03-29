@@ -32,6 +32,8 @@ namespace
       }
 
     protected:
+      using node_type = node<point_type>;
+      using node_index_type = node_type::member_index_type;
       node<point_type> testNode;
   };
 
@@ -69,13 +71,13 @@ namespace
   // Test adding a member
   TEST_F(OctreeNodeTest, AddMember)
   {
-    int maxMembers = 10;
+    node_index_type maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    int counter = 0;
+    node_index_type counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -116,7 +118,7 @@ namespace
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    int counter = 0;
+    node_index_type counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -202,7 +204,7 @@ namespace
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    int counter = 0;
+    node_index_type counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -336,7 +338,7 @@ namespace
       data[i] = nullptr;
     }
 
-    EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ);
+    EXPECT_EQ(testOctree.getMembers().size(), static_cast<test_octree_class::member_index_type>(nX*nY*nZ));
 
     for (int i=0; i<3; i++)
     {
@@ -351,7 +353,7 @@ namespace
     newData = new test_object(newPoint);
     testOctree.addData(newData);
 
-    EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ+1);
+    EXPECT_EQ(testOctree.getMembers().size(), static_cast<test_octree_class::member_index_type>(nX*nY*nZ+1));
     EXPECT_FALSE(testOctree.getRootNode() == oldRoot);
   }
 

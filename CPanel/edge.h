@@ -20,11 +20,18 @@ class secondBufferWake;
 
 class edge
 {
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+	using wakePanels_type = std::vector<wakePanel *>;
+	using wakePanels_index_type = wakePanels_type::size_type;
+	using secondBufferWakes_type = std::vector<secondBufferWake *>;
+	using secondBufferWakes_index_type = secondBufferWakes_type::size_type;
+
     cpNode* n1;
     cpNode* n2;
-    std::vector<bodyPanel*> bodyPans;
-    std::vector<wakePanel*> wakePans;
-    std::vector<secondBufferWake*> SBW2;
+    bodyPanels_type bodyPans;
+    wakePanels_type wakePans;
+    secondBufferWakes_type SBW2;
     bool TE; //Edge is at surface-wake junction
     
     void checkTE();

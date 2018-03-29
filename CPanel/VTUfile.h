@@ -43,7 +43,10 @@ struct piece
 
 class VTUfile
 {
-    std::vector<piece> pieces;
+	using pieces_type = std::vector<piece>;
+	using pieces_index_type = pieces_type::size_type;
+
+	pieces_type pieces;
     std::string name;
     
     void printDoubleArray(std::ofstream &f,std::string name,Eigen::MatrixXd array);

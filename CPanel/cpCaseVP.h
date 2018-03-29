@@ -19,11 +19,17 @@
 
 
 
-class cpCaseVP : public cpCase{
-    
-    std::vector<particle*> particles;
-    std::vector<vortexFil*> filaments;
-    std::vector<wakePanel*>* w2panels; // Second row of buffer wake
+class cpCaseVP : public cpCase
+{
+
+	using particles_type = std::vector<particle *>;
+	using particles_index_type = particles_type::size_type;
+	using filaments_type = std::vector<vortexFil *>;
+	using filaments_index_type = filaments_type::size_type;
+
+    particles_type particles;
+    filaments_type filaments;
+    wakePanels_type * w2panels; // Second row of buffer wake
     
     Eigen::VectorXd wake2Doublets;
     

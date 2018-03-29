@@ -178,17 +178,31 @@
 
 class geometry
 {
-    std::vector<surface*> surfaces;
-    std::vector<wake*> wakes;
-    std::vector<bodyPanel*> bPanels;
-    std::vector<wakePanel*> wPanels;
-    std::vector<wakePanel*> w2Panels; // Buffer wake row two
+	using surfaces_type = std::vector<surface *>;
+	using surfaces_index_type = surfaces_type::size_type;
+	using wakes_type = std::vector<wake *>;
+	using wakes_index_type = wakes_type::size_type;
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+	using wakePanels_type = std::vector<wakePanel *>;
+	using wakePanels_index_type = wakePanels_type::size_type;
+
+    surfaces_type surfaces;
+    wakes_type wakes;
+    bodyPanels_type bPanels;
+    wakePanels_type wPanels;
+    wakePanels_type w2Panels; // Buffer wake row two
 
     std::vector<bool> isFirstPanel;
 
+    using nodes_type = std::vector<cpNode *>;
+    using nodes_index_type = nodes_type::size_type;
+    using edges_type = std::vector<edge *>;
+    using edges_index_type = edges_type::size_type;
+
     panelOctree pOctree;
-    std::vector<cpNode*> nodes;
-    std::vector<edge*> edges;
+    nodes_type nodes;
+    edges_type edges;
 //    std::vector<cpNode*> TEnodes;
     short nNodes;
     short nTris;

@@ -22,9 +22,12 @@ class particle;
 
 class bodyPanel : public panel
 {
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+
     surface* parentSurf;
-    std::vector<bodyPanel*> neighbors;
-    std::vector<bodyPanel*> cluster;
+    bodyPanels_type neighbors;
+    bodyPanels_type cluster;
     int TSorder;
     double sourceStrength = 0; // Initialize with zero so can print before compVelocity
     bool upper; // Sheds wake panel from lower edge

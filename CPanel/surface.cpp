@@ -44,7 +44,7 @@ std::vector<edge*> surface::getTrailingEdges()
     
     edge* TE;
     
-    for (int i=0; i<panels.size(); i++)
+    for (panels_index_type i=0; i<panels.size(); i++)
     {
         if (panels[i]->isTEpanel())
         {
@@ -102,9 +102,9 @@ std::vector<std::pair<Eigen::Vector3d,bodyPanel*>> surface::getStreamlineStartPn
         std::vector<bodyPanel*> closePanels = pStag->getRelatedPanels();
         Eigen::Vector3d projPnt;
         
-        for (int i=0; i<pnts.size(); i++)
+        for (size_t i=0; i<pnts.size(); i++)
         {
-            for (int j=0; j<closePanels.size(); j++)
+            for (size_t j=0; j<closePanels.size(); j++)
             {
                 if (closePanels[j]->inPanelProjection(pnts[i],projPnt))
                 {
@@ -129,7 +129,7 @@ std::vector<std::pair<Eigen::Vector3d,bodyPanel*>> surface::getStreamlineStartPn
         std::vector<bodyPanel*> pans;
         Eigen::Vector3d oldNorm,pnt;
         double theta1,theta2;
-        for (int i=0; i<edges.size(); i++)
+        for (size_t i=0; i<edges.size(); i++)
         {
             pans = edges[i]->getBodyPans();
             if (i == 0)

@@ -42,6 +42,10 @@ protected:
     Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform;
     
+    using bodyPanels_type = std::vector<bodyPanel *>;
+    using bodyPanels_index_type = bodyPanels_type::size_type;
+    using wakePanels_type = std::vector<wakePanel *>;
+    using wakePanels_index_type = wakePanels_type::size_type;
     std::vector<bodyPanel*>* bPanels;
     std::vector<wakePanel*>* wPanels;
     Eigen::VectorXd sigmas;
@@ -60,7 +64,10 @@ protected:
     Eigen::Vector3d dM_dAlpha;
     Eigen::Vector3d dM_dBeta;
     
-    std::vector<bodyStreamline*> bStreamlines;
+    using streamlines_type = std::vector<bodyStreamline *>;
+    using streamlines_index_type = streamlines_type::size_type;
+
+    streamlines_type bStreamlines;
     Eigen::Vector3d windToBody(double V,double alpha,double beta);
     
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
@@ -86,6 +93,8 @@ protected:
         std::vector<Eigen::Vector3d> cellCenter;
     } volMeshDat;
     
+    using cells_type = std::vector<Eigen::VectorXi>;
+    using cells_index_type = cells_type::size_type;
     std::vector<Eigen::VectorXi> cells;
     Eigen::MatrixXd pts;
     

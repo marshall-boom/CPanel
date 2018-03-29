@@ -120,7 +120,7 @@ bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
 wakePanel* edge::getOtherWakePan(wakePanel* currentPan)
 {
 
-    for (int i=0; i<wakePans.size(); i++)
+    for (wakePanels_index_type i=0; i<wakePans.size(); i++)
     {
         if (wakePans[i] != currentPan)
         {

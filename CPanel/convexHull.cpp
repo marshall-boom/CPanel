@@ -47,8 +47,8 @@ convexHull::convexHull(Eigen::MatrixXd points, bool bound) : boundary(bound)
     std::sort(members.begin()+1,members.end(),compareTheta());
     int minBegin = -1;
     int minEnd = -1;
-    unsigned long maxBegin = members.size();
-    for (int i=1; i<members.size()-1; i++)
+    members_index_type maxBegin = members.size();
+    for (members_index_type i=1; i<members.size()-1; i++)
     {
         if (members[i]->theta == minTheta && minBegin == -1)
         {
@@ -81,7 +81,7 @@ convexHull::member::member(const Eigen::Vector3d &point, const Eigen::Vector3d &
 void convexHull::computeHull()
 {
     hull.push_back(members.front());
-    for (int i=0; i<members.size()-1; i++)
+    for (members_index_type i=0; i<members.size()-1; i++)
     {
         Eigen::Vector3d v1,v2;
         if (i==members.size()-2)
@@ -123,12 +123,12 @@ bool convexHull::compareNodes(std::vector<Eigen::Vector3d> nodesLocal)
     Eigen::Vector3d pMember;
     bool breakFlag = false;
     
-    for (int i=0; i<hull.size(); i++)
+    for (members_index_type i=0; i<hull.size(); i++)
     {
         pMember(0) = hull[i]->x;
         pMember(1) = hull[i]->y;
         pMember(2) = hull[i]->z;
-        for (int j=0; j<nodesLocal.size(); j++)
+        for (members_index_type j=0; j<nodesLocal.size(); j++)
         {
             if (pMember == nodesLocal[j])
             {

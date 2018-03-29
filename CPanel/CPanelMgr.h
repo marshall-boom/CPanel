@@ -17,12 +17,17 @@
 
 class caseMgr
 {
+	using cases_type = std::vector<cpCase *>;
+	using cases_index_type = cases_type::size_type;
+	using casesVP_type = std::vector<cpCaseVP *>;
+	using casesVP_index_type = casesVP_type::size_type;
+
     inputParams* p;
     geometry* geom;
     Eigen::VectorXi outSpacing;
     
-    std::vector<cpCase*> cases;
-    std::vector<cpCaseVP*> casesVP;
+    cases_type cases;
+    casesVP_type casesVP;
     
     void setCases();
     void runCases();

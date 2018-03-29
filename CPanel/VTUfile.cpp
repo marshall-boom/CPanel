@@ -16,14 +16,14 @@ void VTUfile::write()
     {
         f << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
         f << "\t<UnstructuredGrid>\n";
-        for (int p=0; p<pieces.size(); p++)
+        for (pieces_index_type p=0; p<pieces.size(); p++)
         {
             piece piece = pieces[p];
             f << "\t\t<Piece NumberOfPoints=\"" << piece.pnts.rows() << "\" NumberOfCells=\"" << piece.connectivity.rows() << "\">\n";
             if (piece.cellData.size() != 0)
             {
                 f << "\t\t\t<CellData Scalars=\"scalars\">\n";
-                for (int c=0; c<piece.cellData.size(); c++)
+                for (pieces_index_type c=0; c<piece.cellData.size(); c++)
                 {
                     printDoubleArray(f, piece.cellData[c].name, piece.cellData[c].data);
                 }
@@ -32,7 +32,7 @@ void VTUfile::write()
             if (piece.pntData.size() != 0)
             {
                 f << "\t\t\t<PointData Scalars=\"scalars\">\n";
-                for (int a=0; a<piece.pntData.size(); a++)
+                for (pieces_index_type a=0; a<piece.pntData.size(); a++)
                 {
                     printDoubleArray(f, piece.pntData[a].name, piece.pntData[a].data);
                 }

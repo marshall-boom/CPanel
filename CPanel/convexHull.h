@@ -46,10 +46,13 @@ class convexHull
             return (p1->d > p2->d);
         }
     };
-    
-    std::vector<member*> members;
-    std::vector<member*> hull;
-    
+
+    using members_type = std::vector<member *>;
+    using members_index_type = members_type::size_type;
+
+    members_type members;
+    members_type hull;
+
     void computeHull();
     bool boundary;
     // TRUE : Points on boundary consider inside hull and therefore not included in hull vector.
@@ -62,7 +65,7 @@ public:
     convexHull(Eigen::MatrixXd points, bool boundary);
     ~convexHull()
     {
-        for (int i = 0; i<members.size(); i++)
+        for (members_index_type i = 0; i<members.size(); i++)
         {
             delete members[i];
         }

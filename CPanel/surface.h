@@ -22,8 +22,11 @@ class bodyStreamline;
 class surface
 {
 protected:
+	using panels_type = std::vector<bodyPanel *>;
+	using panels_index_type = panels_type::size_type;
+
     geometry* geom;
-    std::vector<bodyPanel*> panels;
+    panels_type panels;
     short surfID;
     bool TEflag; //Surface has sharp trailing edges
     bool LSflag; //Surface is a lifting surface

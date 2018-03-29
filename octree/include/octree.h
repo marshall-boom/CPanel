@@ -17,9 +17,13 @@
 template<typename type>
 class octree
 {
+  public:
+    using member_collection_type = std::vector<member<type>>;
+    using member_index_type = typename member_collection_type::size_type;
+
     node<type> *root_node;
-    short maxMembersPerNode;
-    std::vector<member<type>> members;
+    member_index_type maxMembersPerNode;
+    member_collection_type members;
     short numLevels;
     double maxTheta = 0.5;
 
@@ -29,7 +33,7 @@ class octree
         boxMin = members[0].getRefPoint();
         boxMax = members[0].getRefPoint();
 
-        for (int i=0; i<members.size(); i++)
+        for (member_index_type i=0; i<members.size(); i++)
         {
             Eigen::Vector3d pnt = members[i].getRefPoint();;
             for (int j=0; j<3; j++)
@@ -143,7 +147,8 @@ public:
             iter = members.size();
         }
 
-        for (int i=0; i<newData.size(); i++)
+        using data_index_type = typename std::vector<type *>::size_type;
+        for (data_index_type i=0; i<newData.size(); i++)
         {
             members.push_back(createMember(newData[i]));
         }
@@ -156,7 +161,7 @@ public:
 
             root_node = new node<type>(NULL,center,halfDimension,0,maxMembersPerNode,maxTheta);
 
-            for (int i=0; i<members.size(); i++)
+            for (member_index_type i=0; i<members.size(); i++)
             {
                 root_node->addMember(members[i]);
             }
@@ -239,7 +244,7 @@ public:
     {
         short levels = 0;
         std::vector<node<type>*> nodes = getNodes();
-        for(int i=0; i<nodes.size(); i++)
+        for(size_t i=0; i<nodes.size(); i++)
         {
             if(nodes[i]->getLevel()>levels)
             {
@@ -279,7 +284,7 @@ public:
         std::vector<node<type>*> nodes = this->getNodes();
         std::vector<node<type>*> levelNodes;
 
-        for(int i=0; i<nodes.size(); i++){
+        for(size_t i=0; i<nodes.size(); i++){
             if(nodes[i]->getLevel() == level){
                 levelNodes.push_back(nodes[i]);
             }

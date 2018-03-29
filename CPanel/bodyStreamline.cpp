@@ -44,7 +44,7 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
 
     pntPot = geom->pntPotential(pntAbove, Vinf);
 
-    int i = 0;
+    size_t i = 0;
     maxAngle = angleTol;
 
     while (i < possiblePans.size())
@@ -80,7 +80,7 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
                 if (possiblePans.size() > 1)
                 {
                     // Remove other possible panel from vector
-                    for (int j=0; j<possiblePans.size(); j++)
+                    for (size_t j=0; j<possiblePans.size(); j++)
                     {
                         if (possiblePans[j] != possiblePans[i])
                         {
@@ -129,7 +129,7 @@ edge* bodyStreamline::edgeIntersection(bodyPanel* pan,const Eigen::Vector3d &pnt
         }
     }
 
-    for (int i=0; i<edges.size(); i++)
+    for (size_t i=0; i<edges.size(); i++)
     {
         if (edges[i] == lastEdge)
         {

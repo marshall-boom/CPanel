@@ -15,22 +15,22 @@
 geometry::~geometry()
 {
 
-    for (int i=0; i<surfaces.size(); i++)
+    for (surfaces_index_type i=0; i<surfaces.size(); i++)
     {
         delete surfaces[i];
     }
     surfaces.clear();
-    for (int i=0; i<wakes.size(); i++)
+    for (wakes_index_type i=0; i<wakes.size(); i++)
     {
         delete wakes[i];
     }
     wakes.clear();
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         delete edges[i];
     }
     edges.clear();
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         delete nodes[i];
     }
@@ -45,27 +45,27 @@ geometry::geometry(const geometry& copy)
 	writeCoeffFlag(false), vortPartFlag(false), infCoeffFile(copy.infCoeffFile), dt(copy.dt),
 	inputV(copy.inputV)
 {
-    for (int i=0; i<copy.surfaces.size(); i++)
+    for (surfaces_index_type i=0; i<copy.surfaces.size(); i++)
     {
         surfaces[i] = new surface(*copy.surfaces[i]);
     }
-    for (int i=0; i<copy.wakes.size(); i++)
+    for (wakes_index_type i=0; i<copy.wakes.size(); i++)
     {
         wakes[i] = new wake(*copy.wakes[i]);
     }
-    for (int i=0; i<copy.bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<copy.bPanels.size(); i++)
     {
         bPanels[i] = new bodyPanel(*copy.bPanels[i]);
     }
-    for (int i=0; i<copy.wPanels.size(); i++)
+    for (wakePanels_index_type i=0; i<copy.wPanels.size(); i++)
     {
         wPanels[i] = new wakePanel(*copy.wPanels[i]);
     }
-    for (int i=0; i<copy.nodes.size(); i++)
+    for (nodes_index_type i=0; i<copy.nodes.size(); i++)
     {
         nodes[i] = new cpNode(*copy.nodes[i]);
     }
-    for (int i=0; i<copy.edges.size(); i++)
+    for (edges_index_type i=0; i<copy.edges.size(); i++)
     {
         edges[i] = new edge(*copy.edges[i]);
     }
@@ -88,27 +88,27 @@ geometry& geometry::operator=(const geometry &rhs)
     infCoeffFile = rhs.infCoeffFile;
     
 
-    for (int i=0; i<rhs.surfaces.size(); i++)
+    for (surfaces_index_type i=0; i<rhs.surfaces.size(); i++)
     {
         surfaces[i] = new surface(*rhs.surfaces[i]);
     }
-    for (int i=0; i<rhs.wakes.size(); i++)
+    for (wakes_index_type i=0; i<rhs.wakes.size(); i++)
     {
         wakes[i] = new wake(*rhs.wakes[i]);
     }
-    for (int i=0; i<rhs.bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<rhs.bPanels.size(); i++)
     {
         bPanels[i] = new bodyPanel(*rhs.bPanels[i]);
     }
-    for (int i=0; i<rhs.wPanels.size(); i++)
+    for (wakePanels_index_type i=0; i<rhs.wPanels.size(); i++)
     {
         wPanels[i] = new wakePanel(*rhs.wPanels[i]);
     }
-    for (int i=0; i<rhs.nodes.size(); i++)
+    for (nodes_index_type i=0; i<rhs.nodes.size(); i++)
     {
         nodes[i] = new cpNode(*rhs.nodes[i]);
     }
-    for (int i=0; i<rhs.edges.size(); i++)
+    for (edges_index_type i=0; i<rhs.edges.size(); i++)
     {
         edges[i] = new edge(*rhs.edges[i]);
     }
@@ -224,12 +224,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             std::vector< edge* > TEedges;
             std::vector< cpNode* > TEnodes;
             
-            for( int i=0; i<edges.size(); i++ ){
+            for(edges_index_type i=0; i<edges.size(); i++ ){
                 if( edges[i]->isTE() ){
                     TEedges.push_back(edges[i]);
                 }
             }
-            for( int i=0; i<nodes.size(); i++ ){
+            for(nodes_index_type i=0; i<nodes.size(); i++ ){
                 if( nodes[i]->isTE() ){
                     TEnodes.push_back(nodes[i]);
                 }
@@ -240,7 +240,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
             int nodeCounter=0, panelCounter=0;
             
-            for( int i=0; i<TEedges.size(); i++)
+            for(size_t i=0; i<TEedges.size(); i++)
             {
                 
                 // Find the trialing nodes (by index?)
@@ -249,7 +249,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 int n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
                 
                 bool isUsed = false;
-                for(int j=0; j<usedTENodesIndex.size(); j++)
+                for(size_t j=0; j<usedTENodesIndex.size(); j++)
                 {
                     if(n1index == usedTENodesIndex[j])
                     {
@@ -277,7 +277,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                 }
                 //N2
                 isUsed = false;
-                for(int j=0; j<usedTENodesIndex.size();j++)
+                for(size_t j=0; j<usedTENodesIndex.size();j++)
                 {
                     if(n2index == usedTENodesIndex[j]){
                         isUsed = true;
@@ -339,7 +339,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::sort( nodes.begin(), nodes.end() );
         nodes.erase( std::unique( nodes.begin(), nodes.end() ), nodes.end() );
 
-        for (int i=0; i<nodes.size(); i++)
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             nodes[i]->setIndex(i);
         }
@@ -351,7 +351,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         // Set neighbors
         std::cout << "Finding Panel Neighbors..." << std::endl;
 
-        for (int i=0; i<edges.size(); i++)
+        for (edges_index_type i=0; i<edges.size(); i++)
         {
             edges[i]->setNeighbors();
         }
@@ -361,9 +361,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         if (wakes.size() > 1)
         {
             std::vector<wake*> newWakes;
-            for (int i=0; i<wakes.size(); i++)
+            for (wakes_index_type i=0; i<wakes.size(); i++)
             {
-                for (int j=i; j<wakes.size(); j++)
+                for (wakes_index_type j=i; j<wakes.size(); j++)
                 {
                     if (wakes[i]->isSameWake(wakes[j]))
                     {
@@ -385,15 +385,15 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
         std::vector<bodyPanel*> tempB;
         std::vector<wakePanel*> tempW;
-        for (int i=0; i<surfaces.size(); i++)
+        for (surfaces_index_type i=0; i<surfaces.size(); i++)
         {
             tempB = surfaces[i]->getPanels();
             bPanels.insert(bPanels.begin(),tempB.begin(),tempB.end());
         }
-        for (int i=0; i<wakes.size(); i++)
+        for (wakes_index_type i=0; i<wakes.size(); i++)
         {
             tempW = wakes[i]->getPanels();
-            for ( int i=0; i<tempW.size(); i++)
+            for (size_t i=0; i<tempW.size(); i++)
             {
                 if (tempW[i]->isSecondRow == false)
                 {
@@ -404,11 +404,11 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
         
         // Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
-        for (int i=0; i<bPanels.size(); i++)
+        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
         {
             bPanels[i]->setTipFlag();
         }
-        for (int i=0; i<bPanels.size(); i++)
+        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
         {
             bPanels[i]->setCluster();
         }
@@ -518,7 +518,7 @@ double geometry::shortestEdge(const Eigen::MatrixXi &connectivity)
 
 bool geometry::isLiftingSurf(int currentID, std::vector<int> wakeIDs)
 {
-    for (int i=0; i<wakeIDs.size(); i++)
+    for (size_t i=0; i<wakeIDs.size(); i++)
     {
         if (wakeIDs[i]-10000 == currentID)
         {
@@ -570,7 +570,7 @@ std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
     int i1,i2;
     std::vector<edge*> triEdges;
     edge* e;
-    for (int i=0; i<pNodes.size(); i++)
+    for (size_t i=0; i<pNodes.size(); i++)
     {
         i1 = i;
         if (i == pNodes.size()-1)
@@ -589,7 +589,7 @@ std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
 
 edge* geometry::findEdge(cpNode* n1,cpNode* n2)
 {
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->sameEdge(n1, n2))
         {
@@ -611,12 +611,12 @@ void geometry::createOctree()
     std::vector<wakePanel*> tempW;
     std::vector<bodyPanel*> tempB;
     
-    for (int i=0; i<surfaces.size(); i++)
+    for (surfaces_index_type i=0; i<surfaces.size(); i++)
     {
         tempB = surfaces[i]->getPanels();
         panels.insert(panels.end(),tempB.begin(),tempB.end());
     }
-    for (int i=0; i<wakes.size(); i++)
+    for (wakes_index_type i=0; i<wakes.size(); i++)
     {
         tempW = wakes[i]->getPanels();
         panels.insert(panels.end(),tempW.begin(),tempW.end());
@@ -690,7 +690,7 @@ void geometry::setInfCoeff()
     
     for (int i=0; i<nBodyPans; i++)
     {
-        for (int j=0; j<w2Panels.size(); j++)
+        for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
         {
             C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
         }
@@ -707,7 +707,7 @@ void geometry::setInfCoeff()
 Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
 {
     Eigen::Vector4i indices;
-    for (int i=0; i<interpPans.size(); i++)
+    for (size_t i=0; i<interpPans.size(); i++)
     {
         indices(i) = interpPans[i]->getIndex();
     }
@@ -729,12 +729,12 @@ std::vector<panel*> geometry::getPanels()
 {
     std::vector<panel*> panels;
     
-    for (int i=0; i<surfaces.size(); i++)
+    for (surfaces_index_type i=0; i<surfaces.size(); i++)
     {
         std::vector<bodyPanel*> temp = surfaces[i]->getPanels();
         panels.insert(panels.end(),temp.begin(),temp.end());
     }
-    for (int i=0; i<wakes.size(); i++)
+    for (wakes_index_type i=0; i<wakes.size(); i++)
     {
         std::vector<wakePanel*> temp = wakes[i]->getPanels();
         panels.insert(panels.end(),temp.begin(),temp.end());
@@ -749,7 +749,7 @@ bool geometry::infCoeffFileExists()
     {
         std::ifstream fid;
         fid.open(p.string());
-        int nPans;
+        size_t nPans;
         fid >> nPans;
         fid.close();
         if (nPans != bPanels.size())
@@ -772,16 +772,16 @@ void geometry::readInfCoeff()
     fid >> nPans;
     A.resize(nPans,nPans);
     B.resize(nPans,nPans);
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
-        for (int j=0; j<bPanels.size(); j++)
+        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
         {
             fid >> A(i,j);
         }
     }
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
-        for (int j=0; j<bPanels.size(); j++)
+        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
         {
             fid >> B(i,j);
         }
@@ -791,9 +791,9 @@ void geometry::readInfCoeff()
         fid >> nW2pans;
         C.resize(nPans, nW2pans);
         
-        for (int i=0; i<bPanels.size(); i++)
+        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
         {
-            for (int j=0; j<w2Panels.size(); j++)
+            for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
             {
                 fid >> C(i,j);
             }
@@ -809,17 +809,17 @@ void geometry::writeInfCoeff()
     std::ofstream fid;
     fid.open(infCoeffFile);
     fid << bPanels.size() << "\n";
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
-        for (int j=0; j<bPanels.size(); j++)
+        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
         {
             fid << A(i,j) << "\t";
         }
         fid << "\n";
     }
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
-        for (int j=0; j<bPanels.size(); j++)
+        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
         {
             fid << B(i,j) << "\t";
         }
@@ -828,9 +828,9 @@ void geometry::writeInfCoeff()
     if(vortPartFlag)
     {
         fid << w2Panels.size() << "\n";
-        for (int i=0; i<bPanels.size(); i++)
+        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
         {
-            for (int j=0; j<w2Panels.size(); j++)
+            for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
             {
                 fid << C(i,j) << "\t";
             }
@@ -843,7 +843,7 @@ void geometry::writeInfCoeff()
 Eigen::MatrixXd geometry::getNodePnts()
 {
     Eigen::MatrixXd nodePnts(nodes.size(),3);
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         nodePnts.row(i) = nodes[i]->getPnt();
     }
@@ -853,11 +853,11 @@ Eigen::MatrixXd geometry::getNodePnts()
 double geometry::pntPotential(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf)
 {
     double pot = 0;
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
         pot += bPanels[i]->panelPhi(pnt);
     }
-    for (int i=0; i<wPanels.size(); i++)
+    for (wakePanels_index_type i=0; i<wPanels.size(); i++)
     {
         pot += wPanels[i]->panelPhi(pnt);
     }
@@ -868,7 +868,7 @@ double geometry::pntPotential(const Eigen::Vector3d &pnt, const Eigen::Vector3d 
 double geometry::wakePotential(const Eigen::Vector3d &pnt)
 {
     double pot = 0;
-    for (int i=0; i<wPanels.size(); i++)
+    for (wakePanels_index_type i=0; i<wPanels.size(); i++)
     {
         pot += wPanels[i]->panelPhi(pnt);
     }
@@ -878,11 +878,11 @@ double geometry::wakePotential(const Eigen::Vector3d &pnt)
 Eigen::Vector3d geometry::pntVelocity(const Eigen::Vector3d &pnt, const Eigen::Vector3d &Vinf, double PG)
 {
     Eigen::Vector3d vel = Eigen::Vector3d::Zero();
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
         vel += bPanels[i]->panelV(pnt);
     }
-    for (int i=0; i<wPanels.size(); i++)
+    for (wakePanels_index_type i=0; i<wPanels.size(); i++)
     {
         vel += wPanels[i]->panelV(pnt);
     }
@@ -899,10 +899,10 @@ void geometry::clusterCheck()
     fid.open("ClusterCheck.txt");
     int index;
     std::vector<bodyPanel*> clust;
-    for (int i=0; i<bPanels.size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
     {
         clust = bPanels[i]->getCluster();
-        for (int j=0; j<clust.size(); j++)
+        for (size_t j=0; j<clust.size(); j++)
         {
             index = (int)std::distance(bPanels.begin(),std::find(bPanels.begin(), bPanels.end(), clust[j]));
             fid << index+1 << "\t";
@@ -920,7 +920,7 @@ void geometry::calcTimeStep(){
     if(dt == 0) // If timestep is set in input file, it will not be zero and won't be modified
     {
         std::vector<edge*> Tedges;
-        for(int i=0; i<edges.size(); i++)
+        for(edges_index_type i=0; i<edges.size(); i++)
         {
             if(edges[i]->isTE())
             {
@@ -929,7 +929,7 @@ void geometry::calcTimeStep(){
         }
         
         double sum = 0;
-        for(int i=0; i < Tedges.size(); i++)
+        for(size_t i=0; i < Tedges.size(); i++)
         {
             sum += Tedges[i]->length();
         }

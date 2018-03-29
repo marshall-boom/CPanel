@@ -22,7 +22,7 @@ void panel::setGeom()
 {
     longSide = 0;
     
-    for (int i=0; i<pEdges.size(); i++)
+    for (edges_index_type i=0; i<pEdges.size(); i++)
     {
         double l = pEdges[i]->length();
         if (l > longSide)
@@ -102,7 +102,7 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
     // Returns true if point is contained in extrusion of panel infinitely in normal direction
     Eigen::MatrixXd points(nodes.size()+1,3);
     std::vector<Eigen::Vector3d> nodesLocal;
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         nodesLocal.push_back(global2local(nodes[i]->getPnt(), true));
         points.row(i) = nodesLocal[i];
@@ -212,7 +212,7 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
         double phi = 0;
         double Al;
         Eigen::Vector3d a,b,s;
-        for (int i=0; i<nodes.size(); i++)
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             Eigen::Vector3d p1;
             Eigen::Vector3d p2;
@@ -253,7 +253,7 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
     {
         Eigen::Vector3d p1,p2,a,b,s;
         int i1,i2;
-        for (int i=0; i<nodes.size(); i++)
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             if (i!=nodes.size()-1)
             {
@@ -322,7 +322,7 @@ Eigen::Vector3d panel::pntDubV(const Eigen::Vector3d n,const Eigen::Vector3d &pj
 Eigen::VectorXi panel::getVerts()
 {
     Eigen::VectorXi verts(nodes.size());
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         verts(i) = nodes[i]->getIndex();
     }
@@ -391,7 +391,7 @@ Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
     
     Eigen::Vector3d p1,p2,a,b,s;
     int i1,i2;
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         if (i!=nodes.size()-1)
         {

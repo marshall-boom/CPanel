@@ -22,7 +22,7 @@ void wakeLine::setDimensions()
 {
     std::vector<edge*> es = upper->getEdges();
     std::vector<cpNode*> TEnodes;
-    for (int i=0; i<es.size(); i++)
+    for (size_t i=0; i<es.size(); i++)
     {
         if (es[i]->isTE())
         {

@@ -16,7 +16,7 @@ wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eige
   : panel(nodes,pEdges,bezNorm,surfID), upperPan(nullptr), lowerPan(nullptr),
 	TEpanel(false), parentWake(parentWake), vortFil(nullptr), bufferParent(nullptr)
 {
-    for (int i=0; i<pEdges.size(); i++)
+    for (size_t i=0; i<pEdges.size(); i++)
     {
         pEdges[i]->addWakePan(this);
     }
@@ -51,7 +51,7 @@ void wakePanel::interpPanels(std::vector<bodyPanel*> &interpPans, double &interp
     }
     else
     {
-        for (int i=1; i<wakeLines.size()-1; i++)
+        for (size_t i=1; i<wakeLines.size()-1; i++)
         {
             if ((wakeLines[i]->getY() <= center(1) && wakeLines[i+1]->getY() > center(1)))
             {
@@ -133,7 +133,7 @@ void wakePanel::setParentPanels(bodyPanel* upper, bodyPanel* lower)
 
 edge* wakePanel::getTE()
 {
-    for (int i=0; i<pEdges.size(); i++)
+    for (edges_index_type i=0; i<pEdges.size(); i++)
     {
         if (pEdges[i]->isTE())
         {
@@ -235,7 +235,7 @@ std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {
     
     // initialize original index locations
     std::vector<int> idx(v.size());
-    for (int i = 0; i !=idx.size(); ++i) idx[i] = i;
+    for (size_t i = 0; i !=idx.size(); ++i) idx[i] = i;
     
     // sort indexes based on comparing values in v
     sort(idx.begin(), idx.end(),[v](int i1, int i2) {return v[i1] < v[i2];});

@@ -31,8 +31,13 @@ class surface;
 class panel
 {    
 protected:
-    std::vector<cpNode*> nodes;
-    std::vector<edge*> pEdges;
+	using nodes_type = std::vector<cpNode *>;
+	using nodes_index_type = nodes_type::size_type;
+	using edges_type = std::vector<edge *>;
+	using edges_index_type = edges_type::size_type;
+
+    nodes_type nodes;
+    edges_type pEdges;
     Eigen::Vector3d center;
     Eigen::Vector3d normal;
     Eigen::Vector3d bezNormal; //Used in derivative calculation

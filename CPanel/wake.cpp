@@ -16,11 +16,11 @@
 
 wake::~wake()
 {
-    for (int i=0; i<wakeLines.size(); i++)
+    for (wakeLines_index_type i=0; i<wakeLines.size(); i++)
     {
         delete wakeLines[i];
     }
-    for (int i=0; i<vortexSheets.size(); i++)
+    for (wakePanels_index_type  i=0; i<vortexSheets.size(); i++)
     {
         delete vortexSheets[i];
     }
@@ -43,7 +43,7 @@ void wake::addPanel(wakePanel* wPan)
         normal = wPan->getNormal();
     }
     
-    for (int i=0; i<nodes.size(); i++)
+    for (size_t i=0; i<nodes.size(); i++)
     {
         pnt = nodes[i]->getPnt();
         if (pnt(1) > yMax)
@@ -94,7 +94,7 @@ void wake::mergeWake(wake *other)
 {
     std::vector<wakePanel*> pans = other->getPanels();
     wakePanel* w;
-    for (int i=0; i<pans.size(); i++)
+    for (size_t i=0; i<pans.size(); i++)
     {
         w = pans[i];
         wpanels.push_back(w);
@@ -103,7 +103,7 @@ void wake::mergeWake(wake *other)
     
     std::vector<wakeLine*> otherLines = other->getWakeLines();
     wakeLine* wLine;
-    for (int i=0; i<otherLines.size(); i++)
+    for (size_t i=0; i<otherLines.size(); i++)
     {
         wLine = new wakeLine(*otherLines[i]);
         addWakeLine(wLine);
@@ -186,7 +186,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     
     // Collect these particles in a vector
     std::vector<particle*> unsortedParts;
-    for (int i=0; i<particles->size(); i++)
+    for (size_t i=0; i<particles->size(); i++)
     {
         if ((*particles)[i]->shedTime == partRow)
         {
@@ -204,7 +204,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         int lowestYindex = 0;
         
         // Go through the vector and see if there is an element with a lesser 'y' value
-        for (int i=0; i<unsortedParts.size(); i++) {
+        for (size_t i=0; i<unsortedParts.size(); i++) {
             double partY = unsortedParts[i]->parentPanel->getCenter().y();
             
             if(partY < lowestY){
@@ -223,7 +223,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     
     // 1. Find curve length
     double Slen = 0;
-    for(int i=0; i<sortedParts.size()-1; i++)
+    for(size_t i=0; i<sortedParts.size()-1; i++)
     {
         // Grab current and next particle positions
         Eigen::Vector3d pos1 = sortedParts[i]->pos;
@@ -279,12 +279,12 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     Cl = Eigen::VectorXd::Zero(nPnts+1);
     Cd = Eigen::VectorXd::Zero(nPnts+1);
     
-    for (int i=1; i<Spts.size(); i++)
+    for (size_t i=1; i<Spts.size(); i++)
     {
         Eigen::Vector3d pWake = Spts[i];
         
         Eigen::Vector3d partV = Eigen::Vector3d::Zero();
-        for (int j=0; j<particles->size(); j++) {
+        for (size_t j=0; j<particles->size(); j++) {
             partV += (*particles)[j]->velInfl(pWake);
         }
         
@@ -449,7 +449,7 @@ Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yLoc)
 wakeLine* wake::findWakeLine(double y)
 {
     double y1,y2;
-    for (int i=0; i<wakeLines.size(); i++)
+    for (wakeLines_index_type i=0; i<wakeLines.size(); i++)
     {
         y1 = wakeLines[i]->getP1()(1);
         y2 = wakeLines[i]->getP2()(1);
@@ -477,7 +477,7 @@ double wake::wakeStrength(double y)
     }
     else
     {
-        for (int i=1; i<wakeLines.size()-1; i++)
+        for (wakeLines_index_type i=1; i<wakeLines.size()-1; i++)
         {
             if ((wakeLines[i]->getY() <= y && wakeLines[i+1]->getY() > y))
             {
@@ -593,12 +593,12 @@ Eigen::Vector3d wake::pntInWake(double x, double y)
     pntInWake.setZero();
     Eigen::Vector3d yDir;
     yDir << 0,1,0;
-    for (int i=0; i<wpanels.size(); i++)
+    for (wakePanels_index_type i=0; i<wpanels.size(); i++)
     {
         if (wpanels[i]->isTEpanel())
         {
             std::vector<edge*> edges = wpanels[i]->getUpper()->getEdges();
-            for (int j=0; j<edges.size(); j++)
+            for (size_t j=0; j<edges.size(); j++)
             {
                 if (edges[j]->isTE())
                 {

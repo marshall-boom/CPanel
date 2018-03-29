@@ -42,8 +42,13 @@ struct inputParams
     bool vortexParticles = false;
     bool volMeshFlag = false;
 
-    std::vector<double> volMeshBounds;
-    std::vector<int> volMeshRes;
+    using volMeshBounds_type = std::vector<double>;
+    using volMeshBounds_index_type = volMeshBounds_type::size_type;
+    using volMeshRes_type = std::vector<int>;
+    using volMeshRes_index_type = volMeshRes_type::size_type;
+
+    volMeshBounds_type volMeshBounds;
+    volMeshRes_type volMeshRes;
 
 
     inputParams(cpFile* inFile)

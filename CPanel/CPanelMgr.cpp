@@ -44,7 +44,7 @@ void caseMgr::runCases()
     {
         std::cout << "\nRunning " << casesVP.size() << " Cases...\n" << std::flush;
         
-        for (int i=0; i<casesVP.size(); i++)
+        for (cases_index_type i=0; i<casesVP.size(); i++)
         {
             std::string out;
             std::stringstream outstream;
@@ -60,7 +60,7 @@ void caseMgr::runCases()
         std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
         std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(24) << std::left << "Stability Derivatives" << std::setw(15) << std::left << "Volume Mesh" << std::endl;
         
-        for (int i=0; i<cases.size(); i++)
+        for (cases_index_type i=0; i<cases.size(); i++)
         {
             std::string out;
             std::stringstream outstream;
@@ -95,11 +95,11 @@ void caseMgr::writeSummary()
         
         outSpacing.resize(9);
         outSpacing << 11,7,8,8,8,8,12,12,12;
-        for (int i=0; i<cases.size(); i++)
+        for (cases_index_type i=0; i<cases.size(); i++)
         {
             writeCase(i+1, cases[i], out);
         }
-        for (int i=0; i<casesVP.size(); i++) {
+        for (cases_index_type i=0; i<casesVP.size(); i++) {
             writeCase(i+1, casesVP[i], out);
         }
     }

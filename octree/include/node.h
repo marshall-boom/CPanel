@@ -20,13 +20,18 @@
 template<typename type>
 class node
 {
+    using member_collection_type = std::vector<member<type>>;
+public:
+    using member_index_type = typename member_collection_type::size_type;
+
+private:
     node<type>* parent;
     node<type>* children[8];
     Eigen::Vector3d origin;
     Eigen::Vector3d halfDimension;
-    std::vector<member<type>> members;
+    member_collection_type members;
     short level;
-    short maxMembers;
+    member_index_type maxMembers;
     double maxTheta;
 
     void createChild(int childNumber)
@@ -85,7 +90,7 @@ class node
     std::vector<type*> membersToObjects()
     {
         std::vector<type*> objects;
-        for (int i=0; i<members.size(); i++)
+        for (member_index_type i=0; i<members.size(); i++)
         {
             type* obj = members[i].getObj();
             objects.push_back(obj);
@@ -184,7 +189,7 @@ public:
             members.push_back(member);
             if (members.size() > maxMembers)
             {
-                for (int i=0; i<members.size(); i++)
+                for (member_index_type i=0; i<members.size(); i++)
                 {
                     pushMember(members[i]);
                 }
@@ -223,7 +228,7 @@ public:
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 velInfl+=nParts[i]->velInflAlgSmooth(POI); // uses faster velocity formulation
             }
@@ -237,7 +242,7 @@ public:
             else
             {
                 std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                for(size_t i=0; i<children.size() ; i++)
                 {
                     velInfl += children[i]->calcVel(POI);
                 }
@@ -253,7 +258,7 @@ public:
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 if(part != nParts[i])
                 {
@@ -270,7 +275,7 @@ public:
             else
             {
                 std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                for(size_t i=0; i<children.size() ; i++)
                 {
                     velInfl += children[i]->calcVel(part);
                 }
@@ -286,7 +291,7 @@ public:
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 if(nParts[i] != part) // Kroneger delta func.
                 {
@@ -303,7 +308,7 @@ public:
             else
             {
                 std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                for(size_t i=0; i<children.size() ; i++)
                 {
                     stretchInfl += children[i]->calcStretch(part);
                 }
@@ -337,7 +342,7 @@ public:
             else
             {
                 std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                for(size_t i=0; i<children.size() ; i++)
                 {
                     diffInfl += children[i]->calcDiff(part);
                 }
@@ -443,7 +448,7 @@ public:
                 if (children[i] != NULL)
                 {
                     std::vector<type*> temp = children[i]->getMembers();
-                    for (int j=0; j<temp.size(); j++)
+                    for (member_index_type j=0; j<temp.size(); j++)
                     {
                         recursiveMembers.push_back(temp[j]);
                     }
@@ -471,7 +476,7 @@ public:
                 if (children[i] != NULL)
                 {
                     std::vector<node<type>*> temp = children[i]->getSubNodes();
-                    for (int j=0; j<temp.size(); j++)
+                    for (size_t j=0; j<temp.size(); j++)
                     {
                         recursiveNodes.push_back(temp[j]);
                     }
@@ -543,7 +548,7 @@ public:
         std::vector<node<type>*> children = this->getChildren();
         std::vector<type*> childExps;
 
-        for(int i=0; i<children.size(); i++)
+        for(size_t i=0; i<children.size(); i++)
         {
             childExps.push_back(children[i]->multExp);
         }

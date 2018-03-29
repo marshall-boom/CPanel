@@ -19,10 +19,15 @@ class bodyPanel;
 
 class cpNode
 {
+	using edges_type = std::vector<edge *>;
+	using edges_index_type = edges_type::size_type;
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+
     Eigen::Vector3d pnt;
     int index;
-    std::vector<edge*> edges;
-    std::vector<bodyPanel*> bodyPans;
+    edges_type edges;
+    bodyPanels_type bodyPans;
     double c_w = 1.3; //vpp
     
     bool TEnode;

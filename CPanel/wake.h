@@ -25,6 +25,11 @@ class particle;
 
 class wake
 {
+	using wakePanels_type = std::vector<wakePanel *>;
+	using wakePanels_index_type = wakePanels_type::size_type;
+	using wakeLines_type = std::vector<wakeLine *>;
+	using wakeLines_index_type = wakeLines_type::size_type;
+
     int ID;
     geometry* geom;
     std::vector<wakePanel*> wpanels;

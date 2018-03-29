@@ -383,10 +383,10 @@ void inputParams::writeInputFile()
     fid << "Accelerate_Code" << std::endl;
     fid << accelerateCode << std::endl;
     fid << "Volume_Mesh (Xo Xf Yo Yf Zo Zf nX nY nZ)" << std::endl;
-    for (int i=0; i<volMeshBounds.size(); i++) {
+    for (volMeshBounds_index_type i=0; i<volMeshBounds.size(); i++) {
         fid << volMeshBounds[i] << " ";
     }
-    for (int i=0; i<volMeshRes.size(); i++) {
+    for (volMeshRes_index_type i=0; i<volMeshRes.size(); i++) {
         fid << volMeshRes[i] << " ";
     }
     fid << "/n/n" <<std::flush;
