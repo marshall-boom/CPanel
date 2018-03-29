@@ -933,7 +933,7 @@ void geometry::calcTimeStep(){
         {
             sum += Tedges[i]->length();
         }
-        double avgLength = sum/Tedges.size();
+        double avgLength = sum/static_cast<double>(Tedges.size());
         
         dt = avgLength/inputV;
         

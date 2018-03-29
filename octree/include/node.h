@@ -109,7 +109,7 @@ public:
             children[i] = NULL;
         }
 
-        level = parent_level+1;
+        level = parent_level+static_cast<short>(1);
     }
 
     node(const node<type>& copy)

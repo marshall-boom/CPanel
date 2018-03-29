@@ -226,7 +226,7 @@ double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
         dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
     }
     
-    return std::accumulate(dist.begin(), dist.end(), 0.0)/dist.size();
+    return std::accumulate(dist.begin(), dist.end(), 0.0)/static_cast<double>(dist.size());
 }
 
 
