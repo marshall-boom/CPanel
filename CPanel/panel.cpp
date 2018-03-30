@@ -252,7 +252,7 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
     else
     {
         Eigen::Vector3d p1,p2,a,b,s;
-        int i1,i2;
+        nodes_index_type i1,i2;
         for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             if (i!=nodes.size()-1)
@@ -390,7 +390,7 @@ Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
     // dudz  dvdz  dwdz
     
     Eigen::Vector3d p1,p2,a,b,s;
-    int i1,i2;
+    nodes_index_type i1,i2;
     for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         if (i!=nodes.size()-1)

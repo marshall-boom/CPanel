@@ -201,7 +201,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     {
         // Start with first element in vector
         double lowestY = unsortedParts[0]->parentPanel->getCenter().y();
-        int lowestYindex = 0;
+        size_t lowestYindex = 0;
         
         // Go through the vector and see if there is an element with a lesser 'y' value
         for (size_t i=0; i<unsortedParts.size(); i++) {
