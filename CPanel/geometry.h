@@ -204,8 +204,8 @@ class geometry
     nodes_type nodes;
     edges_type edges;
 //    std::vector<cpNode*> TEnodes;
-    short nNodes;
-    short nTris;
+    size_t nNodes;
+    size_t nTris;
 
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
@@ -222,13 +222,13 @@ class geometry
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
-    void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID );
+    void createSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID );
     void createOctree();
     void getLiftingSurfs(std::vector<surface*>& wakes, std::vector<surface*>& liftingSurfs);
     void setNeighbors(panel* p,int targetID);
     bool isLiftingSurf(int currentID, std::vector<int> wakeIDs);
-    void correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity);
-    double shortestEdge(const Eigen::MatrixXi &connectivity);
+    void correctWakeConnectivity(size_t wakeNodeStart,size_t wakeTriStart,Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity);
+    double shortestEdge(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity);
     liftingSurf* getParentSurf(int wakeID);
 
     void setInfCoeff();
@@ -238,7 +238,7 @@ class geometry
     void readInfCoeff();
     void writeInfCoeff();
 
-    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<bool> isFirstPanel);
+    void createVPWakeSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<size_t> &VPwakeID, std::vector<bool> isFirstPanel);
     void calcTimeStep();
 
 public:
@@ -270,8 +270,8 @@ public:
 
     void clusterCheck();
 
-    short getNumberOfNodes() {return nNodes;}
-    short getNumberOfTris() {return nTris;}
+    size_t getNumberOfNodes() {return nNodes;}
+    size_t getNumberOfTris() {return nTris;}
     std::vector<cpNode*> getNodes() {return nodes;}
     Eigen::MatrixXd getNodePnts();
 

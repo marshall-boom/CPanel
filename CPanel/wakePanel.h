@@ -32,7 +32,7 @@ class wakePanel : public panel
     wakePanel* bufferParent;
     
 public:
-    wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, int surfID);
+    wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake, size_t surfID);
     
     wakePanel(const wakePanel &copy);
     
@@ -64,7 +64,7 @@ public:
     bool isSecondRow = false;
     
     
-    std::vector<int> sort_indexes(std::vector<double> &v);
+    std::vector<size_t> sort_indexes(std::vector<double> &v);
     Eigen::Vector3d partStretching(particle* part);
     
     std::vector<cpNode*> pointsInOrder();

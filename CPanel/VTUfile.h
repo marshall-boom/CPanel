@@ -36,7 +36,7 @@ struct pntDataArray
 struct piece
 {
     Eigen::MatrixXd pnts;
-    Eigen::MatrixXi connectivity;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> connectivity;
     std::vector<cellDataArray> cellData;
     std::vector<pntDataArray> pntData;
 };
@@ -53,6 +53,8 @@ class VTUfile
     
     void printIntArray(std::ofstream &f,std::string name,Eigen::MatrixXi array);
     
+    void printSizeTArray(std::ofstream &f,std::string nname,Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> array);
+
     void write();
     
 public:

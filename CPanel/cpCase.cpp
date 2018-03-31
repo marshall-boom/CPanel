@@ -361,7 +361,7 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
 {
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals"),x("xPosition"),y("yPosition"),z("zPostition");
-    Eigen::MatrixXi con(bPanels->size(),3);
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
     mu.data.resize(bPanels->size(),1);
     sigma.data.resize(bPanels->size(),1);
     pot.data.resize(bPanels->size(),1);
@@ -409,7 +409,7 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
 {
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
     con.resize(wPanels->size(),3);
     mu.data.resize(wPanels->size(),1);
     pot.data.resize(wPanels->size(),1);
@@ -464,7 +464,7 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
     std::vector<piece> pieces;
     std::vector<pntDataArray> data;
     pntDataArray vel("Velocity");
-    Eigen::MatrixXi con;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
     Eigen::MatrixXd pntMat;
     std::vector<Eigen::Vector3d> pnts,velocities;
 
@@ -499,16 +499,16 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
 }
 
 
-void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> ccells){
+void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> ccells){
     size_t nCells = ccells.size();
 
     std::vector<cellDataArray> data;
     cellDataArray vel("Velocity"), Cp("Cp");
-    Eigen::MatrixXi con;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
     con.resize(nCells,8);
     vel.data.resize(nCells,3);
     Cp.data.resize(nCells,1);
-    for (int i=0; i<nCells; i++)
+    for (size_t i=0; i<nCells; i++)
     {
         vel.data.row(i) = volMeshDat.velocity[i];
         Cp.data(i,0) = volMeshDat.coef_press[i];
@@ -590,7 +590,7 @@ void cpCase::createVolMesh(){
     for (int i=0; i<nX; i++) {
         for (int j=0; j<nY; j++) {
             for (int k=0; k<nZ; k++) {
-                Eigen::VectorXi cell_pts(8);
+                Eigen::Matrix<size_t, Eigen::Dynamic, 1> cell_pts(8);
                 cell_pts[0] = (k*(nXp*nYp) + j*(nXp) + i);
                 cell_pts[1] = (k*(nXp*nYp) + j*(nXp) + i) + 1;
 

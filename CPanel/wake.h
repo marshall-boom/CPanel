@@ -30,7 +30,7 @@ class wake
 	using wakeLines_type = std::vector<wakeLine *>;
 	using wakeLines_index_type = wakeLines_type::size_type;
 
-    int ID;
+    size_t ID;
     geometry* geom;
     std::vector<wakePanel*> wpanels;
     std::vector<wakePanel*> TEpanels;
@@ -60,7 +60,7 @@ class wake
 
     
 public:
-    wake(int wakeID, geometry* ggeom)
+    wake(size_t wakeID, geometry* ggeom)
       : ID(wakeID), geom(ggeom), x0(0), xf(0), z0(0), zf(0), yMin(0), yMax(0), CL(0), CD(0) {}
     
     ~wake();

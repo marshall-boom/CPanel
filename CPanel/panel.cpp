@@ -11,7 +11,7 @@
 #include "edge.h"
 #include "surface.h"
 
-panel::panel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm, int surfID)
+panel::panel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm, size_t surfID)
   : nodes(nnodes), pEdges(ppEdges), bezNormal(bbezNorm), ID(surfID)
 {
     setGeom();
@@ -319,9 +319,9 @@ Eigen::Vector3d panel::pntDubV(const Eigen::Vector3d n,const Eigen::Vector3d &pj
     return area*(3*pjk.dot(n)*pjk-pow(pjk.norm(),2)*n)/(4*M_PI*pow(pjk.norm(),5));
 }
 
-Eigen::VectorXi panel::getVerts()
+Eigen::Matrix<size_t, Eigen::Dynamic, 1> panel::getVerts()
 {
-    Eigen::VectorXi verts(nodes.size());
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts(nodes.size());
     for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         verts(i) = nodes[i]->getIndex();

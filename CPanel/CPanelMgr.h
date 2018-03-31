@@ -32,7 +32,7 @@ class caseMgr
     void setCases();
     void runCases();
     void writeSummary();
-    void writeCase(int caseNumber, cpCase* c, std::ofstream &outStream);
+    void writeCase(size_t caseNumber, cpCase* c, std::ofstream &outStream);
 public:
     caseMgr(inputParams* pp,geometry* ggeom) : p(pp), geom(ggeom)
     {

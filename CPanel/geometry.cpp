@@ -124,7 +124,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
     {
         std::cout << "Reading Geometry..." << std::endl;
         fid >> nNodes >> nTris;
-        Eigen::MatrixXi connectivity(nTris,3);
+        Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> connectivity(nTris,3);
         Eigen::VectorXi allID(nTris);
         std::vector<int> surfIDs;
         std::vector<int> wakeIDs;
@@ -133,7 +133,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         // Read XYZ Locations of Nodes
         Eigen::Vector3d pnt;
         cpNode* n;
-        for (int i=0; i<nNodes; i++)
+        for (size_t i=0; i<nNodes; i++)
         {
             fid >> pnt(0) >> pnt(1) >> pnt(2);
             n = new cpNode(pnt,i);
@@ -141,7 +141,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         // Temporarily Store Connectivity
-        for (int i=0; i<nTris; i++)
+        for (size_t i=0; i<nTris; i++)
         {
             fid >> connectivity(i,0) >> connectivity(i,1) >> connectivity(i,2);
         }
@@ -149,9 +149,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         connectivity = connectivity.array()-1; //Adjust for 0 based indexing
 
         // Scan Surface IDs and collect Unique IDs
-        int wakeNodeStart = nNodes;
-        int wakeTriStart = nTris;
-        for (int i=0; i<nTris; i++)
+        size_t wakeNodeStart = nNodes;
+        size_t wakeTriStart = nTris;
+        for (size_t i=0; i<nTris; i++)
         {
             fid >> allID(i);
             if (i == 0 || allID(i) != allID(i-1))
@@ -182,7 +182,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         if (normFlag)
         {
             std::cout << "Reading Bezier Normals from Geometry File..." << std::endl;
-            for (int i=0; i<nTris; i++)
+            for (size_t i=0; i<nTris; i++)
             {
                 fid >> norms(i,0) >> norms(i,1) >> norms(i,2);
             }
@@ -236,17 +236,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             }
             
             Eigen::MatrixXd wakeNodes(2*TEnodes.size(),3);
-            Eigen::MatrixXi wakeConnectivity(2*TEedges.size(),4);
-            std::vector<int> VPwakeID, newNodesIndex, usedTENodesIndex;
+            Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> wakeConnectivity(2*TEedges.size(),4);
+            std::vector<size_t> VPwakeID, newNodesIndex, usedTENodesIndex;
             int nodeCounter=0, panelCounter=0;
             
             for(size_t i=0; i<TEedges.size(); i++)
             {
                 
                 // Find the trialing nodes (by index?)
-                int n1index = TEedges[i]->getN1()->getIndex();
-                int n2index = TEedges[i]->getN2()->getIndex();
-                int n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
+                size_t n1index = TEedges[i]->getN1()->getIndex();
+                size_t n2index = TEedges[i]->getN2()->getIndex();
+                size_t n1firstIndex, n1secIndex, n2firstIndex, n2secIndex;
                 
                 bool isUsed = false;
                 for(size_t j=0; j<usedTENodesIndex.size(); j++)
@@ -317,7 +317,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             
             
             // Append nodes and adjust connectivity
-            for (int i=0; i<wakeNodes.rows(); i++)
+            for (size_t i=0; i<static_cast<size_t>(wakeNodes.rows()); i++)
             {
                 n = new cpNode(wakeNodes.row(i),i+nNodes);
                 nodes.push_back(n);
@@ -447,15 +447,15 @@ void geometry::readTri(std::string tri_file, bool normFlag)
     }
 }
 
-void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity)
+void geometry::correctWakeConnectivity(size_t wakeNodeStart,size_t wakeTriStart,Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity)
 {
     Eigen::Vector3d vec;
-    Eigen::Matrix<double,Eigen::Dynamic,2> indReps; // [toReplace, replaceWith]
+    Eigen::Matrix<size_t,Eigen::Dynamic,2> indReps; // [toReplace, replaceWith]
     double tol = shortestEdge(connectivity);
     int count = 0;
-    for (int i=0; i<wakeNodeStart; i++)
+    for (size_t i=0; i<wakeNodeStart; i++)
     {
-        for (int j=wakeNodeStart; j<nNodes; j++)
+        for (size_t j=wakeNodeStart; j<nNodes; j++)
         {
             vec = nodes[i]->getPnt()-nodes[j]->getPnt();
             if (vec.lpNorm<Eigen::Infinity>() < tol)
@@ -470,7 +470,7 @@ void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen:
         }
     }
 
-    for (int i=wakeTriStart; i<nTris; i++)
+    for (size_t i=wakeTriStart; i<nTris; i++)
     {
         for (int j=0; j<connectivity.cols(); j++)
         {
@@ -485,7 +485,7 @@ void geometry::correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen:
     }
 }
 
-double geometry::shortestEdge(const Eigen::MatrixXi &connectivity)
+double geometry::shortestEdge(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity)
 {
     int nrows,ncols;
     Eigen::Vector3d p1,p2;
@@ -528,14 +528,14 @@ bool geometry::isLiftingSurf(int currentID, std::vector<int> wakeIDs)
     return false;
 }
 
-void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID )
+void geometry::createSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID )
 {
     surface* s = nullptr;
     wake* w = nullptr;
     bodyPanel* bPan;
     wakePanel* wPan;
     std::vector<edge*> pEdges;
-    for (int i=0; i<nTris; i++)
+    for (size_t i=0; i<nTris; i++)
     {
         std::vector<cpNode*> pNodes;
         pNodes.push_back(nodes[connectivity(i,0)]);
@@ -567,7 +567,7 @@ void geometry::createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::
 
 std::vector<edge*> geometry::panEdges(const std::vector<cpNode*>  &pNodes)
 {
-    int i1,i2;
+    size_t i1,i2;
     std::vector<edge*> triEdges;
     edge* e;
     for (size_t i=0; i<pNodes.size(); i++)
@@ -943,7 +943,7 @@ void geometry::calcTimeStep(){
 }
 
 
-void geometry::createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID,  std::vector<bool> iisFirstPanel){
+void geometry::createVPWakeSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<size_t> &VPwakeID,  std::vector<bool> iisFirstPanel){
     
     wake* w = nullptr;
     wakePanel* wPan;

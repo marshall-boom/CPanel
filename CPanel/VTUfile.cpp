@@ -42,7 +42,7 @@ void VTUfile::write()
             printDoubleArray(f, "Position", piece.pnts);
             f << "\t\t\t</Points>\n";
             f << "\t\t\t<Cells>\n";
-            printIntArray(f, "connectivity", piece.connectivity);
+            printSizeTArray(f, "connectivity", piece.connectivity);
             Eigen::MatrixXi offset(piece.connectivity.rows(),1);
             Eigen::MatrixXi type(piece.connectivity.rows(),1);
             
@@ -110,6 +110,20 @@ void VTUfile::printDoubleArray(std::ofstream &f,std::string nname,Eigen::MatrixX
 }
 
 void VTUfile::printIntArray(std::ofstream &f,std::string nname,Eigen::MatrixXi array)
+{
+    f << "\t\t\t\t<DataArray type=\"Int32\" Name=\"" << nname << "\" Format=\"ascii\">\n";
+    for (int i=0; i<array.rows(); i++)
+    {
+        for (int j=0; j<array.cols(); j++)
+        {
+            f << array(i,j) << "\t";
+        }
+        f << "\n";
+    }
+    f << "\t\t\t\t</DataArray>\n";
+}
+
+void VTUfile::printSizeTArray(std::ofstream &f,std::string nname,Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> array)
 {
     f << "\t\t\t\t<DataArray type=\"Int32\" Name=\"" << nname << "\" Format=\"ascii\">\n";
     for (int i=0; i<array.rows(); i++)

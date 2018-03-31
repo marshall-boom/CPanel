@@ -95,13 +95,13 @@ protected:
     
     using cells_type = std::vector<Eigen::VectorXi>;
     using cells_index_type = cells_type::size_type;
-    std::vector<Eigen::VectorXi> cells;
+    std::vector<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> cells;
     Eigen::MatrixXd pts;
     
     Eigen::Vector3d velocityAtPoint(Eigen::Vector3d POI);
     void createVolMesh();
     void populateVolMesh();
-    void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
+    void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> cells);
     
     Eigen::MatrixXd solnMat; // For unsteady sims, but needs to be in parent class for simple output
     

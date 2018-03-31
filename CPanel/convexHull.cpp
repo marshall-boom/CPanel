@@ -45,16 +45,18 @@ convexHull::convexHull(Eigen::MatrixXd points, bool bound) : boundary(bound)
         }
     }
     std::sort(members.begin()+1,members.end(),compareTheta());
-    int minBegin = -1;
-    int minEnd = -1;
+    size_t minBegin = 0;
+    bool minBeginSet = false;
+    size_t minEnd = 0;
+    bool minEndSet = false;
     members_index_type maxBegin = members.size();
     for (members_index_type i=1; i<members.size()-1; i++)
     {
-        if (members[i]->theta == minTheta && minBegin == -1)
+        if (members[i]->theta == minTheta && !minBeginSet)
         {
             minBegin = i;
         }
-        else if (members[i]->theta != minTheta && minBegin != -1 && minEnd == -1)
+        else if (members[i]->theta != minTheta && minBeginSet && minEndSet)
         {
             minEnd = i;
         }

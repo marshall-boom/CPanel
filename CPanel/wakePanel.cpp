@@ -13,7 +13,7 @@
 
 
 wakePanel::wakePanel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm,
-		             wake* pparentWake, int surfID)
+		             wake* pparentWake, size_t surfID)
   : panel(nnodes,ppEdges,bbezNorm,surfID), upperPan(nullptr), lowerPan(nullptr),
 	TEpanel(false), parentWake(pparentWake), vortFil(nullptr), bufferParent(nullptr)
 {
@@ -230,12 +230,12 @@ double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
 }
 
 
-std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {
+std::vector<size_t> wakePanel::sort_indexes(std::vector<double> &v) {
     
     // if function errors out, its because I replaced all 'std::size_t' with 'int' except for vector<int>
     
     // initialize original index locations
-    std::vector<int> idx(v.size());
+    std::vector<size_t> idx(v.size());
     for (size_t i = 0; i !=idx.size(); ++i) idx[i] = i;
     
     // sort indexes based on comparing values in v

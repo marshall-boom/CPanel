@@ -753,7 +753,7 @@ void cpCaseVP::writeFilesVP(){
 void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals");
-    Eigen::MatrixXi con(bPanels->size(),3);
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
     mu.data.resize(bPanels->size(),1);
     sigma.data.resize(bPanels->size(),1);
     pot.data.resize(bPanels->size(),1);
@@ -790,7 +790,7 @@ void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixX
 void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
     mu.data.resize(wPanels->size(),1);
     pot.data.resize(wPanels->size(),1);
     for (wakePanels_index_type i=0; i<wPanels->size(); i++)
@@ -816,7 +816,7 @@ void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::Matrix
 void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
     con.resize(w2panels->size(),4);
     mu.data.resize(w2panels->size(),1);
     pot.data.resize(w2panels->size(),1);
@@ -840,7 +840,7 @@ void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Mat
 void cpCaseVP::writeFilamentData(boost::filesystem::path path){
     std::vector<cellDataArray> data;
     cellDataArray mu("Gamma");
-    Eigen::MatrixXi con;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
     
     Eigen::MatrixXd nodeMat(2*filaments.size(),3);
     for(filaments_index_type i=0; i<filaments.size(); i++){
@@ -882,8 +882,8 @@ void cpCaseVP::writeParticleData(boost::filesystem::path path){
     
     std::vector<cellDataArray> data;
     cellDataArray strength("Strength"), shedTime("Time Step Shed");
-    Eigen::MatrixXi con(particles.size(),1);
-    Eigen::MatrixXi shed(particles.size(),1);
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(particles.size(),1);
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> shed(particles.size(),1);
     
     strength.data.resize(particles.size(),3);
     shedTime.data.resize(particles.size(),1);

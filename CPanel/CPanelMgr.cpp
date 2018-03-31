@@ -107,7 +107,7 @@ void caseMgr::writeSummary()
     
 }
 
-void caseMgr::writeCase(int caseNumber, cpCase* c, std::ofstream &outStream)
+void caseMgr::writeCase(size_t caseNumber, cpCase* c, std::ofstream &outStream)
 {
     outStream << std::endl;
     outStream << std::setprecision(3);

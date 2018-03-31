@@ -49,7 +49,7 @@ protected:
     double prevPotential = 0;
     Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
     double Cp;
-    int ID;
+    size_t ID;
     double core = 0.05;
     
     double vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m);
@@ -65,7 +65,7 @@ protected:
     Eigen::Matrix3d gradDoub(const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s);
 
 public:
-    panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,int surfID);
+    panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, size_t surfID);
     
     virtual ~panel() {}
     
@@ -91,12 +91,12 @@ public:
     std::vector<Eigen::Vector3d> pntsAroundPnt(int nPnts,const Eigen::Vector3d &POI, double r);
     Eigen::Vector3d pntNearEdge(edge* e);
     
-    int getID() {return ID;}
+    size_t getID() {return ID;}
     Eigen::Vector3d getCenter() const {return center;}
     Eigen::Vector3d getNormal() const {return normal;}
     Eigen::Vector3d getBezNormal() const {return bezNormal;}
     std::vector<cpNode*> getNodes() {return nodes;}
-    Eigen::VectorXi getVerts();
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> getVerts();
     std::vector<edge*> getEdges() {return pEdges;}
     double getLongSide() {return longSide;}
     double getArea() {return area;}

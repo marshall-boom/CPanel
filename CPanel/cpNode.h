@@ -25,7 +25,7 @@ class cpNode
 	using bodyPanels_index_type = bodyPanels_type::size_type;
 
     Eigen::Vector3d pnt;
-    int index;
+    size_t index;
     edges_type edges;
     bodyPanels_type bodyPans;
     double c_w = 1.3; //vpp
@@ -33,7 +33,7 @@ class cpNode
     bool TEnode;
     
 public:
-    cpNode(Eigen::Vector3d pnt,int index);
+    cpNode(Eigen::Vector3d pnt,size_t iindex);
         
     Eigen::Vector3d operator-=(const cpNode &rhs);
     
@@ -45,12 +45,12 @@ public:
     edge* getTE(edge* exception);
     
     void setTE();
-    void setIndex(int i);
+    void setIndex(size_t i);
     
     void setPnt(Eigen::Vector3d pos){pnt = pos;}
     Eigen::Vector3d getPnt() const {return pnt;}
     
-    int getIndex() const {return index;}
+    size_t getIndex() const {return index;}
     
     std::vector<edge*> getEdges() {return edges;}
     

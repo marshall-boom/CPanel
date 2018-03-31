@@ -11,7 +11,7 @@
 #include "bodyPanel.h"
 
 
-cpNode::cpNode(Eigen::Vector3d ppnt,int iindex) : pnt(ppnt), index(iindex), TEnode(false) {}
+cpNode::cpNode(Eigen::Vector3d ppnt,size_t iindex) : pnt(ppnt), index(iindex), TEnode(false) {}
 
 Eigen::Vector3d cpNode::operator-=(const cpNode &rhs)
 {
@@ -55,7 +55,7 @@ edge* cpNode::getTE(edge* exception)
 
 void cpNode::setTE() {TEnode = true;}
 
-void cpNode::setIndex(int i) {index = i;}
+void cpNode::setIndex(size_t i) {index = i;}
 
 edge* cpNode::getOtherTrailEdge(edge* current)
 {
