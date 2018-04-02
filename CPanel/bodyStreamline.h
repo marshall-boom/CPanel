@@ -1,10 +1,19 @@
-//
-//  bodyStreamline.h
-//  CPanel - Unstructured Panel Code
-//
-//  Created by Chris Satterwhite on 1/27/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel___Unstructured_Panel_Code__bodyStreamline__
 #define __CPanel___Unstructured_Panel_Code__bodyStreamline__
@@ -27,8 +36,6 @@ class bodyStreamline
     double Vmag;
     double PG;
     int marchDir;
-    geometry* geom;
-    int pntsPerPanel;
     
 //    Eigen::Vector3d trailingEdgePnt(bodyPanel* p);
     edge* edgeIntersection(bodyPanel* pan,const Eigen::Vector3d &pnt, double pntPot, Eigen::Vector3d &vel, double &dt, Eigen::Vector3d &pntOnEdge, double maxAngle, edge* lastEdge, bool &stagFlag);
@@ -37,7 +44,7 @@ class bodyStreamline
     
     double safeInvCos(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2);
 public:
-    bodyStreamline(Eigen::Vector3d startPnt, bodyPanel* startPan, const Eigen::Vector3d &Vinf, double PG, geometry* geom, int pntsPerPanel, bool marchFwd);
+    bodyStreamline(Eigen::Vector3d startPnt, bodyPanel* startPan, const Eigen::Vector3d &Vinf, double PG, geometry *geom, int pntsPerPanel, bool marchFwd);
     
     std::vector<Eigen::Vector3d> getPnts() {return pnts;}
     std::vector<Eigen::Vector3d> getVelocities() {return velocities;}

@@ -1,10 +1,19 @@
-//
-//  cpCaseVP.h
-//  CPanel
-//
-//  Created by Connor Sousa on 1/31/17.
-//  Copyright (c) 2017 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2017 Connor Sousa
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Connor Sousa - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel__cpCaseVP__
 #define __CPanel__cpCaseVP__
@@ -19,11 +28,17 @@
 
 
 
-class cpCaseVP : public cpCase{
-    
-    std::vector<particle*> particles;
-    std::vector<vortexFil*> filaments;
-    std::vector<wakePanel*>* w2panels; // Second row of buffer wake
+class cpCaseVP : public cpCase
+{
+
+	using particles_type = std::vector<particle *>;
+	using particles_index_type = particles_type::size_type;
+	using filaments_type = std::vector<vortexFil *>;
+	using filaments_index_type = filaments_type::size_type;
+
+    particles_type particles;
+    filaments_type filaments;
+    wakePanels_type * w2panels; // Second row of buffer wake
     
     Eigen::VectorXd wake2Doublets;
     
@@ -73,7 +88,8 @@ class cpCaseVP : public cpCase{
     
     
 public:
-    cpCaseVP( geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams ) : cpCase( geom, V, alpha, beta, mach, inParams )
+    cpCaseVP( geometry *ggeom, double V, double aalpha, double bbeta, double mmach, inputParams* inParams )
+      : cpCase( ggeom, V, aalpha, bbeta, mmach, inParams )
     {
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();

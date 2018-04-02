@@ -1,8 +1,16 @@
 ################################################################################
 # Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
 #
-# All rights reserved. Licensed under the MIT License. See LICENSE file in the
-# project root for full license information.
+# This program and the accompanying materials are made
+# available under the terms of the Eclipse Public License 2.0
+# which is available at https://www.eclipse.org/legal/epl-2.0/
+#
+# See LICENSE.md file in the project root for full license information.
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+# Contributors:
+#    David D. Marshall - initial code and implementation
 ################################################################################
 
 cmake_minimum_required(VERSION 3.0)
@@ -42,14 +50,36 @@ include_directories(${CPANEL_BINARY_DIR}/include)
 # Compiler Shenanigans to Ensure IEEE
 #list(APPEND CMAKE_C_FLAGS  "-std=c99 -mfpmath=sse -msse2")
 ################################################################################
+include(${PROJECT_SOURCE_DIR}/cmake-util/compiler_flags.cmake)
+set(CPANEL_CXX_FLAGS "")
+ENABLE_CXX_LANGUAGE_VERSION(flag_temp 2011)
+if (flag_temp STREQUAL "NOT_FOUND")
+  message(FATAL_ERROR "Compiler does not support C++11.")
+else()
+  set(CPANEL_CXX_FLAGS "${CPANEL_CXX_FLAGS} ${flag_temp}")
+endif()
+ENABLE_CXX_PEDANTIC(flag_temp)
+if (flag_temp STREQUAL "NOT_FOUND")
+  message(WARNING "Compiler does not support pedantic setting.")
+else()
+  set(CPANEL_CXX_FLAGS "${CPANEL_CXX_FLAGS} ${flag_temp}")
+endif()
+ENABLE_CXX_WARNING_LEVEL(flag_temp 3)
+if (flag_temp STREQUAL "NOT_FOUND")
+  message(WARNING "Compiler does not support desired warning level.")
+else()
+  set(CPANEL_CXX_FLAGS "${CPANEL_CXX_FLAGS} ${flag_temp}")
+endif()
+
+set(CMAKE_CXX_FLAGS "${CPANEL_CXX_FLAGS}")
 
 ################################################################################
 # Find Dependencies
 ################################################################################
 find_package(Eigen3_Local REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 find_package(GTest_Local 1.8.0 REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
 include(CTest)
 
 ################################################################################

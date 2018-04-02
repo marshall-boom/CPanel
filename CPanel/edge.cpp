@@ -1,19 +1,28 @@
-//
-//  edge.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 1/25/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    Connor Sousa - Vortex particle implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "edge.h"
 #include "bodyPanel.h"
 #include "wakePanel.h"
 #include "cpNode.h"
-#include "geometry.h"
 
 
-edge::edge(cpNode* n1,cpNode* n2,geometry* geom) : n1(n1), n2(n2), TE(false), geom(geom)
+edge::edge(cpNode* nn1,cpNode* nn2) : n1(nn1), n2(nn2), TE(false)
 {
     n1->addEdge(this);
     n2->addEdge(this);
@@ -50,18 +59,20 @@ void edge::checkTE()
             theta1 = acos(v1.dot(normal)/(v1.norm()*normal.norm()));
             theta2 = acos(v2.dot(normal)/(v2.norm()*normal.norm()));
             
-            // By comparing the angle instead of just z location, distinction of upper and lower will be consistent even in the case of a wake shed from a vertical tail.
-            //
-            // \ upper
-            //  \
-            //   .p1   n
-            //    \   /|\
-            //     \___|___wake
-            //     /
-            //    /
-            //   .p2
-            //  /
-            // / lower
+            /* By comparing the angle instead of just z location, distinction of upper and lower will be consistent even in the case of a wake shed from a vertical tail.
+             *
+             * \ upper
+             *  \
+             *   .p1   n
+             *    \   /|\
+             *     \___|___wake
+             *     /
+             *    /
+             *   .p2
+             *  /
+             * / lower
+             *
+             */
             
             if (theta1 < theta2)
             {
@@ -108,7 +119,7 @@ bool edge::sameEdge(cpNode* node1, cpNode* node2)
 bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
 {
     
-    for (int i=0; i<2; i++)
+    for (size_t i=0; i<2; i++)
     {
         if (bodyPans[i] != currentPan)
         {
@@ -121,7 +132,7 @@ bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
 wakePanel* edge::getOtherWakePan(wakePanel* currentPan)
 {
 
-    for (int i=0; i<wakePans.size(); i++)
+    for (wakePanels_index_type i=0; i<wakePans.size(); i++)
     {
         if (wakePans[i] != currentPan)
         {

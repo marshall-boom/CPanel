@@ -1,17 +1,27 @@
-//
-//  surface.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 5/5/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "surface.h"
 #include "geometry.h"
 #include "bodyStreamline.h"
 
 
-surface::surface(const int &surfaceID,geometry* geom) : surfID(surfaceID), geom(geom), TEflag(false), LSflag(false) {}
+surface::surface(const int &ssurfaceID,geometry* ggeom)
+  : geom(ggeom), surfID(ssurfaceID), TEflag(false), LSflag(false) {}
 //==== Destructor ====//
 //surface::~surface()
 //{
@@ -20,6 +30,10 @@ surface::surface(const int &surfaceID,geometry* geom) : surfID(surfaceID), geom(
 //        delete panels[i];
 //    }
 //}
+
+surface::~surface()
+{
+}
 
 void surface::addPanel(bodyPanel* bPan)
 {
@@ -40,7 +54,7 @@ std::vector<edge*> surface::getTrailingEdges()
     
     edge* TE;
     
-    for (int i=0; i<panels.size(); i++)
+    for (panels_index_type i=0; i<panels.size(); i++)
     {
         if (panels[i]->isTEpanel())
         {
@@ -98,9 +112,9 @@ std::vector<std::pair<Eigen::Vector3d,bodyPanel*>> surface::getStreamlineStartPn
         std::vector<bodyPanel*> closePanels = pStag->getRelatedPanels();
         Eigen::Vector3d projPnt;
         
-        for (int i=0; i<pnts.size(); i++)
+        for (size_t i=0; i<pnts.size(); i++)
         {
-            for (int j=0; j<closePanels.size(); j++)
+            for (size_t j=0; j<closePanels.size(); j++)
             {
                 if (closePanels[j]->inPanelProjection(pnts[i],projPnt))
                 {
@@ -125,7 +139,7 @@ std::vector<std::pair<Eigen::Vector3d,bodyPanel*>> surface::getStreamlineStartPn
         std::vector<bodyPanel*> pans;
         Eigen::Vector3d oldNorm,pnt;
         double theta1,theta2;
-        for (int i=0; i<edges.size(); i++)
+        for (size_t i=0; i<edges.size(); i++)
         {
             pans = edges[i]->getBodyPans();
             if (i == 0)

@@ -1,10 +1,19 @@
-//
-//  bodyPanel.h
-//  CPanel
-//
-//  Created by Chris Satterwhite on 5/1/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel__bodyPanel__
 #define __CPanel__bodyPanel__
@@ -22,9 +31,12 @@ class particle;
 
 class bodyPanel : public panel
 {
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+
     surface* parentSurf;
-    std::vector<bodyPanel*> neighbors;
-    std::vector<bodyPanel*> cluster;
+    bodyPanels_type neighbors;
+    bodyPanels_type cluster;
     int TSorder;
     double sourceStrength = 0; // Initialize with zero so can print before compVelocity
     bool upper; // Sheds wake panel from lower edge
@@ -54,7 +66,7 @@ class bodyPanel : public panel
     Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
     
 public:
-    bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID);
+    bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
         
     void addNeighbor(bodyPanel* p);
     void setUpper();

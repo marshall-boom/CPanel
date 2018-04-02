@@ -1,17 +1,27 @@
-
-//  panel.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 5/1/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "panel.h"
 #include "cpNode.h"
 #include "edge.h"
 #include "surface.h"
 
-panel::panel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, int surfID) : ID(surfID), nodes(nodes), pEdges(pEdges), bezNormal(bezNorm)
+panel::panel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm, size_t surfID)
+  : nodes(nnodes), pEdges(ppEdges), bezNormal(bbezNorm), ID(surfID)
 {
     setGeom();
 }
@@ -21,7 +31,7 @@ void panel::setGeom()
 {
     longSide = 0;
     
-    for (int i=0; i<pEdges.size(); i++)
+    for (edges_index_type i=0; i<pEdges.size(); i++)
     {
         double l = pEdges[i]->length();
         if (l > longSide)
@@ -101,12 +111,12 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
     // Returns true if point is contained in extrusion of panel infinitely in normal direction
     Eigen::MatrixXd points(nodes.size()+1,3);
     std::vector<Eigen::Vector3d> nodesLocal;
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         nodesLocal.push_back(global2local(nodes[i]->getPnt(), true));
-        points.row(i) = nodesLocal[i];
+        points.row(static_cast<Eigen::Vector3d::Index>(i)) = nodesLocal[i];
     }
-    points.row(nodes.size()) = global2local(POI,true);
+    points.row(static_cast<Eigen::Vector3d::Index>(nodes.size())) = global2local(POI,true);
     
     convexHull hull(points,true);
     
@@ -211,7 +221,7 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
         double phi = 0;
         double Al;
         Eigen::Vector3d a,b,s;
-        for (int i=0; i<nodes.size(); i++)
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             Eigen::Vector3d p1;
             Eigen::Vector3d p2;
@@ -229,7 +239,9 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
             b = POI-p2;
             s = p2-p1;
             Al = local.row(2).dot(s.cross(a));
-            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+// NOTE: last paremeter is not used
+//            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1));
         }
         return phi/(4*M_PI);
     }
@@ -249,8 +261,8 @@ Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
     else
     {
         Eigen::Vector3d p1,p2,a,b,s;
-        int i1,i2;
-        for (int i=0; i<nodes.size(); i++)
+        nodes_index_type i1,i2;
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             if (i!=nodes.size()-1)
             {
@@ -282,7 +294,7 @@ Eigen::Vector3d panel::vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &
     return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b))+pow(core*s.norm(),2)); // Connor: s is side length and was not included before. Excluding side length makes for an arbitrary core size for different geometry
 }
 
-double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m,const Eigen::Vector3d &n)
+double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m)
 {
     double eps = pow(10, -15);
     double PA,PB,num,denom;
@@ -316,12 +328,12 @@ Eigen::Vector3d panel::pntDubV(const Eigen::Vector3d n,const Eigen::Vector3d &pj
     return area*(3*pjk.dot(n)*pjk-pow(pjk.norm(),2)*n)/(4*M_PI*pow(pjk.norm(),5));
 }
 
-Eigen::VectorXi panel::getVerts()
+Eigen::Matrix<size_t, Eigen::Dynamic, 1> panel::getVerts()
 {
-    Eigen::VectorXi verts(nodes.size());
-    for (int i=0; i<nodes.size(); i++)
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts(nodes.size());
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
-        verts(i) = nodes[i]->getIndex();
+        verts(static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, 1>::Index>(i)) = nodes[i]->getIndex();
     }
     return verts;
 }
@@ -357,9 +369,9 @@ Eigen::Matrix3d panel::velocityGradientPointDoublet(Eigen::Vector3d POI){
     // dudy  dvdy  dwdy
     // dudz  dvdz  dwdz
 
-    double x, y, z, x0, y0, z0;
+    double x, y, z, x0, y0;
     x = this->getCenter().x(); y = this->getCenter().y(); z = this->getCenter().z();
-    x0 = POI.x(); y0 = POI.y(); z0 = POI.z();
+    x0 = POI.x(); y0 = POI.y();
     
     double ddd = pow(pow(x-x0,2) + pow(y-y0,2) + z*z,3.5); // doublet deriv denom
     double uvConst = 3*doubletStrength*area/(4*M_PI);
@@ -387,8 +399,8 @@ Eigen::Matrix3d panel::velocityGradientDoublet(Eigen::Vector3d POI){
     // dudz  dvdz  dwdz
     
     Eigen::Vector3d p1,p2,a,b,s;
-    int i1,i2;
-    for (int i=0; i<nodes.size(); i++)
+    nodes_index_type i1,i2;
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         if (i!=nodes.size()-1)
         {

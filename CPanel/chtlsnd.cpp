@@ -1,17 +1,28 @@
-//
-//  chtlsnd.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 11/24/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "chtlsnd.h"
 
 chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::MatrixXd &Xf, int order, const Eigen::MatrixXd &Xb, const Eigen::MatrixXd &Vb, Eigen::VectorXd V0)
 {
-    unsigned long nf = Xf.rows();
-    unsigned long nb = Xb.rows();
+	using index_type = Eigen::MatrixXd::Index;
+
+	index_type nf = Xf.rows();
+	index_type nb = Xb.rows();
     
     
     bool constr = true;
@@ -19,14 +30,14 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     {
         constr = false;
     }
-    int N = (int)X0.size(); // Problem Dimensionality
+    index_type N = static_cast<index_type>(X0.size()); // intProblem Dimensionality
     
     Eigen::MatrixXd dXf(nf,N);
     Eigen::MatrixXd dXb(nb,N);
     double rmax = 0;
  
     // Calculate and Normalize relative locations of function observation points
-    for (int i=0; i<nf; i++)
+    for (index_type i=0; i<nf; i++)
     {
         dXf.row(i) = Xf.row(i)-X0;
         double r = dXf.row(i).norm();
@@ -39,7 +50,7 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     dXf /= rmax;
     
     // Do the same for derivative observation points
-    for (int i=0; i<nb; i++)
+    for (index_type i=0; i<nb; i++)
     {
         dXb.row(i) = Xb.row(i)-X0;
     }
@@ -51,11 +62,11 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     Eigen::VectorXd Wf = Eigen::VectorXd::Zero(nf);
     Eigen::VectorXd Wb = Eigen::VectorXd::Zero(nb);
     Eigen::MatrixXd WfDiag(nf,nf), WbDiag(nb,nb);
-    for (int i=0; i<nf; i++)
+    for (index_type i=0; i<nf; i++)
     {
         Wf(i) = 1/dXf.row(i).norm();
     }
-    for (int i=0; i<nb; i++)
+    for (index_type i=0; i<nb; i++)
     {
         Wb(i) = 1/dXb.row(i).norm();
     }
@@ -63,12 +74,12 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     WbDiag = Wb.asDiagonal();
     
     // Generate list of derivatives included in Taylor Series
-    Eigen::MatrixXi ms = derivSequence(order,N);
+    Eigen::MatrixXi ms = derivSequence(order,static_cast<int>(N));
     ms = sortBySum(ms);
     ms = ms.block(1, 0, ms.rows()-1, ms.cols());
     Eigen::VectorXi sums = ms.rowwise().sum();
  
-    unsigned long t = ms.rows();
+    index_type t = ms.rows();
     
     // Build TLS and HTLS matrices (A and B) for function observations and derivative enforcement, respectively.
     Eigen::MatrixXd A = Eigen::MatrixXd::Zero(nf,t);
@@ -76,14 +87,14 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     Eigen::Matrix<int,1,3> ps;
     double fact;
     double asum;
-    for (int k=0; k<t; k++)
+    for (index_type k=0; k<t; k++)
     {
         fact = 1;
-        for (int i=0; i<N; i++)
+        for (index_type i=0; i<N; i++)
         {
             fact /= factorial(ms(k,i));
         }
-        for (int i=0; i<nf; i++)
+        for (index_type i=0; i<nf; i++)
         {
             double prod = 1;
             for (int ii=0; ii<N; ii++)
@@ -93,7 +104,7 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
             A(i,k) = fact*prod;
 //            A(i,k) = fact*(pow(dXf(i,0),ms(k,0))*pow(dXf(i,1),ms(k,1))*pow(dXf(i,2),ms(k,2)));
         }
-        for (int i=0; i<nb; i++)
+        for (index_type i=0; i<nb; i++)
         {
             asum = 0;
             for (int a=0; a<N; a++)
@@ -202,7 +213,7 @@ Eigen::MatrixXi chtlsnd::derivSequence(int q, int N)
     Eigen::MatrixXi d(0,0);
     if (q == 0)
     {
-        d = Eigen::MatrixXi::Zero(1,N);
+        d = Eigen::MatrixXi::Zero(1,static_cast<Eigen::MatrixXi::Index>(N));
     }
     else
     {
@@ -236,7 +247,7 @@ Eigen::MatrixXi chtlsnd::derivSequence(int q, int N)
 
 Eigen::MatrixXi chtlsnd::sortBySum(Eigen::MatrixXi m)
 {
-    unsigned long cols = m.cols();
+	Eigen::MatrixXi::Index cols = m.cols();
     Eigen::MatrixXi out(1,cols);
     out.row(0) = m.row(0);
     bool flag;
@@ -263,9 +274,11 @@ Eigen::MatrixXi chtlsnd::sortBySum(Eigen::MatrixXi m)
 
 Eigen::MatrixXi chtlsnd::insertRow(const Eigen::MatrixXi &m, const Eigen::MatrixXi &insert, int row)
 {
+    using index_type = Eigen::MatrixXi::Index;
+
     Eigen::MatrixXi temp(m.rows()+1,m.cols());
-    unsigned long rows = m.rows();
-    unsigned long cols = m.cols();
+    index_type rows = m.rows();
+    index_type cols = m.cols();
     assert(row <= rows);
     if (row == 0)
     {

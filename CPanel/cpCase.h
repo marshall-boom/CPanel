@@ -1,10 +1,19 @@
-//
-//  runCase.h
-//  CPanel
-//
-//  Created by Chris Satterwhite on 10/13/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel__runCase__
 #define __CPanel__runCase__
@@ -42,6 +51,10 @@ protected:
     Eigen::Vector3d Vinf;
     Eigen::Matrix3d transform;
     
+    using bodyPanels_type = std::vector<bodyPanel *>;
+    using bodyPanels_index_type = bodyPanels_type::size_type;
+    using wakePanels_type = std::vector<wakePanel *>;
+    using wakePanels_index_type = wakePanels_type::size_type;
     std::vector<bodyPanel*>* bPanels;
     std::vector<wakePanel*>* wPanels;
     Eigen::VectorXd sigmas;
@@ -60,7 +73,10 @@ protected:
     Eigen::Vector3d dM_dAlpha;
     Eigen::Vector3d dM_dBeta;
     
-    std::vector<bodyStreamline*> bStreamlines;
+    using streamlines_type = std::vector<bodyStreamline *>;
+    using streamlines_index_type = streamlines_type::size_type;
+
+    streamlines_type bStreamlines;
     Eigen::Vector3d windToBody(double V,double alpha,double beta);
     
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
@@ -86,20 +102,23 @@ protected:
         std::vector<Eigen::Vector3d> cellCenter;
     } volMeshDat;
     
-    std::vector<Eigen::VectorXi> cells;
+    using cells_type = std::vector<Eigen::VectorXi>;
+    using cells_index_type = cells_type::size_type;
+    std::vector<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> cells;
     Eigen::MatrixXd pts;
     
     Eigen::Vector3d velocityAtPoint(Eigen::Vector3d POI);
     void createVolMesh();
     void populateVolMesh();
-    void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::VectorXi> cells);
+    void writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nodeMat, std::vector<Eigen::Matrix<size_t, Eigen::Dynamic, 1>> cells);
     
     Eigen::MatrixXd solnMat; // For unsteady sims, but needs to be in parent class for simple output
     
     
     
 public:
-    cpCase(geometry *geom, double V, double alpha, double beta, double mach, inputParams* inParams) : geom(geom), Vmag(V), alpha(alpha), beta(beta), mach(mach), params(inParams)
+    cpCase(geometry *ggeom, double V, double aalpha, double bbeta, double mmach, inputParams* inParams)
+      : geom(ggeom), params(inParams), Vmag(V), mach(mmach), alpha(aalpha), beta(bbeta)
     {
         Vinf = windToBody(V,alpha,beta);
         bPanels = geom->getBodyPanels();

@@ -1,10 +1,19 @@
-//
-//  particleFMM.cpp
-//  CPanel - Unstructured Panel Code
-//
-//  Created by Connor Sousa on 5/10/16.
-//  Copyright (c) 2016 Connor Sousa. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2016 Connor Sousa
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Connor Sousa - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "particleFMM.h"
 #include "particle.h"
@@ -19,11 +28,11 @@ void particleFMM::build(particleOctree* tree){
 }
 
 void particleFMM::computeMultExp(){
-    for(int i=levels+1; i>1; i--)
+    for(size_t i=levels+1; i>1; i--)
     { // Ignore root node. 1 based indexing for tree
         std::vector<node<particle> *> nodes = partTree->getLevelNodes(i);
         
-        for (int j=0; j<nodes.size(); j++)
+        for (size_t j=0; j<nodes.size(); j++)
         {
             if (nodes[j]->isLeafNode())
             {
@@ -59,7 +68,7 @@ Eigen::Vector3d particleFMM::barnesHutVel(Eigen::Vector3d POI){
     Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
-    for (int i=0; i<rootChildren.size(); i++)
+    for (size_t i=0; i<rootChildren.size(); i++)
     {
         velInfl+=rootChildren[i]->calcVel(POI);
     }
@@ -74,7 +83,7 @@ Eigen::Vector3d particleFMM::barnesHutVel(particle* part){
     Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
-    for (int i=0; i<rootChildren.size(); i++)
+    for (size_t i=0; i<rootChildren.size(); i++)
     {
         velInfl += rootChildren[i]->calcVel(part);
     }
@@ -86,7 +95,7 @@ Eigen::Vector3d particleFMM::barnesHutStretch(particle* part){
     Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
-    for (int i=0; i<rootChildren.size(); i++)
+    for (size_t i=0; i<rootChildren.size(); i++)
     {
         stretchInfl += rootChildren[i]->calcStretch(part);
     }
@@ -98,7 +107,7 @@ Eigen::Vector3d particleFMM::barnesHutDiff(particle* part){
     Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
     std::vector<node<particle>*> rootChildren = partTree->getRootNode()->getChildren();
     
-    for (int i=0; i<rootChildren.size(); i++)
+    for (size_t i=0; i<rootChildren.size(); i++)
     {
         diffInfl += rootChildren[i]->calcDiff(part);
     }
@@ -118,7 +127,7 @@ Eigen::Vector3d particleFMM::findExpPos(node<particle>* thisNode)
     Eigen::Vector3d weightedPos = Eigen::Vector3d::Zero();
     double totStrength = 0;
     
-    for (int i=0; i<nParts.size(); i++) {
+    for (size_t i=0; i<nParts.size(); i++) {
         weightedPos += (nParts[i]->pos) * (nParts[i]->strength).norm();
         totStrength += (nParts[i]->strength).norm();
     }
@@ -133,7 +142,7 @@ Eigen::Vector3d particleFMM::findExpPos(std::vector<particle*> parts)
     Eigen::Vector3d weightedPos = Eigen::Vector3d::Zero();
     double totStrength = 0;
     
-    for (int i=0; i<parts.size(); i++) {
+    for (size_t i=0; i<parts.size(); i++) {
         weightedPos += (parts[i]->pos) * (parts[i]->strength).norm();
         totStrength += (parts[i]->strength).norm();
     }
@@ -147,7 +156,7 @@ Eigen::Vector3d particleFMM::findExpStrength(node<particle>* thisNode){
     
     Eigen::Vector3d nodeStren = Eigen::Vector3d::Zero();
     
-    for (int i=0; i<nodeParticles.size(); i++) {
+    for (size_t i=0; i<nodeParticles.size(); i++) {
         nodeStren+=nodeParticles[i]->strength;
     }
     
@@ -158,7 +167,7 @@ Eigen::Vector3d particleFMM::findExpStrength(std::vector<particle*> parts){
     
     Eigen::Vector3d nodeStren = Eigen::Vector3d::Zero();
     
-    for (int i=0; i<parts.size(); i++) {
+    for (size_t i=0; i<parts.size(); i++) {
         nodeStren+=parts[i]->strength;
     }
     
@@ -171,7 +180,7 @@ double particleFMM::findExpRadius(node<particle>* thisNode){
     
     double nodeRad = 0;
     
-    for (int i=0; i<nodeParticles.size(); i++) {
+    for (size_t i=0; i<nodeParticles.size(); i++) {
         nodeRad+=nodeParticles[i]->radius;
     }
     
@@ -183,7 +192,7 @@ double particleFMM::findExpRadius(std::vector<particle*> parts){
     
     double nodeRad = 0;
     
-    for (int i=0; i<parts.size(); i++) {
+    for (size_t i=0; i<parts.size(); i++) {
         nodeRad+=parts[i]->radius;
     }
     

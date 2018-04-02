@@ -1,10 +1,20 @@
-//
-//  wake.h
-//  CPanel
-//
-//  Created by Chris Satterwhite on 10/15/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    Connor Sousa - Vortex particle implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel__wake__
 #define __CPanel__wake__
@@ -25,7 +35,12 @@ class particle;
 
 class wake
 {
-    int ID;
+	using wakePanels_type = std::vector<wakePanel *>;
+	using wakePanels_index_type = wakePanels_type::size_type;
+	using wakeLines_type = std::vector<wakeLine *>;
+	using wakeLines_index_type = wakeLines_type::size_type;
+
+    size_t ID;
     geometry* geom;
     std::vector<wakePanel*> wpanels;
     std::vector<wakePanel*> TEpanels;
@@ -55,7 +70,8 @@ class wake
 
     
 public:
-    wake(int wakeID, geometry* geom) : ID(wakeID), geom(geom), yMin(0) {}
+    wake(size_t wakeID, geometry* ggeom)
+      : ID(wakeID), geom(ggeom), x0(0), xf(0), z0(0), zf(0), yMin(0), yMax(0), CL(0), CD(0) {}
     
     ~wake();
     
@@ -71,7 +87,7 @@ public:
     
     void trefftzPlane(double Vinf,double Sref);
     void trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* particles, int numSimSteps);
-    Eigen::Vector3d lambVectorInt(const Eigen::Vector3d &Vinf,Eigen::VectorXd &yLoc);
+    Eigen::Vector3d lambVectorInt(Eigen::VectorXd &yLoc);
     
     
     

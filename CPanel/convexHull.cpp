@@ -1,10 +1,19 @@
-//
-//  convexHull.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 9/24/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "convexHull.h"
 
@@ -45,16 +54,18 @@ convexHull::convexHull(Eigen::MatrixXd points, bool bound) : boundary(bound)
         }
     }
     std::sort(members.begin()+1,members.end(),compareTheta());
-    int minBegin = -1;
-    int minEnd = -1;
-    unsigned long maxBegin = members.size();
-    for (int i=1; i<members.size()-1; i++)
+    size_t minBegin = 0;
+    bool minBeginSet = false;
+    size_t minEnd = 0;
+    bool minEndSet = false;
+    members_index_type maxBegin = members.size();
+    for (members_index_type i=1; i<members.size()-1; i++)
     {
-        if (members[i]->theta == minTheta && minBegin == -1)
+        if (members[i]->theta == minTheta && !minBeginSet)
         {
             minBegin = i;
         }
-        else if (members[i]->theta != minTheta && minBegin != -1 && minEnd == -1)
+        else if (members[i]->theta != minTheta && minBeginSet && minEndSet)
         {
             minEnd = i;
         }
@@ -63,8 +74,8 @@ convexHull::convexHull(Eigen::MatrixXd points, bool bound) : boundary(bound)
             maxBegin = i;
         }
     }
-    std::sort(members.begin()+minBegin,members.begin()+minEnd,compareDistAscending());
-    std::sort(members.begin()+maxBegin,members.end(),compareDistDescending());
+    std::sort(members.begin()+static_cast<members_type::difference_type>(minBegin),members.begin()+static_cast<members_type::difference_type>(minEnd),compareDistAscending());
+    std::sort(members.begin()+static_cast<members_type::difference_type>(maxBegin),members.end(),compareDistDescending());
     computeHull();
 }
 
@@ -81,7 +92,7 @@ convexHull::member::member(const Eigen::Vector3d &point, const Eigen::Vector3d &
 void convexHull::computeHull()
 {
     hull.push_back(members.front());
-    for (int i=0; i<members.size()-1; i++)
+    for (members_index_type i=0; i<members.size()-1; i++)
     {
         Eigen::Vector3d v1,v2;
         if (i==members.size()-2)
@@ -123,12 +134,12 @@ bool convexHull::compareNodes(std::vector<Eigen::Vector3d> nodesLocal)
     Eigen::Vector3d pMember;
     bool breakFlag = false;
     
-    for (int i=0; i<hull.size(); i++)
+    for (members_index_type i=0; i<hull.size(); i++)
     {
         pMember(0) = hull[i]->x;
         pMember(1) = hull[i]->y;
         pMember(2) = hull[i]->z;
-        for (int j=0; j<nodesLocal.size(); j++)
+        for (members_index_type j=0; j<nodesLocal.size(); j++)
         {
             if (pMember == nodesLocal[j])
             {

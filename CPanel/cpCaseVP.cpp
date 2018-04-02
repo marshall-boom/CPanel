@@ -1,10 +1,22 @@
-//
-//  cpCaseVP.cpp
-//  CPanel
-//
-//  Created by Connor Sousa on 1/31/17.
-//  Copyright (c) 2017 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2017 Connor Sousa
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Connor Sousa - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
+
+#include <iostream>
+#include <iomanip>
 
 #include "cpCaseVP.h"
 
@@ -143,22 +155,22 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
 }
 
 void cpCaseVP::convectBufferWake(){
-    wake2Doublets.resize((*w2panels).size());
-    for (int i=0; i<(*w2panels).size(); i++)
+    wake2Doublets.resize(static_cast<Eigen::VectorXd::Index>(w2panels->size()));
+    for (wakePanels_index_type i=0; i<w2panels->size(); i++)
     {
         (*w2panels)[i]->setPrevStrength((*w2panels)[i]->getMu());
         double parentMu = (*w2panels)[i]->getBufferParent()->getMu();
         (*w2panels)[i]->setMu(parentMu);
-        wake2Doublets[i] = parentMu;
+        wake2Doublets[static_cast<Eigen::VectorXd::Index>(i)] = parentMu;
     }
     
 }
 
 
 void cpCaseVP::setSourceStrengthsVP(){
-    sigmas.resize(bPanels->size());
+    sigmas.resize(static_cast<Eigen::VectorXd::Index>(bPanels->size()));
     
-    for (int i=0; i<bPanels->size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
         Eigen::Vector3d sumVelInfl = Eigen::Vector3d::Zero();
         
@@ -168,21 +180,21 @@ void cpCaseVP::setSourceStrengthsVP(){
         }
         else
         {
-            for(int j=0; j<particles.size(); j++)
+            for(particles_index_type j=0; j<particles.size(); j++)
             {
                 sumVelInfl += particles[j]->velInfl((*bPanels)[i]->getCenter());
             }
         }
         
         // Influence from vortex filaments
-        for(int j=0; j<filaments.size(); j++)
+        for(filaments_index_type j=0; j<filaments.size(); j++)
         {
             sumVelInfl += filaments[j]->velInfl( (*bPanels)[i]->getCenter() );
         }
         
         (*bPanels)[i]->setSigma( Vinf((*bPanels)[i]->getCenter()) + sumVelInfl , 0 );
         
-        sigmas(i) = (*bPanels)[i]->getSigma();
+        sigmas(static_cast<Eigen::VectorXd::Index>(i)) = (*bPanels)[i]->getSigma();
     }
 }
 
@@ -232,13 +244,13 @@ bool cpCaseVP::solveMatrixEq(){
         converged = false;
     }
     
-    for (int i=0; i<bPanels->size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        (*bPanels)[i]->setMu(doubletStrengths(i));
+        (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
         (*bPanels)[i]->setPotential(Vinf((*bPanels)[i]->getCenter()));
     }
     
-    for (int i=0; i<wPanels->size(); i++)
+    for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
         (*wPanels)[i]->setMu();
         (*wPanels)[i]->setPotential(Vinf((*wPanels)[i]->getCenter()));
@@ -265,14 +277,14 @@ bool cpCaseVP::solveVPmatrixEq(){
         converged = false;
     }
     
-    for (int i=0; i<bPanels->size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        (*bPanels)[i]->setMu(doubletStrengths(i));
+        (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
         (*bPanels)[i]->setPotential(VinfPlusVecPot((*bPanels)[i]->getCenter()));
         
     }
     
-    for (int i=0; i<wPanels->size(); i++)
+    for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
         (*wPanels)[i]->setPrevStrength((*wPanels)[i]->getMu());
         (*wPanels)[i]->setMu();
@@ -288,7 +300,7 @@ bool cpCaseVP::solveVPmatrixEq(){
 
 bool cpCaseVP::edgeIsUsed(edge* thisEdge, std::vector<edge*> pEdges){
     
-    for(int i=0; i<pEdges.size(); i++){
+    for(size_t i=0; i<pEdges.size(); i++){
         if(thisEdge == pEdges[i]){
             return true;
         }
@@ -301,17 +313,17 @@ void cpCaseVP::collapseBufferWake(){
     
     std::vector<edge*> usedEdges;
     
-    for(int i=0; i<(*w2panels).size(); i++)
+    for(wakePanels_index_type i=0; i<w2panels->size(); i++)
     {
         std::vector<edge*> pEdges = (*w2panels)[i]->edgesInOrder();
         
         Eigen::Vector3d strength = Eigen::Vector3d::Zero();
-        for (int j=1; j<4; j++) //edges 2-4 only
+        for (size_t j=1; j<4; j++) //edges 2-4 only
         {
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-                strength += (*w2panels)[i]->edgeStrength( pEdges[j], j ); // Don't need to pass in pEdges...
+                strength += (*w2panels)[i]->edgeStrength( pEdges[j], static_cast<int>(j) ); // Don't need to pass in pEdges...
             }
         }
         
@@ -329,7 +341,7 @@ void cpCaseVP::collapseBufferWake(){
     // Create filament
     if(filaments.size() == 0)
     {
-        for(int i=0; i<(*w2panels).size(); i++)
+        for(wakePanels_index_type i=0; i<w2panels->size(); i++)
         {
             vortexFil* fil;
             Eigen::Vector3d p1,p2;
@@ -345,7 +357,7 @@ void cpCaseVP::collapseBufferWake(){
     }
     else
     {
-        for(int i=0; i<(*w2panels).size(); i++){
+        for(wakePanels_index_type i=0; i<w2panels->size(); i++){
             filaments[i]->setStrength(-(*w2panels)[i]->getMu()); // Negative strength is because filament is actually the upstream edge being convected which is oriented the opposite direction as downstream edge
         }
         
@@ -359,7 +371,7 @@ void cpCaseVP::compVelocity(){
     Fbody = Eigen::Vector3d::Zero();
     bodyPanel* p;
     
-    for (int i=0; i<bPanels->size(); i++)
+    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
         p = (*bPanels)[i];
         p->computeVelocity(PG,Vinf(p->getCenter()));
@@ -405,7 +417,7 @@ void cpCaseVP::trefftzPlaneAnalysisVP(){
     std::vector<wake*> wakes = geom->getWakes();
     CL_trefftz = 0;
     CD_trefftz = 0;
-    for (int i=0; i<wakes.size(); i++)
+    for (size_t i=0; i<wakes.size(); i++)
     {
         wakes[i]->trefftzPlaneVP(Vmag,params->Sref, &particles, timestep);
         CL_trefftz += wakes[i]->getCL()/PG;
@@ -451,7 +463,7 @@ void cpCaseVP::particleStrengthUpdate(){
     
     std::vector<Eigen::Vector3d> stretchDiffVec; // Creating vector values because the strength change needs to be set after all particle influences have been calculated
         
-    for(int i=0; i<particles.size(); i++)
+    for(particles_index_type i=0; i<particles.size(); i++)
     {
         Eigen::Vector3d dAlpha_diff = Eigen::Vector3d::Zero();
         Eigen::Vector3d dAlpha_stretch = Eigen::Vector3d::Zero();
@@ -472,7 +484,7 @@ void cpCaseVP::particleStrengthUpdate(){
             else
             {
                 // Stretching from particles
-                for(int j=0; j<particles.size(); j++)
+                for(particles_index_type j=0; j<particles.size(); j++)
                 {
                     if(i!=j) // Kroneger Delta Function
                     {
@@ -491,7 +503,7 @@ void cpCaseVP::particleStrengthUpdate(){
                 dAlpha_diff += FMM.barnesHutDiff(particles[i]);
             }else
             {
-                for(int j=0; j<particles.size(); j++)
+                for(particles_index_type j=0; j<particles.size(); j++)
                 {
                     if(i!=j){ // Kroneger Delta Function
                         dAlpha_diff += particles[i]->viscousDiffusion(particles[j]);
@@ -501,13 +513,13 @@ void cpCaseVP::particleStrengthUpdate(){
             }
             
             // Stretching from body panels
-            for(int j=0; j<(*bPanels).size(); j++)
+            for(bodyPanels_index_type j=0; j<bPanels->size(); j++)
             {
                 dAlpha_diff += (*bPanels)[j]->partStretching(particles[i]);
             }
             
             // Stretching from wake panels
-            for(int j=0;j<(*wPanels).size(); j++)
+            for(wakePanels_index_type j=0;j<wPanels->size(); j++)
             {
                 dAlpha_diff += (*wPanels)[j]->partStretching(particles[i]);
             }
@@ -515,7 +527,7 @@ void cpCaseVP::particleStrengthUpdate(){
             stretchDiffVec.push_back( dAlpha_diff + dAlpha_stretch );
         }
     }
-    for(int i=0;i<particles.size();i++)
+    for(particles_index_type i=0;i<particles.size();i++)
     {
         Eigen::Vector3d newStrength;
         if(particles[i]->getprevStrengthUpdate().isZero())
@@ -533,7 +545,7 @@ void cpCaseVP::particleStrengthUpdate(){
 void cpCaseVP::convectParticles(){
     std::vector<Eigen::Vector3d> newPartPositions;
     
-    for(int i=0;i<particles.size();i++){
+    for(particles_index_type i=0;i<particles.size();i++){
         
         Eigen::Vector3d newPos;
         
@@ -553,7 +565,7 @@ void cpCaseVP::convectParticles(){
         //        }
     }
     
-    for(int i=0;i<particles.size();i++){
+    for(particles_index_type i=0;i<particles.size();i++){
         particles[i]->setPos(newPartPositions[i]);
         
     }
@@ -592,14 +604,14 @@ Eigen::Vector3d cpCaseVP::VinfPlusVecPot(Eigen::Vector3d POI){
         vInfluence += FMM.barnesHutVel(POI);
     }else
     {
-        for (int i=0; i<particles.size(); i++) {
+        for (particles_index_type i=0; i<particles.size(); i++) {
             vInfluence += particles[i]->velInfl(POI);
         }
     }
     
     
     // Filaments
-    for (int i=0; i<filaments.size(); i++)
+    for (filaments_index_type i=0; i<filaments.size(); i++)
     {
         vInfluence += filaments[i]->velInfl(POI);
     }
@@ -633,7 +645,7 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything( Eigen::Vector3d POI ){
         velOnPart += FMM.barnesHutVel(POI);
     }
     else{
-        for(int j=0;j<particles.size();j++)
+        for(particles_index_type j=0;j<particles.size();j++)
         {
             velOnPart += particles[j]->velInfl(POI);
         }
@@ -641,22 +653,22 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything( Eigen::Vector3d POI ){
     
     
     // Body panel influence
-    for(int j=0;j<(*bPanels).size();j++){
+    for(bodyPanels_index_type j=0;j<bPanels->size();j++){
         velOnPart += (*bPanels)[j]->panelV(POI);
     }
     
     
     // Buffer wake influence
-    for(int j=0;j<(*wPanels).size();j++){
+    for(wakePanels_index_type j=0;j<wPanels->size();j++){
         velOnPart += (*wPanels)[j]->panelV(POI);
     }
     
-    for(int j=0;j<(*w2panels).size();j++){
+    for(wakePanels_index_type j=0;j<w2panels->size();j++){
         velOnPart += (*w2panels)[j]->panelV(POI);
     }
     
     // Vortex Filament influence
-    for(int i=0; i<filaments.size(); i++){
+    for(filaments_index_type i=0; i<filaments.size(); i++){
         velOnPart +=filaments[i]->velInfl(POI);
     }
     
@@ -682,7 +694,7 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything(particle* part){
         velOnPart += FMM.barnesHutVel(part);
     }
     else{
-        for(int j=0;j<particles.size();j++)
+        for(particles_index_type j=0;j<particles.size();j++)
         {
             velOnPart += particles[j]->velInfl(pos);
         }
@@ -696,22 +708,22 @@ Eigen::Vector3d cpCaseVP::velocityInflFromEverything(particle* part){
     
     
     // Body panel influence
-    for(int j=0;j<(*bPanels).size();j++){
+    for(bodyPanels_index_type j=0;j<bPanels->size();j++){
         velOnPart += (*bPanels)[j]->panelV(pos);
     }
     
     
     // Buffer wake influence
-    for(int j=0;j<(*wPanels).size();j++){
+    for(wakePanels_index_type j=0;j<wPanels->size();j++){
         velOnPart += (*wPanels)[j]->panelV(pos);
     }
-    for(int j=0;j<(*w2panels).size();j++){
+    for(wakePanels_index_type j=0;j<w2panels->size();j++){
         velOnPart += (*w2panels)[j]->panelV(pos);
     }
     
     
     // Vortex Filament influence
-    for(int i=0; i<filaments.size(); i++){
+    for(filaments_index_type i=0; i<filaments.size(); i++){
         velOnPart +=filaments[i]->velInfl(pos);
     }
     
@@ -750,22 +762,23 @@ void cpCaseVP::writeFilesVP(){
 void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals");
-    Eigen::MatrixXi con(bPanels->size(),3);
-    mu.data.resize(bPanels->size(),1);
-    sigma.data.resize(bPanels->size(),1);
-    pot.data.resize(bPanels->size(),1);
-    V.data.resize(bPanels->size(),3);
-    Cp.data.resize(bPanels->size(),1);
-    bN.data.resize(bPanels->size(),3);
-    for (int i=0; i<bPanels->size(); i++)
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+    Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        mu.data(i,0) = (*bPanels)[i]->getMu();
-        sigma.data(i,0) = (*bPanels)[i]->getSigma();
-        pot.data(i,0) = (*bPanels)[i]->getPotential();
-        V.data.row(i) = (*bPanels)[i]->getGlobalV();
-        Cp.data(i,0) = (*bPanels)[i]->getCp();
-        con.row(i) = (*bPanels)[i]->getVerts();
-        bN.data.row(i) = (*bPanels)[i]->getBezNormal();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*bPanels)[i]->getMu();
+        sigma.data(ii,0) = (*bPanels)[i]->getSigma();
+        pot.data(ii,0) = (*bPanels)[i]->getPotential();
+        V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+        Cp.data(ii,0) = (*bPanels)[i]->getCp();
+        con.row(ii) = (*bPanels)[i]->getVerts();
+        bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
     }
     
     data.push_back(mu);
@@ -787,14 +800,15 @@ void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixX
 void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
-    mu.data.resize(wPanels->size(),1);
-    pot.data.resize(wPanels->size(),1);
-    for (int i=0; i<wPanels->size(); i++)
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
+    for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
-        mu.data(i,0) = (*wPanels)[i]->getMu();
-        pot.data(i,0) = (*wPanels)[i]->getPotential();
-        con.row(i) = (*wPanels)[i]->getVerts();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*wPanels)[i]->getMu();
+        pot.data(ii,0) = (*wPanels)[i]->getPotential();
+        con.row(ii) = (*wPanels)[i]->getVerts();
     }
     
     data.push_back(mu);
@@ -813,15 +827,16 @@ void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::Matrix
 void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat){
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
-    Eigen::MatrixXi con;
-    con.resize(w2panels->size(),4);
-    mu.data.resize(w2panels->size(),1);
-    pot.data.resize(w2panels->size(),1);
-    for (int i=0; i<w2panels->size(); i++)
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
+    con.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),4);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),1);
+    for (wakePanels_index_type i=0; i<w2panels->size(); i++)
     {
-        mu.data(i,0) = (*w2panels)[i]->getMu();
-        pot.data(i,0) = (*w2panels)[i]->getPotential();
-        con.row(i) = (*w2panels)[i]->getVerts();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*w2panels)[i]->getMu();
+        pot.data(ii,0) = (*w2panels)[i]->getPotential();
+        con.row(ii) = (*w2panels)[i]->getVerts();
     }
     data.push_back(mu);
     data.push_back(pot);
@@ -837,25 +852,27 @@ void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Mat
 void cpCaseVP::writeFilamentData(boost::filesystem::path path){
     std::vector<cellDataArray> data;
     cellDataArray mu("Gamma");
-    Eigen::MatrixXi con;
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
     
     Eigen::MatrixXd nodeMat(2*filaments.size(),3);
-    for(int i=0; i<filaments.size(); i++){
-        nodeMat.row(2*i) = filaments[i]->getP1();
-        nodeMat.row(2*i+1) = filaments[i]->getP2();
+    for(filaments_index_type i=0; i<filaments.size(); i++){
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        nodeMat.row(2*ii) = filaments[i]->getP1();
+        nodeMat.row(2*ii+1) = filaments[i]->getP2();
     }
     
     
-    con.resize(filaments.size(),2); // 2 pnts per filament
+    con.resize(static_cast<Eigen::MatrixXd::Index>(filaments.size()),2); // 2 pnts per filament
     
-    mu.data.resize(filaments.size(),1);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(filaments.size()),1);
     
-    int nodeCounter = 0; // Used to make filament end points
-    for (int i=0; i<filaments.size(); i++)
+    size_t nodeCounter = 0; // Used to make filament end points
+    for (filaments_index_type i=0; i<filaments.size(); i++)
     {
-        mu.data(i,0) = filaments[i]->getStrength();
-        con(i,0) = nodeCounter;
-        con(i,1) = nodeCounter+1;
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = filaments[i]->getStrength();
+        con(ii,0) = nodeCounter;
+        con(ii,1) = nodeCounter+1;
         nodeCounter = nodeCounter+2;
     }
     
@@ -872,23 +889,24 @@ void cpCaseVP::writeFilamentData(boost::filesystem::path path){
 void cpCaseVP::writeParticleData(boost::filesystem::path path){
     
     Eigen::MatrixXd partMat(particles.size(),3);
-    for (int i=0; i<particles.size(); i++)
+    for (particles_index_type i=0; i<particles.size(); i++)
     {
-        partMat.row(i) = particles[i]->pos;
+        partMat.row(static_cast<Eigen::MatrixXd::Index>(i)) = particles[i]->pos;
     }
     
     std::vector<cellDataArray> data;
     cellDataArray strength("Strength"), shedTime("Time Step Shed");
-    Eigen::MatrixXi con(particles.size(),1);
-    Eigen::MatrixXi shed(particles.size(),1);
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(particles.size(),1);
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> shed(particles.size(),1);
     
-    strength.data.resize(particles.size(),3);
-    shedTime.data.resize(particles.size(),1);
-    for (int i=0; i<particles.size(); i++)
+    strength.data.resize(static_cast<Eigen::MatrixXd::Index>(particles.size()),3);
+    shedTime.data.resize(static_cast<Eigen::MatrixXd::Index>(particles.size()),1);
+    for (particles_index_type i=0; i<particles.size(); i++)
     {
-        strength.data.row(i) = particles[i]->strength;
-        shedTime.data(i,0) = particles[i]->shedTime;
-        con(i) = i;
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        strength.data.row(ii) = particles[i]->strength;
+        shedTime.data(ii,0) = particles[i]->shedTime;
+        con(ii) = i;
     }
     data.push_back(strength);
     data.push_back(shedTime);
@@ -927,12 +945,12 @@ void cpCaseVP::populateVolMesh(){
     volMeshDat.velocity.clear();
     volMeshDat.coef_press.clear();
     
-    for (int i=0; i<cells.size(); i++) {
+    for (cells_index_type i=0; i<cells.size(); i++) {
         Eigen::Vector3d velInCell = velocityInflFromEverything(volMeshDat.cellCenter[i]);
         volMeshDat.velocity.push_back(velInCell);
     }
     
-    for (int i=0; i<cells.size(); i++) {
+    for (cells_index_type i=0; i<cells.size(); i++) {
         // Incompressible Bernoulli equation
         double Cp = pow( volMeshDat.velocity[i].norm() / Vmag , 2 );
         volMeshDat.coef_press.push_back(Cp);

@@ -1,11 +1,21 @@
-////
-////  geometry.h
-////  CPanel
-////
-////  Created by Chris Satterwhite on 4/30/14.
-////  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-////
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    Connor Sousa - Vortex particle implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
+
 //#ifndef __CPanel__geometry__
 //#define __CPanel__geometry__
 //
@@ -178,20 +188,34 @@
 
 class geometry
 {
-    std::vector<surface*> surfaces;
-    std::vector<wake*> wakes;
-    std::vector<bodyPanel*> bPanels;
-    std::vector<wakePanel*> wPanels;
-    std::vector<wakePanel*> w2Panels; // Buffer wake row two
+	using surfaces_type = std::vector<surface *>;
+	using surfaces_index_type = surfaces_type::size_type;
+	using wakes_type = std::vector<wake *>;
+	using wakes_index_type = wakes_type::size_type;
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+	using wakePanels_type = std::vector<wakePanel *>;
+	using wakePanels_index_type = wakePanels_type::size_type;
+
+    surfaces_type surfaces;
+    wakes_type wakes;
+    bodyPanels_type bPanels;
+    wakePanels_type wPanels;
+    wakePanels_type w2Panels; // Buffer wake row two
 
     std::vector<bool> isFirstPanel;
 
+    using nodes_type = std::vector<cpNode *>;
+    using nodes_index_type = nodes_type::size_type;
+    using edges_type = std::vector<edge *>;
+    using edges_index_type = edges_type::size_type;
+
     panelOctree pOctree;
-    std::vector<cpNode*> nodes;
-    std::vector<edge*> edges;
+    nodes_type nodes;
+    edges_type edges;
 //    std::vector<cpNode*> TEnodes;
-    short nNodes;
-    short nTris;
+    size_t nNodes;
+    size_t nTris;
 
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
@@ -208,13 +232,13 @@ class geometry
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
     edge* findEdge(cpNode* n1,cpNode* n2);
-    void createSurfaces(const Eigen::MatrixXi &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID );
+    void createSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity, const Eigen::MatrixXd &norms, const Eigen::VectorXi &allID );
     void createOctree();
     void getLiftingSurfs(std::vector<surface*>& wakes, std::vector<surface*>& liftingSurfs);
     void setNeighbors(panel* p,int targetID);
     bool isLiftingSurf(int currentID, std::vector<int> wakeIDs);
-    void correctWakeConnectivity(int wakeNodeStart,int wakeTriStart,Eigen::MatrixXi &connectivity);
-    double shortestEdge(const Eigen::MatrixXi &connectivity);
+    void correctWakeConnectivity(size_t wakeNodeStart,size_t wakeTriStart,Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity);
+    double shortestEdge(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &connectivity);
     liftingSurf* getParentSurf(int wakeID);
 
     void setInfCoeff();
@@ -224,7 +248,7 @@ class geometry
     void readInfCoeff();
     void writeInfCoeff();
 
-    void createVPWakeSurfaces(const Eigen::MatrixXi &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<int> &VPwakeID, std::vector<bool> isFirstPanel);
+    void createVPWakeSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> &wakeConnectivity, const Eigen::MatrixXd &wakeNorms,  const std::vector<size_t> &VPwakeID, std::vector<bool> isFirstPanel);
     void calcTimeStep();
 
 public:
@@ -237,6 +261,8 @@ public:
         vortPartFlag = p->vortexParticles;
         dt = p->timeStep;
         inputV = p->velocities(0);
+        nNodes=0;
+        nTris=0;
 
         readTri(p->geomFile->file, p->normFlag);
 
@@ -254,8 +280,8 @@ public:
 
     void clusterCheck();
 
-    short getNumberOfNodes() {return nNodes;}
-    short getNumberOfTris() {return nTris;}
+    size_t getNumberOfNodes() {return nNodes;}
+    size_t getNumberOfTris() {return nTris;}
     std::vector<cpNode*> getNodes() {return nodes;}
     Eigen::MatrixXd getNodePnts();
 

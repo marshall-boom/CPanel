@@ -1,14 +1,25 @@
-//
-//  streamline.cpp
-//  CPanel - Unstructured Panel Code
-//
-//  Created by Chris Satterwhite on 1/26/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "streamline.h"
 
-streamline::streamline(const Eigen::Vector3d &startPnt, double xMax, double tol, const Eigen::Vector3d &Vinf, double PG, geometry* geom) : Vinf(Vinf), PG(PG), geom(geom)
+streamline::streamline(const Eigen::Vector3d &startPnt, double xMax, double tol,
+		               const Eigen::Vector3d &VVinf, double PPG, geometry* ggeom)
+  : Vinf(VVinf), PG(PPG), geom(ggeom)
 {
     coeff5 << 16.0/135 , 0 , 6656.0/12825 , 28561.0/56430 , -9.0/50 , 2.0/55;
     coeff4 << 25.0/216 , 0 , 1408.0/2565 , 2197.0/4104 , -0.2 , 0;
@@ -20,11 +31,7 @@ streamline::streamline(const Eigen::Vector3d &startPnt, double xMax, double tol,
     
     while (nextPnt(0) < xMax)
     {
-        if (error == 0)
-        {
-            dt = dt;
-        }
-        else
+        if (error > 0)
         {
             dt = dt*pow((tol*dt/(2*error)),0.25);
         }

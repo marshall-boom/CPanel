@@ -1,17 +1,26 @@
-//
-//  cpNode.cpp
-//  CPanel - Unstructured Panel Code
-//
-//  Created by Chris Satterwhite on 2/2/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "cpNode.h"
 #include "edge.h"
 #include "bodyPanel.h"
 
 
-cpNode::cpNode(Eigen::Vector3d pnt,int index) : pnt(pnt), index(index), TEnode(false) {}
+cpNode::cpNode(Eigen::Vector3d ppnt,size_t iindex) : pnt(ppnt), index(iindex), TEnode(false) {}
 
 Eigen::Vector3d cpNode::operator-=(const cpNode &rhs)
 {
@@ -39,7 +48,7 @@ void cpNode::addBodyPanel(bodyPanel* p) {bodyPans.push_back(p);}
 
 edge* cpNode::getTE(edge* exception)
 {
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->isTE() && edges[i] != exception)
         {
@@ -55,11 +64,11 @@ edge* cpNode::getTE(edge* exception)
 
 void cpNode::setTE() {TEnode = true;}
 
-void cpNode::setIndex(int i) {index = i;}
+void cpNode::setIndex(size_t i) {index = i;}
 
 edge* cpNode::getOtherTrailEdge(edge* current)
 {
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->isTE() && edges[i] != current)
         {
@@ -73,7 +82,7 @@ edge* cpNode::getOtherTrailEdge(edge* current)
 std::vector<edge*> cpNode::getTrailingEdges(){
     
     std::vector<edge*> trailingEdges;
-    for (int i=0; i<edges.size(); i++)
+    for (edges_index_type i=0; i<edges.size(); i++)
     {
         if (edges[i]->isTE())
         {
@@ -88,14 +97,14 @@ Eigen::Vector3d cpNode::nodeWakeProjAngle(){
     std::vector<edge*> tedges = this->getTrailingEdges();
     Eigen::Vector3d avgNorm = Eigen::Vector3d::Zero();
 
-    for (int j = 0; j < tedges.size(); j++) {
+    for (size_t j = 0; j < tedges.size(); j++) {
         std::vector<bodyPanel*> bPans = tedges[j]->getBodyPans();
         
         // In the case that a side patch is included with the top and bottom panels,
         // the displacement in the z direction will work, but not the y. CPanel seems
         // to exclude these from the node values though...
-        for (int j=0; j<bPans.size(); j++) {
-            avgNorm += bPans[j]->getNormal();
+        for (bodyPanels_index_type i=0; i<bPans.size(); i++) {
+            avgNorm += bPans[i]->getNormal();
         }
         
         avgNorm = avgNorm/avgNorm.size(); // Sum to average

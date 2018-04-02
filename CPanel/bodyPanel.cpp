@@ -1,23 +1,35 @@
-//
-//  bodyPanel.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 5/1/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "bodyPanel.h"
 #include "edge.h"
 #include "cpNode.h"
 #include "surface.h"
 
-bodyPanel::bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID) : panel(nodes,pEdges,bezNorm,surfID), upper(false), lower(false), streamFlag(false), parentSurf(parentSurf), TEpanel(false), TSorder(3), tipFlag(false)
+bodyPanel::bodyPanel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges,
+		            Eigen::Vector3d bezNorm,surface* pparentSurf, size_t surfID)
+  : panel(nnodes,ppEdges,bezNorm,surfID), parentSurf(pparentSurf), TSorder(3), upper(false), lower(false),
+	TEpanel(false), TE(nullptr), tipFlag(false), streamFlag(false), index(-1)
 {
-    for (int i=0; i<pEdges.size(); i++)
+    for (size_t i=0; i<pEdges.size(); i++)
     {
         pEdges[i]->addBodyPan(this);
     }
-    for (int i=0; i<nodes.size(); i++)
+    for (size_t i=0; i<nodes.size(); i++)
     {
         nodes[i]->addBodyPanel(this);
     }
@@ -51,7 +63,7 @@ void bodyPanel::setTipFlag()
     int count = 0;
     double angle;
     Eigen::Vector3d nNormal;
-    for (int i=0; i<neighbors.size(); i++)
+    for (bodyPanels_index_type i=0; i<neighbors.size(); i++)
     {
         nNormal = neighbors[i]->getNormal();
         double dot = normal.dot(nNormal)/(normal.norm()*nNormal.norm());
@@ -133,7 +145,7 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
     {
         double Al,phiV;
         Eigen::Vector3d a,b,s;
-        for (int i=0; i<nodes.size(); i++)
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             Eigen::Vector3d p1;
             Eigen::Vector3d p2;
@@ -153,7 +165,9 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
             Al = local.row(2).dot(s.cross(a));
             if (!itselfFlag)
             {
-                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+// Note: last parameter was not used
+//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1));
                 phiDub += phiV;
             }
             phiSrc += srcSidePhi(PN,Al,phiV,a,b,s);
@@ -191,7 +205,7 @@ void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eige
         n = local.row(2);
         pjk = POI-center;
         double Al;
-        for (int i=0; i<nodes.size(); i++)
+        for (nodes_index_type i=0; i<nodes.size(); i++)
         {
             if (i!=nodes.size()-1)
             {
@@ -252,7 +266,9 @@ Eigen::Vector3d bodyPanel::srcSideV(const double &PN,const double &Al, const Eig
     {
         GL = 1/S*log(std::abs((A+B+S)/(A+B-S)));
     }
-    double CJK = vortexPhi(PN,Al,a,b,s,l,m,n);
+// NOTE: last parameter is not used
+//    double CJK = vortexPhi(PN,Al,a,b,s,l,m,n);
+    double CJK = vortexPhi(PN,Al,a,b,s,l,m);
     return (GL*(s.dot(m)*l-s.dot(l)*m)+CJK*n);
 }
 
@@ -269,7 +285,7 @@ inline Eigen::Vector3d bodyPanel::pntSrcV(const Eigen::Vector3d &pjk)
 void bodyPanel::setCluster()
 {
     int dim;
-    int buffer = 10;
+    size_t buffer = 10;
     if (tipFlag)
     {
         dim = 2;
@@ -279,19 +295,19 @@ void bodyPanel::setCluster()
         dim = 3;
     }
     
-    double nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))-1+buffer; // Binomial Coefficient
-    double nPanels = std::ceil(nObs/2);
-    int oldSize = (int)cluster.size();
+    size_t nObs = static_cast<size_t>(chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))-1)+buffer; // Binomial Coefficient
+    size_t nPanels = (nObs+1)/2; // ceil(nObs/2) for integers
+    bodyPanels_index_type oldSize = cluster.size();
     cluster.push_back(this);
     bool upFlag = upper;
     bool lowFlag = lower;
     while (cluster.size() < nPanels)
     {
         std::vector<bodyPanel*> toAdd;
-        for (unsigned long i=oldSize; i<cluster.size(); i++)
+        for (bodyPanels_index_type i=oldSize; i<cluster.size(); i++)
         {
             std::vector<bodyPanel*> temp = cluster[i]->getNeighbors();
-            for (int j=0; j<temp.size(); j++)
+            for (bodyPanels_index_type j=0; j<temp.size(); j++)
             {
                 if (clusterTest(temp[j], 5*M_PI/6,upFlag,lowFlag))
                 {
@@ -328,20 +344,20 @@ void bodyPanel::setCluster()
                 
                 // Do Something to fix error when cluster can't be found.
                 
-                nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder)) + buffer; // Binomial Coefficient
-                nPanels = ceil(nObs/2);
+                nObs = static_cast<size_t>(chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))) + buffer; // Binomial Coefficient
+                nPanels = (nObs+1)/2; // ceil(nObs/2) for integers
                 
             }
             
             if (cluster.size() > 0) {
-                cluster.erase(cluster.begin()+nPanels+1,cluster.end());
+                cluster.erase(cluster.begin()+static_cast<bodyPanels_type::difference_type>(nPanels+1),cluster.end());
             }
             break;
         }
         else
         {
-            oldSize = (int)cluster.size();
-            for (int i=0; i<toAdd.size(); i++)
+            oldSize = cluster.size();
+            for (bodyPanels_index_type i=0; i<toAdd.size(); i++)
             {
                 cluster.push_back(toAdd[i]);
                 if (cluster.size() == nPanels+1)
@@ -403,16 +419,16 @@ Eigen::Vector3d bodyPanel::velocity2D(const Eigen::Vector3d &pnt,double pntPoten
     Eigen::Vector3d pntLocal = global2local(pnt,true);
     Eigen::Vector2d X0 = pntLocal.head(2);
     Eigen::Vector2d V0 = Eigen::Vector2d::Zero();
-    Xf.resize(clust.size(),3);
+    Xf.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),3);
     Xb = Eigen::MatrixXd::Zero(0,dim);
     Vb = Eigen::MatrixXd::Zero(0,dim);
-    df.resize(clust.size());
-    for (int i=0; i<clust.size(); i++)
+    df.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()));
+    for (bodyPanels_index_type i=0; i<clust.size(); i++)
     {
-        Xf.row(i) = global2local(clust[i]->getCenter(),true);
-        df(i) = clust[i]->getPotential()-pntPotential;
+        Xf.row(static_cast<Eigen::MatrixXd::Index>(i)) = global2local(clust[i]->getCenter(),true);
+        df(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getPotential()-pntPotential;
     }
-    Eigen::MatrixXd xLocal = Xf.block(0,0,clust.size(),2);
+    Eigen::MatrixXd xLocal = Xf.block(0,0,static_cast<Eigen::MatrixXd::Index>(clust.size()),2);
     chtlsnd tipV(X0,xLocal,TSorder,Xb,Vb,V0);
     Eigen::Vector3d vLocal;
     vLocal(0) = tipV.getF().row(0)*df;
@@ -435,15 +451,15 @@ Eigen::Vector3d bodyPanel::velocity3D(const Eigen::Vector3d &pnt,double pntPoten
     Eigen::MatrixXd Xf,Xb,Vb;
     Eigen::VectorXd df;
     
-    Xf.resize(clust.size(),dim);
-    Xb.resize(clust.size(),dim);
-    Vb.resize(clust.size(),dim);
-    df.resize(clust.size());
-    for (int i=0; i<clust.size(); i++)
+    Xf.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),dim);
+    Xb.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),dim);
+    Vb.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),dim);
+    df.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()));
+    for (bodyPanels_index_type i=0; i<clust.size(); i++)
     {
-        Xf.row(i) = clust[i]->getCenter();
-        Vb.row(i) = clust[i]->getBezNormal();
-        df(i) = clust[i]->getPotential()-pntPotential;
+        Xf.row(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getCenter();
+        Vb.row(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getBezNormal();
+        df(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getPotential()-pntPotential;
     }
     Xb = Xf;
     chtlsnd vWeights(pnt,Xf,TSorder,Xb,Vb,Eigen::Vector3d::Zero());
@@ -522,7 +538,7 @@ bool bodyPanel::nearTrailingEdge()
         else
         {
             std::vector<bodyPanel*> neighbs = getNeighbors();
-            for (int i=0; i<neighbs.size(); i++)
+            for (bodyPanels_index_type i=0; i<neighbs.size(); i++)
             {
                 if (neighbs[i]->isUpper() || neighbs[i]->isLower())
                 {
@@ -545,10 +561,10 @@ std::vector<bodyPanel*> bodyPanel::getRelatedPanels()
     pans.push_back(this);
     std::vector<bodyPanel*> nodePans;
     
-    for (int i=0; i<nodes.size(); i++)
+    for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         nodePans = nodes[i]->getBodyPans();
-        for (int j=0; j<nodePans.size(); j++)
+        for (size_t j=0; j<nodePans.size(); j++)
         {
             if (std::find(pans.begin(),pans.end(),nodePans[j]) == pans.end())
             {

@@ -1,17 +1,29 @@
-//
-//  inputParams.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 1/16/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    Connor Sousa - Vortex particle & unsteady implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "inputParams.h"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+#include <iostream>
 #include <iomanip>
 #include <limits>
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 bool inputParams::set()
 {
@@ -144,7 +156,7 @@ bool inputParams::set()
                             fid >> lim;
                             volMeshBounds.push_back(lim);
                         }
-                        int res;
+                        size_t res;
                         for (int i=0; i<3; i++) {
                             fid >> res;
                             volMeshRes.push_back(res);
@@ -161,9 +173,9 @@ bool inputParams::set()
                     fid.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
                     fid >> numSteps;
                     if(numSteps != 0){
-                        stepsSetMaunally = true;
+                        stepsSetManually = true;
                     }else{
-                        stepsSetMaunally = false;
+                        stepsSetManually = false;
                     }
                 }
                 else if (s1.compare("Accelerate_Code") == 0)
@@ -381,10 +393,10 @@ void inputParams::writeInputFile()
     fid << "Accelerate_Code" << std::endl;
     fid << accelerateCode << std::endl;
     fid << "Volume_Mesh (Xo Xf Yo Yf Zo Zf nX nY nZ)" << std::endl;
-    for (int i=0; i<volMeshBounds.size(); i++) {
+    for (volMeshBounds_index_type i=0; i<volMeshBounds.size(); i++) {
         fid << volMeshBounds[i] << " ";
     }
-    for (int i=0; i<volMeshRes.size(); i++) {
+    for (volMeshRes_index_type i=0; i<volMeshRes.size(); i++) {
         fid << volMeshRes[i] << " ";
     }
     fid << "/n/n" <<std::flush;

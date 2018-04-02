@@ -1,13 +1,19 @@
-//
-//  main.cpp
-//  OctreeUnitTests
-//
-//  Created by Chris Satterwhite on 4/15/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
-
-//#include "OctreeTests.h"
-//#include "NodeTests.h"
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - porting to GoogleTest
+ ******************************************************************************/
 
 #include <array>
 #include <memory>
@@ -32,6 +38,8 @@ namespace
       }
 
     protected:
+      using node_type = node<point_type>;
+      using node_index_type = node_type::member_index_type;
       node<point_type> testNode;
   };
 
@@ -40,7 +48,6 @@ namespace
   {
 
     // Test origin is set correctly
-    bool flag = true;
     for (int i=0; i<3; i++)
     {
       // Test origin is set correctly
@@ -50,7 +57,6 @@ namespace
     }
 
     // Test children are NULL
-    flag = true;
     for (int i=0; i<8; i++)
     {
       EXPECT_EQ(testNode.getChild(i), nullptr);
@@ -69,13 +75,13 @@ namespace
   // Test adding a member
   TEST_F(OctreeNodeTest, AddMember)
   {
-    int maxMembers = 10;
+    size_t maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    int counter = 0;
+    size_t counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -110,13 +116,13 @@ namespace
   {
     using member_type=member<point_type>;
 
-    int maxMembers = 10;
+    size_t maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    int counter = 0;
+    node_index_type counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -196,13 +202,13 @@ namespace
 
     using member_type=member<point_type>;
 
-    int maxMembers = 10;
+    size_t maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    int counter = 0;
+    node_index_type counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -299,7 +305,7 @@ namespace
 
   TEST(OctreeTest, MaxMembers)
   {
-    int max = 5;
+    size_t max = 5;
     test_octree_class testOctree;
 
     testOctree.setMaxMembers(max);
@@ -309,18 +315,17 @@ namespace
   TEST(OctreeTest, AddData)
   {
     test_octree_class testOctree;
-    int nX = 3;
-    int nY = 3;
-    int nZ = 3;
+    size_t nX = 3;
+    size_t nY = 3;
+    size_t nZ = 3;
 
     std::vector<test_object *> data;
 
-    test_object *obj;
-    for (int i=0; i<nX; i++)
+    for (size_t i=0; i<nX; i++)
     {
-      for (int j=0; j<nY; j++)
+      for (size_t j=0; j<nY; j++)
       {
-        for (int k=0; k<nZ; k++)
+        for (size_t k=0; k<nZ; k++)
         {
           Eigen::Vector3d center;
           center[0] = i;
@@ -331,15 +336,14 @@ namespace
       }
     }
     testOctree.addData(data);
-    for (int i=0; i<nX*nY*nZ; ++i)
+    for (size_t i=0; i<nX*nY*nZ; ++i)
     {
       delete data[i];
       data[i] = nullptr;
     }
 
-    EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ);
+    EXPECT_EQ(testOctree.getMembers().size(), static_cast<test_octree_class::member_index_type>(nX*nY*nZ));
 
-    bool flag = true;
     for (int i=0; i<3; i++)
     {
       EXPECT_EQ(testOctree.getRootNode()->getOrigin()[i], 1);
@@ -353,7 +357,7 @@ namespace
     newData = new test_object(newPoint);
     testOctree.addData(newData);
 
-    EXPECT_EQ(testOctree.getMembers().size(), nX*nY*nZ+1);
+    EXPECT_EQ(testOctree.getMembers().size(), static_cast<test_octree_class::member_index_type>(nX*nY*nZ+1));
     EXPECT_FALSE(testOctree.getRootNode() == oldRoot);
   }
 

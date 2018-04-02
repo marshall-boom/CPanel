@@ -1,10 +1,22 @@
-//
-//  CPanelMgr.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 1/16/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
+
+#include <iostream>
+#include <iomanip>
 
 #include "CPanelMgr.h"
 
@@ -41,7 +53,7 @@ void caseMgr::runCases()
     {
         std::cout << "\nRunning " << casesVP.size() << " Cases...\n" << std::flush;
         
-        for (int i=0; i<casesVP.size(); i++)
+        for (cases_index_type i=0; i<casesVP.size(); i++)
         {
             std::string out;
             std::stringstream outstream;
@@ -57,7 +69,7 @@ void caseMgr::runCases()
         std::cout << "\nRunning " << cases.size() << " Cases... (\u2713 - Complete, X - Not Requested)\n" << std::endl;
         std::cout << std::setw(10) << std::left << "Case #" << std::setw(15) << std::left << "Solve System" << std::setw(15) << std::left << "Surface Data" << std::setw(16) << std::left << "Trefftz Plane" <<  std::setw(14) << std::left << "Streamlines" << std::setw(24) << std::left << "Stability Derivatives" << std::setw(15) << std::left << "Volume Mesh" << std::endl;
         
-        for (int i=0; i<cases.size(); i++)
+        for (cases_index_type i=0; i<cases.size(); i++)
         {
             std::string out;
             std::stringstream outstream;
@@ -92,11 +104,11 @@ void caseMgr::writeSummary()
         
         outSpacing.resize(9);
         outSpacing << 11,7,8,8,8,8,12,12,12;
-        for (int i=0; i<cases.size(); i++)
+        for (cases_index_type i=0; i<cases.size(); i++)
         {
             writeCase(i+1, cases[i], out);
         }
-        for (int i=0; i<casesVP.size(); i++) {
+        for (cases_index_type i=0; i<casesVP.size(); i++) {
             writeCase(i+1, casesVP[i], out);
         }
     }
@@ -104,7 +116,7 @@ void caseMgr::writeSummary()
     
 }
 
-void caseMgr::writeCase(int caseNumber, cpCase* c, std::ofstream &outStream)
+void caseMgr::writeCase(size_t caseNumber, cpCase* c, std::ofstream &outStream)
 {
     outStream << std::endl;
     outStream << std::setprecision(3);

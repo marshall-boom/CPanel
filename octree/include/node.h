@@ -1,10 +1,19 @@
-//
-//  node.h
-//  CPanel
-//
-//  Created by Chris Satterwhite on 4/5/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. improvements
+ ******************************************************************************/
 
 #ifndef __CPanel__node__
 #define __CPanel__node__
@@ -20,13 +29,18 @@
 template<typename type>
 class node
 {
+    using member_collection_type = std::vector<member<type>>;
+public:
+    using member_index_type = typename member_collection_type::size_type;
+
+private:
     node<type>* parent;
     node<type>* children[8];
     Eigen::Vector3d origin;
     Eigen::Vector3d halfDimension;
-    std::vector<member<type>> members;
-    short level;
-    short maxMembers;
+    member_collection_type members;
+    size_t level;
+    member_index_type maxMembers;
     double maxTheta;
 
     void createChild(int childNumber)
@@ -46,7 +60,7 @@ class node
             }
             children[childNumber] = new node<type>(this,tempOrigin,tempHalfDimension,level,maxMembers,maxTheta);
     }
-    
+
     void pushMember(const member<type> &member)
     {
         // Checks if child is already created. If not, creates the right child before adding member.
@@ -61,12 +75,12 @@ class node
             children[child]->addMember(member);
         }
     }
-    
+
     void addChild(node<type>* child, int childNumber)
     {
         children[childNumber] = child;
     }
-    
+
     void addLevel()
     {
         //Recursively adds one to the level of each node if parent is added
@@ -81,29 +95,43 @@ class node
             }
         }
     }
-    
+
     std::vector<type*> membersToObjects()
     {
         std::vector<type*> objects;
-        for (int i=0; i<members.size(); i++)
+        for (member_index_type i=0; i<members.size(); i++)
         {
             type* obj = members[i].getObj();
             objects.push_back(obj);
         }
         return objects;
     }
-    
+
 public:
-    node(node<type>* parent_ptr,Eigen::Vector3d origin,Eigen::Vector3d halfDimension, short parent_level,  short maxMembers, double maxTheta) : parent(parent_ptr),origin(origin),halfDimension(halfDimension),maxMembers(maxMembers),maxTheta(maxTheta)
+    node(node<type>* parent_ptr,Eigen::Vector3d oorigin,Eigen::Vector3d hhalfDimension, size_t parent_level,
+         member_index_type mmaxMembers, double mmaxTheta)
+      : parent(parent_ptr),origin(oorigin),halfDimension(hhalfDimension),maxMembers(mmaxMembers),
+		maxTheta(mmaxTheta),multExp(nullptr)
     {
         for (int i=0; i<8; i++)
         {
             children[i] = NULL;
         }
-        
+
         level = parent_level+1;
     }
-    
+
+    node(const node<type>& copy)
+      : parent(copy.parent), origin(copy.origin), halfDimension(copy.halfDimension),
+		members(copy.members), level(copy.level), maxMembers(copy.maxMembers),
+		maxTheta(copy.maxTheta), multExp(copy.multExp)
+    {
+        for (int i=0; i<8; i++)
+        {
+            children[i] = new node<type>(*copy.children[i]);
+        }
+    }
+
     ~node()
     {
         if (!isLeafNode())
@@ -117,15 +145,7 @@ public:
             }
         }
     }
-    
-    node(const node<type>& copy) : parent(copy.parent), origin(copy.origin), halfDimension(copy.halfDimension), members(copy.members), level(copy.level), maxMembers(copy.maxMembers)
-    {
-        for (int i=0; i<8; i++)
-        {
-            children[i] = new node<type>(*copy.children[i]);
-        }
-    }
-    
+
     node<type> operator=(node<type> other)
     {
         parent = other.parent;
@@ -140,13 +160,13 @@ public:
         }
         return this;
     }
-    
-    
-    void setMaxMembers(const int &max)
+
+
+    void setMaxMembers(const size_t &max)
     {
         maxMembers = max;
     }
-    
+
     void createParent(int corner)
     {
         // Corner   0 1 2 3 4 5 6 7
@@ -163,7 +183,7 @@ public:
             tempHalfDimension[i] = 2*halfDimension[i];
         }
         parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers,maxTheta);
-        
+
         int child = 0;
         for (int i=0; i<3; i++)
         {
@@ -172,7 +192,7 @@ public:
         parent->addChild(this,child); //Adds current node to parent
         addLevel();
     }
-    
+
     void addMember(const member<type> &member)
     {
         if (isLeafNode())  //If no children exist, add member to current node.  If they do, add member to proper child.
@@ -180,7 +200,7 @@ public:
             members.push_back(member);
             if (members.size() > maxMembers)
             {
-                for (int i=0; i<members.size(); i++)
+                for (member_index_type i=0; i<members.size(); i++)
                 {
                     pushMember(members[i]);
                 }
@@ -192,7 +212,7 @@ public:
             pushMember(member);
         }
     }
-    
+
     bool isLeafNode()
     {
         bool flag = true;
@@ -206,20 +226,20 @@ public:
         }
         return flag;
     }
-    
+
     bool isSameLevel(node<type>* otherNode)
     {
         bool isSame = this->getLevel()==otherNode->getLevel()?true:false;
         return isSame;
     }
-    
+
     Eigen::Vector3d calcVel(Eigen::Vector3d POI){
-        
+
         Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 velInfl+=nParts[i]->velInflAlgSmooth(POI); // uses faster velocity formulation
             }
@@ -232,24 +252,24 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    velInfl += children[i]->calcVel(POI);
+                    velInfl += cchildren[i]->calcVel(POI);
                 }
             }
         }
-        
+
         return velInfl;
     }
-    
+
     Eigen::Vector3d calcVel(type* part){
-        
+
         Eigen::Vector3d velInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 if(part != nParts[i])
                 {
@@ -265,24 +285,24 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    velInfl += children[i]->calcVel(part);
+                    velInfl += cchildren[i]->calcVel(part);
                 }
             }
         }
-        
+
         return velInfl;
     }
-    
+
     Eigen::Vector3d calcStretch(type* part){
-        
+
         Eigen::Vector3d stretchInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 if(nParts[i] != part) // Kroneger delta func.
                 {
@@ -298,25 +318,25 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    stretchInfl += children[i]->calcStretch(part);
+                    stretchInfl += cchildren[i]->calcStretch(part);
                 }
             }
         }
-        
+
         return stretchInfl;
     }
 
-    
+
     Eigen::Vector3d calcDiff(type* part){
-        
+
         Eigen::Vector3d diffInfl = Eigen::Vector3d::Zero();
         if(this->isLeafNode())
         {
             std::vector<type*> nParts = this->getMembers();
-            for(int i=0; i<nParts.size(); i++)
+            for(size_t i=0; i<nParts.size(); i++)
             {
                 if(nParts[i] != part) // Kroneger delta func.
                 {
@@ -332,19 +352,19 @@ public:
             }
             else
             {
-                std::vector<node<type>*> children = this->getChildren();
-                for(int i=0; i<children.size() ; i++)
+                std::vector<node<type>*> cchildren = this->getChildren();
+                for(size_t i=0; i<cchildren.size() ; i++)
                 {
-                    diffInfl += children[i]->calcDiff(part);
+                    diffInfl += cchildren[i]->calcDiff(part);
                 }
             }
         }
-        
+
         return diffInfl;
     }
 
-    
-    
+
+
 //    bool isFarField(node<type>* otherNode)
 //    {
 //        if(otherNode->getLevel() == 2){
@@ -352,23 +372,23 @@ public:
 //        }
 //        double centerToCenterDist = (this->getOrigin()-otherNode->getOrigin()).norm();
 //        bool sameLevel = isSameLevel(otherNode);
-//        
+//
 //        if(std::abs(centerToCenterDist) > 2*(this->getHalfDimension()).norm() && sameLevel){
 //            return true;
 //        }else{
 //            return false;
 //        }
 //    };
-    
+
     bool isFarField(node<type>* otherNode){
         // Follows documentation in FTM chapter of Connor's thesis
 
         // Width of Node
         double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
-        
+
         // Particle distance
         double d = (this->multExp->pos - otherNode->multExp->pos).norm();
-        
+
         // theta = s/d;
         if(s/d < maxTheta)
             // maxTheta was put in the particle class to allow for different values for panels if BH is implemented in the future
@@ -380,15 +400,15 @@ public:
             return false;
         }
     };
-    
+
     bool isFarField(Eigen::Vector3d POI){
-        
+
         // Width of Node
         double s = 2*this->halfDimension.x(); // The 'x' can be used because the implementation of the octree keeps each node cubic
-        
+
         // Particle distance
         double d = (this->multExp->pos - POI).norm();
-        
+
         // theta = s/d;
         if(s/d < maxTheta)
         {
@@ -399,13 +419,13 @@ public:
             return false;
         }
     };
-    
-    
+
+
     int getChildContainingMember(const member<type> &member)
     {
         return getChildContainingPnt(member.getRefPoint());
     }
-    
+
     int getChildContainingPnt(const Eigen::Vector3d &pnt)
     { // Finds child quadrant
         int child = 0;
@@ -421,10 +441,10 @@ public:
         {
             child |= 1;
         }
-        
+
         return child;
     }
-    
+
     std::vector<type*> getMembers()
     {
         if (isLeafNode())
@@ -439,7 +459,7 @@ public:
                 if (children[i] != NULL)
                 {
                     std::vector<type*> temp = children[i]->getMembers();
-                    for (int j=0; j<temp.size(); j++)
+                    for (member_index_type j=0; j<temp.size(); j++)
                     {
                         recursiveMembers.push_back(temp[j]);
                     }
@@ -447,9 +467,9 @@ public:
             }
             return recursiveMembers;
         }
-        
+
     }
-    
+
     std::vector<node<type>*> getSubNodes()
     {
         if (isLeafNode())
@@ -467,7 +487,7 @@ public:
                 if (children[i] != NULL)
                 {
                     std::vector<node<type>*> temp = children[i]->getSubNodes();
-                    for (int j=0; j<temp.size(); j++)
+                    for (size_t j=0; j<temp.size(); j++)
                     {
                         recursiveNodes.push_back(temp[j]);
                     }
@@ -476,7 +496,7 @@ public:
             return recursiveNodes;
         }
     }
-    
+
     std::vector<type*> getMembers(node<type>* exception)
     {
         // Used if searching tree starting at bottom to avoid searching the same node twice.
@@ -506,7 +526,7 @@ public:
             return recursiveMembers;
         }
     }
-    
+
     bool hasChildren()
     {
         for(int i=0; i<8; i++)
@@ -519,41 +539,41 @@ public:
         }
         return false;
     }
-    
+
     std::vector<node<type>*> getChildren()
     {
-        std::vector<node<type>*> children;
+        std::vector<node<type>*> cchildren;
         for(int i=0; i<8; i++)
         {
             node<type>* subNode = this->getChild(i);
             if(subNode)
             {
-                children.push_back(subNode);
+                cchildren.push_back(subNode);
             }
         }
-        return children;
+        return cchildren;
     }
-    
+
     std::vector<type*> getChildExpans()
     {
-        std::vector<node<type>*> children = this->getChildren();
+        std::vector<node<type>*> cchildren = this->getChildren();
         std::vector<type*> childExps;
-        
-        for(int i=0; i<children.size(); i++)
+
+        for(size_t i=0; i<cchildren.size(); i++)
         {
-            childExps.push_back(children[i]->multExp);
+            childExps.push_back(cchildren[i]->multExp);
         }
-        
+
         return childExps;
     }
-    
+
     type* multExp; // Public because will access a lot
     void setMultExp(type* exp) {multExp = exp;};
-    
+
     Eigen::Vector3d getOrigin() {return origin;}
     Eigen::Vector3d getHalfDimension() {return halfDimension;}
     node<type>* getChild(int childNumber) {return children[childNumber];}
-    short getLevel() {return level;}
+    size_t getLevel() {return level;}
     node<type>* getParent() {return parent;}
 };
 

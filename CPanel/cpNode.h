@@ -1,10 +1,19 @@
-//
-//  cpNode.h
-//  CPanel - Unstructured Panel Code
-//
-//  Created by Chris Satterwhite on 2/2/15.
-//  Copyright (c) 2015 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2015 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel___Unstructured_Panel_Code__cpNode__
 #define __CPanel___Unstructured_Panel_Code__cpNode__
@@ -19,16 +28,21 @@ class bodyPanel;
 
 class cpNode
 {
+	using edges_type = std::vector<edge *>;
+	using edges_index_type = edges_type::size_type;
+	using bodyPanels_type = std::vector<bodyPanel *>;
+	using bodyPanels_index_type = bodyPanels_type::size_type;
+
     Eigen::Vector3d pnt;
-    int index;
-    std::vector<edge*> edges;
-    std::vector<bodyPanel*> bodyPans;
+    size_t index;
+    edges_type edges;
+    bodyPanels_type bodyPans;
     double c_w = 1.3; //vpp
     
     bool TEnode;
     
 public:
-    cpNode(Eigen::Vector3d pnt,int index);
+    cpNode(Eigen::Vector3d pnt,size_t iindex);
         
     Eigen::Vector3d operator-=(const cpNode &rhs);
     
@@ -40,12 +54,12 @@ public:
     edge* getTE(edge* exception);
     
     void setTE();
-    void setIndex(int i);
+    void setIndex(size_t i);
     
     void setPnt(Eigen::Vector3d pos){pnt = pos;}
     Eigen::Vector3d getPnt() const {return pnt;}
     
-    int getIndex() const {return index;}
+    size_t getIndex() const {return index;}
     
     std::vector<edge*> getEdges() {return edges;}
     

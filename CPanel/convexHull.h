@@ -1,10 +1,19 @@
-//
-//  convexHull.h
-//  CPanel
-//
-//  Created by Chris Satterwhite on 9/24/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #ifndef __CPanel__convexHull__
 #define __CPanel__convexHull__
@@ -46,29 +55,32 @@ class convexHull
             return (p1->d > p2->d);
         }
     };
-    
-    std::vector<member*> members;
-    std::vector<member*> hull;
-    
+
+    using members_type = std::vector<member *>;
+    using members_index_type = members_type::size_type;
+
+    members_type members;
+    members_type hull;
+
     void computeHull();
     bool boundary;
     // TRUE : Points on boundary consider inside hull and therefore not included in hull vector.
     // FALSE : Points on boundary considered outside of hull and therefore included in hull vector
-    
+
     Eigen::Vector3d makeVector(member* p1, member* p2);
-    
+
 public:
-    
+
     convexHull(Eigen::MatrixXd points, bool boundary);
     ~convexHull()
     {
-        for (int i = 0; i<members.size(); i++)
+        for (members_index_type i = 0; i<members.size(); i++)
         {
             delete members[i];
         }
     }
     std::vector<member*> getHull() {return hull;}
-    
+
     bool compareNodes(std::vector<Eigen::Vector3d> nodesLocal);
 };
 

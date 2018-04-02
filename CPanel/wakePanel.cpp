@@ -1,10 +1,20 @@
-//
-//  wakePanel.cpp
-//  CPanel
-//
-//  Created by Chris Satterwhite on 5/1/14.
-//  Copyright (c) 2014 Chris Satterwhite. All rights reserved.
-//
+/*******************************************************************************
+ * Copyright (c) 2014 Chris Satterwhite
+ * Copyright (c) 2018 David D. Marshall <ddmarsha@calpoly.edu>
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * See LICENSE.md file in the project root for full license information.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Chris Satterwhite - initial code and implementation
+ *    Connor Sousa - Vortex particle implementation
+ *    David D. Marshall - misc. changes
+ ******************************************************************************/
 
 #include "wakePanel.h"
 #include "wake.h"
@@ -12,15 +22,20 @@
 #include "edge.h"
 
 
-wakePanel::wakePanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm, wake* parentWake,int surfID) : panel(nodes,pEdges,bezNorm,surfID), TEpanel(false), parentWake(parentWake), upperPan(nullptr), lowerPan(nullptr)
+wakePanel::wakePanel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm,
+		             wake* pparentWake, size_t surfID)
+  : panel(nnodes,ppEdges,bbezNorm,surfID), upperPan(nullptr), lowerPan(nullptr),
+	TEpanel(false), parentWake(pparentWake), vortFil(nullptr), bufferParent(nullptr)
 {
-    for (int i=0; i<pEdges.size(); i++)
+    for (size_t i=0; i<pEdges.size(); i++)
     {
         pEdges[i]->addWakePan(this);
     }
 }
 
-wakePanel::wakePanel(const wakePanel &copy) : panel(copy), upperPan(copy.upperPan), lowerPan(copy.lowerPan), TEpanel(copy.TEpanel), parentWake(copy.parentWake) {}
+wakePanel::wakePanel(const wakePanel &copy)
+  : panel(copy), upperPan(copy.upperPan), lowerPan(copy.lowerPan), TEpanel(copy.TEpanel),
+	parentWake(copy.parentWake), vortFil(copy.vortFil), bufferParent(copy.bufferParent) {}
 
 void wakePanel::setTEpanel()
 {
@@ -47,7 +62,7 @@ void wakePanel::interpPanels(std::vector<bodyPanel*> &interpPans, double &interp
     }
     else
     {
-        for (int i=1; i<wakeLines.size()-1; i++)
+        for (size_t i=1; i<wakeLines.size()-1; i++)
         {
             if ((wakeLines[i]->getY() <= center(1) && wakeLines[i+1]->getY() > center(1)))
             {
@@ -129,7 +144,7 @@ void wakePanel::setParentPanels(bodyPanel* upper, bodyPanel* lower)
 
 edge* wakePanel::getTE()
 {
-    for (int i=0; i<pEdges.size(); i++)
+    for (edges_index_type i=0; i<pEdges.size(); i++)
     {
         if (pEdges[i]->isTE())
         {
@@ -221,20 +236,20 @@ double wakePanel::getPartRadius(Eigen::Vector3d Vinf, double &dt){
         dist.push_back(std::abs((currPnt-neighbor2Pnt).norm()));
     }
     
-    return std::accumulate(dist.begin(), dist.end(), 0.0)/dist.size();
-};
+    return std::accumulate(dist.begin(), dist.end(), 0.0)/static_cast<double>(dist.size());
+}
 
 
-std::vector<int> wakePanel::sort_indexes(std::vector<double> &v) {
+std::vector<size_t> wakePanel::sort_indexes(std::vector<double> &v) {
     
     // if function errors out, its because I replaced all 'std::size_t' with 'int' except for vector<int>
     
     // initialize original index locations
-    std::vector<int> idx(v.size());
-    for (int i = 0; i !=idx.size(); ++i) idx[i] = i;
+    std::vector<size_t> idx(v.size());
+    for (size_t i = 0; i !=idx.size(); ++i) idx[i] = i;
     
     // sort indexes based on comparing values in v
-    sort(idx.begin(), idx.end(),[v](int i1, int i2) {return v[i1] < v[i2];});
+    sort(idx.begin(), idx.end(),[v](size_t i1, size_t i2) {return v[i1] < v[i2];});
     
     return idx;
 }
@@ -277,15 +292,15 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
     //           2
     
     
-    std::vector<edge*> pEdges = this->edgesInOrder();
+    std::vector<edge*> ppEdges = this->edgesInOrder();
     std::vector<cpNode*> ptsIO(4);
     
     // Look at points on the trailing edge first
-    cpNode* n1 = pEdges[0]->getN1();
-    cpNode* n2 = pEdges[0]->getN2();
+    cpNode* n1 = ppEdges[0]->getN1();
+    cpNode* n2 = ppEdges[0]->getN2();
     
     // If n1 shares a node with edge3, then it is node0
-    if(pEdges[3]->containsNode(n1))
+    if(ppEdges[3]->containsNode(n1))
     {
         ptsIO[0] = n1;
         ptsIO[1] = n2;
@@ -296,11 +311,11 @@ std::vector<cpNode*> wakePanel::pointsInOrder(){
     }
     
     // Now look at other edge
-    n1 = pEdges[2]->getN1();
-    n2 = pEdges[2]->getN2();
+    n1 = ppEdges[2]->getN1();
+    n2 = ppEdges[2]->getN2();
     
     // If n1 shares a node with edge1 then it is node 2
-    if(pEdges[1]->containsNode(n1))
+    if(ppEdges[1]->containsNode(n1))
     {
         ptsIO[2] = n1;
         ptsIO[3] = n2;
@@ -329,33 +344,33 @@ std::vector<edge*> wakePanel::edgesInOrder(){
     //
     
     std::vector<edge *> edgesIO(4);
-    std::vector<edge*> pEdges = this->getEdges();
+    std::vector<edge*> ppEdges = this->getEdges();
     
     // The trailing edge is built first and the parallel downstream edge is always built third
-    edgesIO[0] = pEdges[0];
-    edgesIO[2] = pEdges[2];
+    edgesIO[0] = ppEdges[0];
+    edgesIO[2] = ppEdges[2];
     
     
     // Find the vectors in the drawing
-    Eigen::Vector3d a = pEdges[0]->getMidPoint() - this->getCenter();
+    Eigen::Vector3d a = ppEdges[0]->getMidPoint() - this->getCenter();
     Eigen::Vector3d b = this->getNormal();
     
     Eigen::Vector3d c = a.cross(b);
     Eigen::Vector3d d = center+c;
     
     // See if edge1 midpoint or edge 3 midpoint is closer to the point d;
-    double distToE1 = (pEdges[1]->getMidPoint() - d).norm();
-    double distToE3 = (pEdges[3]->getMidPoint() - d).norm();
+    double distToE1 = (ppEdges[1]->getMidPoint() - d).norm();
+    double distToE3 = (ppEdges[3]->getMidPoint() - d).norm();
     
     if(distToE3 < distToE1)
     {
-        edgesIO[3] = pEdges[3];
-        edgesIO[1] = pEdges[1];
+        edgesIO[3] = ppEdges[3];
+        edgesIO[1] = ppEdges[1];
     }
     else
     {
-        edgesIO[3] = pEdges[1];
-        edgesIO[1] = pEdges[3];
+        edgesIO[3] = ppEdges[1];
+        edgesIO[1] = ppEdges[3];
     }
     
     
