@@ -670,11 +670,12 @@ void geometry::setInfCoeff()
         indices = interpIndices(interpPans);
         for (size_t i=0; i<nBodyPans; i++)
         {
+        	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
             influence = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
-            A(i,indices(0)) += influence*(1-interpCoeff);
-            A(i,indices(1)) += influence*(interpCoeff-1);
-            A(i,indices(2)) += influence*interpCoeff;
-            A(i,indices(3)) -= influence*interpCoeff;
+            A(ii,indices(0)) += influence*(1-interpCoeff);
+            A(ii,indices(1)) += influence*(interpCoeff-1);
+            A(ii,indices(2)) += influence*interpCoeff;
+            A(ii,indices(3)) -= influence*interpCoeff;
         }
         for (int i=0; i<percentage.size(); i++)
         {

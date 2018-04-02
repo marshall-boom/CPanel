@@ -762,13 +762,14 @@ void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixX
     bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        mu.data(i,0) = (*bPanels)[i]->getMu();
-        sigma.data(i,0) = (*bPanels)[i]->getSigma();
-        pot.data(i,0) = (*bPanels)[i]->getPotential();
-        V.data.row(i) = (*bPanels)[i]->getGlobalV();
-        Cp.data(i,0) = (*bPanels)[i]->getCp();
-        con.row(i) = (*bPanels)[i]->getVerts();
-        bN.data.row(i) = (*bPanels)[i]->getBezNormal();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*bPanels)[i]->getMu();
+        sigma.data(ii,0) = (*bPanels)[i]->getSigma();
+        pot.data(ii,0) = (*bPanels)[i]->getPotential();
+        V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+        Cp.data(ii,0) = (*bPanels)[i]->getCp();
+        con.row(ii) = (*bPanels)[i]->getVerts();
+        bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
     }
     
     data.push_back(mu);
@@ -795,9 +796,10 @@ void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::Matrix
     pot.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
     for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
-        mu.data(i,0) = (*wPanels)[i]->getMu();
-        pot.data(i,0) = (*wPanels)[i]->getPotential();
-        con.row(i) = (*wPanels)[i]->getVerts();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*wPanels)[i]->getMu();
+        pot.data(ii,0) = (*wPanels)[i]->getPotential();
+        con.row(ii) = (*wPanels)[i]->getVerts();
     }
     
     data.push_back(mu);
@@ -822,9 +824,10 @@ void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Mat
     pot.data.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),1);
     for (wakePanels_index_type i=0; i<w2panels->size(); i++)
     {
-        mu.data(i,0) = (*w2panels)[i]->getMu();
-        pot.data(i,0) = (*w2panels)[i]->getPotential();
-        con.row(i) = (*w2panels)[i]->getVerts();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*w2panels)[i]->getMu();
+        pot.data(ii,0) = (*w2panels)[i]->getPotential();
+        con.row(ii) = (*w2panels)[i]->getVerts();
     }
     data.push_back(mu);
     data.push_back(pot);
@@ -844,8 +847,9 @@ void cpCaseVP::writeFilamentData(boost::filesystem::path path){
     
     Eigen::MatrixXd nodeMat(2*filaments.size(),3);
     for(filaments_index_type i=0; i<filaments.size(); i++){
-        nodeMat.row(2*i) = filaments[i]->getP1();
-        nodeMat.row(2*i+1) = filaments[i]->getP2();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        nodeMat.row(2*ii) = filaments[i]->getP1();
+        nodeMat.row(2*ii+1) = filaments[i]->getP2();
     }
     
     
@@ -856,9 +860,10 @@ void cpCaseVP::writeFilamentData(boost::filesystem::path path){
     size_t nodeCounter = 0; // Used to make filament end points
     for (filaments_index_type i=0; i<filaments.size(); i++)
     {
-        mu.data(i,0) = filaments[i]->getStrength();
-        con(i,0) = nodeCounter;
-        con(i,1) = nodeCounter+1;
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = filaments[i]->getStrength();
+        con(ii,0) = nodeCounter;
+        con(ii,1) = nodeCounter+1;
         nodeCounter = nodeCounter+2;
     }
     
@@ -889,9 +894,10 @@ void cpCaseVP::writeParticleData(boost::filesystem::path path){
     shedTime.data.resize(static_cast<Eigen::MatrixXd::Index>(particles.size()),1);
     for (particles_index_type i=0; i<particles.size(); i++)
     {
-        strength.data.row(i) = particles[i]->strength;
-        shedTime.data(i,0) = particles[i]->shedTime;
-        con(i) = i;
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        strength.data.row(ii) = particles[i]->strength;
+        shedTime.data(ii,0) = particles[i]->shedTime;
+        con(ii) = i;
     }
     data.push_back(strength);
     data.push_back(shedTime);

@@ -290,13 +290,14 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         
         double parentPanWeightedY = particlePntInWakeY( Spts[i] , SptsP1[i] , SptsP2[i] );
         double stFac = stretchFactor( SptsP1[i] , SptsP2[i] );
+        Eigen::VectorXd::Index ii(static_cast<Eigen::VectorXd::Index>(i));
         
-        w(i) = std::abs(partV.z());
+        w(ii) = std::abs(partV.z());
 
-        dPhi(i) = -wakeStrength(parentPanWeightedY) * stFac;
+        dPhi(ii) = -wakeStrength(parentPanWeightedY) * stFac;
         
-        Cl(i) = 2*dPhi(i)/(Vinf*Sref);
-        Cd(i) = dPhi(i)*w(i)/(Vinf*Vinf*Sref);
+        Cl(ii) = 2*dPhi(ii)/(Vinf*Sref);
+        Cd(ii) = dPhi(ii)*w(ii)/(Vinf*Vinf*Sref);
     }
     
     int i=0;

@@ -374,16 +374,17 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
 
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        mu.data(i,0) = (*bPanels)[i]->getMu();
-        sigma.data(i,0) = (*bPanels)[i]->getSigma();
-        pot.data(i,0) = (*bPanels)[i]->getPotential();
-        V.data.row(i) = (*bPanels)[i]->getGlobalV();
-        Cp.data(i,0) = (*bPanels)[i]->getCp();
-        con.row(i) = (*bPanels)[i]->getVerts();
-        bN.data.row(i) = (*bPanels)[i]->getBezNormal();
-        x.data(i,0) = (*bPanels)[i]->getCenter().x();
-        y.data(i,0) = (*bPanels)[i]->getCenter().y();
-        z.data(i,0) = (*bPanels)[i]->getCenter().z();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*bPanels)[i]->getMu();
+        sigma.data(ii,0) = (*bPanels)[i]->getSigma();
+        pot.data(ii,0) = (*bPanels)[i]->getPotential();
+        V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+        Cp.data(ii,0) = (*bPanels)[i]->getCp();
+        con.row(ii) = (*bPanels)[i]->getVerts();
+        bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
+        x.data(ii,0) = (*bPanels)[i]->getCenter().x();
+        y.data(ii,0) = (*bPanels)[i]->getCenter().y();
+        z.data(ii,0) = (*bPanels)[i]->getCenter().z();
     }
 
     data.push_back(mu);
@@ -415,9 +416,10 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
     pot.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
     for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
-        mu.data(i,0) = (*wPanels)[i]->getMu();
-        pot.data(i,0) = (*wPanels)[i]->getPotential();
-        con.row(i) = (*wPanels)[i]->getVerts();
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        mu.data(ii,0) = (*wPanels)[i]->getMu();
+        pot.data(ii,0) = (*wPanels)[i]->getPotential();
+        con.row(ii) = (*wPanels)[i]->getVerts();
     }
     data.push_back(mu);
     data.push_back(pot);
@@ -477,12 +479,13 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
         con.resize(static_cast<Eigen::MatrixXd::Index>(pnts.size()-1),2);
         for (size_t j=0; j<pnts.size(); j++)
         {
-            pntMat.row(j) = pnts[j];
-            vel.data.row(j) = velocities[j];
+        	Eigen::MatrixXd::Index jj(static_cast<Eigen::MatrixXd::Index>(j));
+            pntMat.row(jj) = pnts[j];
+            vel.data.row(jj) = velocities[j];
             if (j<static_cast<size_t>(con.rows()))
             {
-                con(j,0) = j;
-                con(j,1) = j+1;
+                con(jj,0) = j;
+                con(jj,1) = j+1;
             }
         }
         data.push_back(vel);
@@ -510,9 +513,10 @@ void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nod
     Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(nCells),1);
     for (size_t i=0; i<nCells; i++)
     {
-        vel.data.row(i) = volMeshDat.velocity[i];
-        Cp.data(i,0) = volMeshDat.coef_press[i];
-        con.row(i) = cells[i];
+    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+        vel.data.row(ii) = volMeshDat.velocity[i];
+        Cp.data(ii,0) = volMeshDat.coef_press[i];
+        con.row(ii) = cells[i];
     }
     data.push_back(vel);
     data.push_back(Cp);
