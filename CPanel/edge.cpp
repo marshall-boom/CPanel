@@ -109,7 +109,7 @@ bool edge::sameEdge(cpNode* node1, cpNode* node2)
 bodyPanel* edge::getOtherBodyPan(bodyPanel* currentPan)
 {
     
-    for (int i=0; i<2; i++)
+    for (size_t i=0; i<2; i++)
     {
         if (bodyPans[i] != currentPan)
         {

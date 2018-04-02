@@ -30,7 +30,7 @@ private:
     Eigen::Vector3d origin;
     Eigen::Vector3d halfDimension;
     member_collection_type members;
-    short level;
+    size_t level;
     member_index_type maxMembers;
     double maxTheta;
 
@@ -99,7 +99,7 @@ private:
     }
 
 public:
-    node(node<type>* parent_ptr,Eigen::Vector3d oorigin,Eigen::Vector3d hhalfDimension, short parent_level,
+    node(node<type>* parent_ptr,Eigen::Vector3d oorigin,Eigen::Vector3d hhalfDimension, size_t parent_level,
          member_index_type mmaxMembers, double mmaxTheta)
       : parent(parent_ptr),origin(oorigin),halfDimension(hhalfDimension),maxMembers(mmaxMembers),
 		maxTheta(mmaxTheta),multExp(nullptr)
@@ -109,7 +109,7 @@ public:
             children[i] = NULL;
         }
 
-        level = static_cast<short>(parent_level+1);
+        level = parent_level+1;
     }
 
     node(const node<type>& copy)
@@ -153,7 +153,7 @@ public:
     }
 
 
-    void setMaxMembers(const int &max)
+    void setMaxMembers(const size_t &max)
     {
         maxMembers = max;
     }
@@ -173,7 +173,7 @@ public:
         {
             tempHalfDimension[i] = 2*halfDimension[i];
         }
-        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,static_cast<short>(level-1),maxMembers,maxTheta);
+        parent = new node<type>(NULL,tempOrigin,tempHalfDimension,level-1,maxMembers,maxTheta);
 
         int child = 0;
         for (int i=0; i<3; i++)
@@ -564,7 +564,7 @@ public:
     Eigen::Vector3d getOrigin() {return origin;}
     Eigen::Vector3d getHalfDimension() {return halfDimension;}
     node<type>* getChild(int childNumber) {return children[childNumber];}
-    short getLevel() {return level;}
+    size_t getLevel() {return level;}
     node<type>* getParent() {return parent;}
 };
 

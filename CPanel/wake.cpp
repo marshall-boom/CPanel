@@ -214,7 +214,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
         }
         
         sortedParts.push_back(unsortedParts[lowestYindex]);
-        unsortedParts.erase(unsortedParts.begin() + lowestYindex);
+        unsortedParts.erase(unsortedParts.begin() + static_cast<std::vector<particle *>::difference_type>(lowestYindex));
         
     }
     
@@ -247,7 +247,7 @@ void wake::trefftzPlaneVP(double Vinf,double Sref, std::vector<particle*>* parti
     SptsP2.push_back(sortedParts[1]);
     
     Eigen::Vector3d nextP = sortedParts[1]->pos;
-    int nextPindex = 1;
+    size_t nextPindex = 1;
     Eigen::Vector3d pt = sortedParts[0]->pos;
     
     for (int i=1; i<nPnts; i++) {
@@ -410,7 +410,7 @@ Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yyLoc)
 {
     // Sort by y position
     std::sort(TEpanels.begin(), TEpanels.end(), [](wakePanel* w1, wakePanel* w2) {return w1->getCenter()(1) < w2->getCenter()(1);});
-    yyLoc.resize(TEpanels.size()+2);
+    yyLoc.resize(static_cast<Eigen::VectorXd::Index>(TEpanels.size()+2));
     edge* TE = TEpanels[0]->getTE();
     
     if (TE->getN1()->getPnt()(1) > TE->getN2()->getPnt()(1))
@@ -420,7 +420,7 @@ Eigen::Vector3d wake::lambVectorInt(Eigen::VectorXd &yyLoc)
     
     int i = 1;
     Eigen::Vector3d vel,circ;
-    Eigen::MatrixXd sectForces = Eigen::MatrixXd::Zero(TEpanels.size()+2,3);
+    Eigen::MatrixXd sectForces = Eigen::MatrixXd::Zero(static_cast<Eigen::MatrixXd::Index>(TEpanels.size()+2),3);
     while (TE != nullptr)
     {
         yyLoc(i) = TE->getMidPoint()(1);

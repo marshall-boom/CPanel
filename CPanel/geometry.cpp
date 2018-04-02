@@ -141,7 +141,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         // Temporarily Store Connectivity
-        for (size_t i=0; i<nTris; i++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
         {
             fid >> connectivity(i,0) >> connectivity(i,1) >> connectivity(i,2);
         }
@@ -151,7 +151,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         // Scan Surface IDs and collect Unique IDs
         size_t wakeNodeStart = nNodes;
         size_t wakeTriStart = nTris;
-        for (size_t i=0; i<nTris; i++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
         {
             fid >> allID(i);
             if (i == 0 || allID(i) != allID(i-1))
@@ -168,7 +168,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             if (allID(i) > 1000 && allID(i-1) < 1000)
             {
                 wakeNodeStart = connectivity.row(i).minCoeff();
-                wakeTriStart = i;
+                wakeTriStart = static_cast<size_t>(i);
             }
         }
 
@@ -178,11 +178,11 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         // Read in Normals if included in input file
-        Eigen::MatrixXd norms = Eigen::MatrixXd::Zero(nTris,3);
+        Eigen::MatrixXd norms = Eigen::MatrixXd::Zero(static_cast<Eigen::MatrixXd::Index>(nTris),3);
         if (normFlag)
         {
             std::cout << "Reading Bezier Normals from Geometry File..." << std::endl;
-            for (size_t i=0; i<nTris; i++)
+            for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
             {
                 fid >> norms(i,0) >> norms(i,1) >> norms(i,2);
             }
@@ -238,7 +238,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             Eigen::MatrixXd wakeNodes(2*TEnodes.size(),3);
             Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> wakeConnectivity(2*TEedges.size(),4);
             std::vector<size_t> VPwakeID, newNodesIndex, usedTENodesIndex;
-            int nodeCounter=0, panelCounter=0;
+            size_t nodeCounter=0, panelCounter=0;
             
             for(size_t i=0; i<TEedges.size(); i++)
             {
@@ -265,12 +265,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     
                     double VinfLocal = inputV;
                     
-                    wakeNodes.row(nodeCounter) = nodes[n1index]->firstProjNode(dt, VinfLocal);
+                    wakeNodes.row(static_cast<Eigen::MatrixXd::Index>(nodeCounter)) = nodes[n1index]->firstProjNode(dt, VinfLocal);
                     newNodesIndex.push_back(nodeCounter);
                     n1firstIndex = nodeCounter+nNodes;
                     nodeCounter++;
                     
-                    wakeNodes.row(nodeCounter) = nodes[n1index]->secProjNode(dt, VinfLocal);
+                    wakeNodes.row(static_cast<Eigen::MatrixXd::Index>(nodeCounter)) = nodes[n1index]->secProjNode(dt, VinfLocal);
                     newNodesIndex.push_back(nodeCounter);
                     n1secIndex = nodeCounter+nNodes;
                     nodeCounter++;
@@ -291,25 +291,25 @@ void geometry::readTri(std::string tri_file, bool normFlag)
                     usedTENodesIndex.push_back(n2index);
                     
                     double VinfLocal = inputV;
-                    wakeNodes.row(nodeCounter) = nodes[n2index]->firstProjNode(dt, VinfLocal);
+                    wakeNodes.row(static_cast<Eigen::MatrixXd::Index>(nodeCounter)) = nodes[n2index]->firstProjNode(dt, VinfLocal);
                     newNodesIndex.push_back(nodeCounter);
                     n2firstIndex = nodeCounter+nNodes;
                     nodeCounter++;
                     
-                    wakeNodes.row(nodeCounter) = nodes[n2index]->secProjNode(dt, VinfLocal);
+                    wakeNodes.row(static_cast<Eigen::MatrixXd::Index>(nodeCounter)) = nodes[n2index]->secProjNode(dt, VinfLocal);
                     newNodesIndex.push_back(nodeCounter);
                     n2secIndex = nodeCounter+nNodes;
                     nodeCounter++;
                 }
                 
                 
-                wakeConnectivity.row(panelCounter) << n1index, n2index, n2firstIndex, n1firstIndex; //built TE first
+                wakeConnectivity.row(static_cast<Eigen::MatrixXd::Index>(panelCounter)) << n1index, n2index, n2firstIndex, n1firstIndex; //built TE first
                 
                 panelCounter++;
                 VPwakeID.push_back(1001); // First row of wake panels
                 isFirstPanel.push_back(true);
                 
-                wakeConnectivity.row(panelCounter) << n1firstIndex, n2firstIndex, n2secIndex, n1secIndex;
+                wakeConnectivity.row(static_cast<Eigen::MatrixXd::Index>(panelCounter)) << n1firstIndex, n2firstIndex, n2secIndex, n1secIndex;
                 panelCounter++;
                 VPwakeID.push_back(1001); // Second row
                 isFirstPanel.push_back(false);
@@ -317,9 +317,9 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             
             
             // Append nodes and adjust connectivity
-            for (size_t i=0; i<static_cast<size_t>(wakeNodes.rows()); i++)
+            for (Eigen::MatrixXd::Index i=0; i<wakeNodes.rows(); i++)
             {
-                n = new cpNode(wakeNodes.row(i),i+nNodes);
+                n = new cpNode(wakeNodes.row(i),static_cast<size_t>(i)+nNodes);
                 nodes.push_back(n);
             }
             Eigen::MatrixXd wakeNorms = Eigen::MatrixXd::Zero(wakeConnectivity.rows(),3);
@@ -470,7 +470,7 @@ void geometry::correctWakeConnectivity(size_t wakeNodeStart,size_t wakeTriStart,
         }
     }
 
-    for (size_t i=wakeTriStart; i<nTris; i++)
+    for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(wakeTriStart); i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
     {
         for (int j=0; j<connectivity.cols(); j++)
         {
@@ -535,7 +535,7 @@ void geometry::createSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen:
     bodyPanel* bPan;
     wakePanel* wPan;
     std::vector<edge*> pEdges;
-    for (size_t i=0; i<nTris; i++)
+    for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
     {
         std::vector<cpNode*> pNodes;
         pNodes.push_back(nodes[connectivity(i,0)]);
@@ -549,17 +549,17 @@ void geometry::createSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen:
                 s = new surface(allID(i),this);
                 surfaces.push_back(s);
             }
-            bPan = new bodyPanel(pNodes,pEdges,norms.row(i),s,allID(i));
+            bPan = new bodyPanel(pNodes,pEdges,norms.row(i),s,static_cast<size_t>(allID(i)));
             s->addPanel(bPan);
         }
         else
         {
             if (i==0 || allID(i)!=allID(i-1))
             {
-                w = new wake(allID(i),this);
+                w = new wake(static_cast<size_t>(allID(i)),this);
                 wakes.push_back(w);
             }
-            wPan = new wakePanel(pNodes,pEdges,norms.row(i),w,allID(i));
+            wPan = new wakePanel(pNodes,pEdges,norms.row(i),w,static_cast<size_t>(allID(i)));
             w->addPanel(wPan);
         }
     }
@@ -627,23 +627,23 @@ void geometry::createOctree()
 void geometry::setInfCoeff()
 {
     // Construct doublet and source influence coefficient matrices for body panels
-    int nBodyPans = (int)bPanels.size();
-    int nWakePans = (int)wPanels.size();
-    int nPans = nBodyPans+nWakePans;
+    size_t nBodyPans = bPanels.size();
+    size_t nWakePans = wPanels.size();
+    size_t nPans = nBodyPans+nWakePans;
 
-    A.resize(nBodyPans,nBodyPans);
-    B.resize(nBodyPans,nBodyPans);
-    C.resize(nBodyPans,w2Panels.size());
+    A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+    B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+    C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
     
     
-    Eigen::VectorXi percentage(9);
+    Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
 
-    for (int j=0; j<nBodyPans; j++)
+    for (size_t j=0; j<nBodyPans; j++)
     {
-        for (int i=0; i<nBodyPans; i++)
+        for (size_t i=0; i<nBodyPans; i++)
         {
-            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(i,j),A(i,j));
+            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)),A(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)));
         }
         for (int i=0; i<percentage.size(); i++)
         {
@@ -654,9 +654,9 @@ void geometry::setInfCoeff()
         }
     }
 
-    for (int i=0; i<nBodyPans; i++)
+    for (size_t i=0; i<nBodyPans; i++)
     {
-        bPanels[i]->setIndex(i);
+        bPanels[i]->setIndex(static_cast<int>(i));
     }
 
     std::vector<bodyPanel*> interpPans(4); // [Upper1 Lower1 Upper2 Lower2]  Panels that start the bounding wakelines of the wake panel.  Doublet strength is constant along wakelines (muUpper-muLower) and so the doublet strength used for influence of wake panel is interpolated between wakelines.
@@ -664,11 +664,11 @@ void geometry::setInfCoeff()
     double influence;
     Eigen::Vector4i indices;
 
-    for (int j=0; j<nWakePans; j++)
+    for (size_t j=0; j<nWakePans; j++)
     {
         wPanels[j]->interpPanels(interpPans,interpCoeff);
         indices = interpIndices(interpPans);
-        for (int i=0; i<nBodyPans; i++)
+        for (size_t i=0; i<nBodyPans; i++)
         {
             influence = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
             A(i,indices(0)) += influence*(1-interpCoeff);
@@ -688,11 +688,11 @@ void geometry::setInfCoeff()
     
     // Construct doublet influence coefficient matrices for bufferWake panels
     
-    for (int i=0; i<nBodyPans; i++)
+    for (size_t i=0; i<nBodyPans; i++)
     {
         for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
         {
-            C(i,j) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
+            C(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
         }
     }
     
@@ -709,7 +709,7 @@ Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
     Eigen::Vector4i indices;
     for (size_t i=0; i<interpPans.size(); i++)
     {
-        indices(i) = interpPans[i]->getIndex();
+        indices(static_cast<Eigen::Vector4i::Index>(i)) = interpPans[i]->getIndex();
     }
     return indices;
 }
@@ -772,16 +772,16 @@ void geometry::readInfCoeff()
     fid >> nPans;
     A.resize(nPans,nPans);
     B.resize(nPans,nPans);
-    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+    for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); i++)
     {
-        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index j=0; j<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); j++)
         {
             fid >> A(i,j);
         }
     }
-    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+    for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); i++)
     {
-        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index j=0; j<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); j++)
         {
             fid >> B(i,j);
         }
@@ -791,9 +791,9 @@ void geometry::readInfCoeff()
         fid >> nW2pans;
         C.resize(nPans, nW2pans);
         
-        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); i++)
         {
-            for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
+            for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index j=0; j<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); j++)
             {
                 fid >> C(i,j);
             }
@@ -809,17 +809,17 @@ void geometry::writeInfCoeff()
     std::ofstream fid;
     fid.open(infCoeffFile);
     fid << bPanels.size() << "\n";
-    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+    for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); i++)
     {
-        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index j=0; j<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); j++)
         {
             fid << A(i,j) << "\t";
         }
         fid << "\n";
     }
-    for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+    for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); i++)
     {
-        for (bodyPanels_index_type j=0; j<bPanels.size(); j++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index j=0; j<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); j++)
         {
             fid << B(i,j) << "\t";
         }
@@ -828,9 +828,9 @@ void geometry::writeInfCoeff()
     if(vortPartFlag)
     {
         fid << w2Panels.size() << "\n";
-        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); i++)
         {
-            for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
+            for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index j=0; j<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(bPanels.size()); j++)
             {
                 fid << C(i,j) << "\t";
             }
@@ -845,7 +845,7 @@ Eigen::MatrixXd geometry::getNodePnts()
     Eigen::MatrixXd nodePnts(nodes.size(),3);
     for (nodes_index_type i=0; i<nodes.size(); i++)
     {
-        nodePnts.row(i) = nodes[i]->getPnt();
+        nodePnts.row(static_cast<Eigen::MatrixXd::Index>(i)) = nodes[i]->getPnt();
     }
     return nodePnts;
 }
@@ -963,10 +963,10 @@ void geometry::createVPWakeSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, 
         pEdges = panEdges(pNodes); // Create edges or find edges that already exists
         
         
-        wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w,VPwakeID[i]);
+        wPan = new wakePanel(pNodes,pEdges,wakeNorms.row(i),w,VPwakeID[static_cast<size_t>(i)]);
         w->addPanel(wPan);
         
-        if( iisFirstPanel[i] )
+        if( iisFirstPanel[static_cast<size_t>(i)] )
         {
             firstPan = wPan;
             wPan->isSecondRow = false;

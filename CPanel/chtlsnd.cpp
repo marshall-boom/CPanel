@@ -65,7 +65,7 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     WbDiag = Wb.asDiagonal();
     
     // Generate list of derivatives included in Taylor Series
-    Eigen::MatrixXi ms = derivSequence(order,N);
+    Eigen::MatrixXi ms = derivSequence(order,static_cast<int>(N));
     ms = sortBySum(ms);
     ms = ms.block(1, 0, ms.rows()-1, ms.cols());
     Eigen::VectorXi sums = ms.rowwise().sum();
@@ -198,13 +198,13 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
 
 }
 
-Eigen::MatrixXi chtlsnd::derivSequence(int q, size_t N)
+Eigen::MatrixXi chtlsnd::derivSequence(int q, int N)
 {
     // Builds the list of mixed partial derivatives to highest order q for a function of N dimensions. The algorithm used is recursive.
     Eigen::MatrixXi d(0,0);
     if (q == 0)
     {
-        d = Eigen::MatrixXi::Zero(1,N);
+        d = Eigen::MatrixXi::Zero(1,static_cast<Eigen::MatrixXi::Index>(N));
     }
     else
     {
@@ -238,7 +238,7 @@ Eigen::MatrixXi chtlsnd::derivSequence(int q, size_t N)
 
 Eigen::MatrixXi chtlsnd::sortBySum(Eigen::MatrixXi m)
 {
-    unsigned long cols = m.cols();
+	Eigen::MatrixXi::Index cols = m.cols();
     Eigen::MatrixXi out(1,cols);
     out.row(0) = m.row(0);
     bool flag;

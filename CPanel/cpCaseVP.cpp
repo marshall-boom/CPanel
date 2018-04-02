@@ -146,20 +146,20 @@ void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
 }
 
 void cpCaseVP::convectBufferWake(){
-    wake2Doublets.resize(w2panels->size());
+    wake2Doublets.resize(static_cast<Eigen::VectorXd::Index>(w2panels->size()));
     for (wakePanels_index_type i=0; i<w2panels->size(); i++)
     {
         (*w2panels)[i]->setPrevStrength((*w2panels)[i]->getMu());
         double parentMu = (*w2panels)[i]->getBufferParent()->getMu();
         (*w2panels)[i]->setMu(parentMu);
-        wake2Doublets[i] = parentMu;
+        wake2Doublets[static_cast<Eigen::VectorXd::Index>(i)] = parentMu;
     }
     
 }
 
 
 void cpCaseVP::setSourceStrengthsVP(){
-    sigmas.resize(bPanels->size());
+    sigmas.resize(static_cast<Eigen::VectorXd::Index>(bPanels->size()));
     
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
@@ -185,7 +185,7 @@ void cpCaseVP::setSourceStrengthsVP(){
         
         (*bPanels)[i]->setSigma( Vinf((*bPanels)[i]->getCenter()) + sumVelInfl , 0 );
         
-        sigmas(i) = (*bPanels)[i]->getSigma();
+        sigmas(static_cast<Eigen::VectorXd::Index>(i)) = (*bPanels)[i]->getSigma();
     }
 }
 
@@ -237,7 +237,7 @@ bool cpCaseVP::solveMatrixEq(){
     
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        (*bPanels)[i]->setMu(doubletStrengths(i));
+        (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
         (*bPanels)[i]->setPotential(Vinf((*bPanels)[i]->getCenter()));
     }
     
@@ -270,7 +270,7 @@ bool cpCaseVP::solveVPmatrixEq(){
     
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        (*bPanels)[i]->setMu(doubletStrengths(i));
+        (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
         (*bPanels)[i]->setPotential(VinfPlusVecPot((*bPanels)[i]->getCenter()));
         
     }
@@ -309,12 +309,12 @@ void cpCaseVP::collapseBufferWake(){
         std::vector<edge*> pEdges = (*w2panels)[i]->edgesInOrder();
         
         Eigen::Vector3d strength = Eigen::Vector3d::Zero();
-        for (int j=1; j<4; j++) //edges 2-4 only
+        for (size_t j=1; j<4; j++) //edges 2-4 only
         {
             if (!edgeIsUsed(pEdges[j],usedEdges))
             {
                 usedEdges.push_back(pEdges[j]);
-                strength += (*w2panels)[i]->edgeStrength( pEdges[j], j ); // Don't need to pass in pEdges...
+                strength += (*w2panels)[i]->edgeStrength( pEdges[j], static_cast<int>(j) ); // Don't need to pass in pEdges...
             }
         }
         
@@ -754,12 +754,12 @@ void cpCaseVP::writeBodyDataVP(boost::filesystem::path path,const Eigen::MatrixX
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals");
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
-    mu.data.resize(bPanels->size(),1);
-    sigma.data.resize(bPanels->size(),1);
-    pot.data.resize(bPanels->size(),1);
-    V.data.resize(bPanels->size(),3);
-    Cp.data.resize(bPanels->size(),1);
-    bN.data.resize(bPanels->size(),3);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+    Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
         mu.data(i,0) = (*bPanels)[i]->getMu();
@@ -791,8 +791,8 @@ void cpCaseVP::writeWakeDataVP(boost::filesystem::path path, const Eigen::Matrix
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(wPanels->size(),(*wPanels)[0]->getVerts().size()); // Assumes wake won't mix tris and quads
-    mu.data.resize(wPanels->size(),1);
-    pot.data.resize(wPanels->size(),1);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
     for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
         mu.data(i,0) = (*wPanels)[i]->getMu();
@@ -817,9 +817,9 @@ void cpCaseVP::writeBuffWake2Data(boost::filesystem::path path, const Eigen::Mat
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
-    con.resize(w2panels->size(),4);
-    mu.data.resize(w2panels->size(),1);
-    pot.data.resize(w2panels->size(),1);
+    con.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),4);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(w2panels->size()),1);
     for (wakePanels_index_type i=0; i<w2panels->size(); i++)
     {
         mu.data(i,0) = (*w2panels)[i]->getMu();
@@ -849,11 +849,11 @@ void cpCaseVP::writeFilamentData(boost::filesystem::path path){
     }
     
     
-    con.resize(filaments.size(),2); // 2 pnts per filament
+    con.resize(static_cast<Eigen::MatrixXd::Index>(filaments.size()),2); // 2 pnts per filament
     
-    mu.data.resize(filaments.size(),1);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(filaments.size()),1);
     
-    int nodeCounter = 0; // Used to make filament end points
+    size_t nodeCounter = 0; // Used to make filament end points
     for (filaments_index_type i=0; i<filaments.size(); i++)
     {
         mu.data(i,0) = filaments[i]->getStrength();
@@ -877,7 +877,7 @@ void cpCaseVP::writeParticleData(boost::filesystem::path path){
     Eigen::MatrixXd partMat(particles.size(),3);
     for (particles_index_type i=0; i<particles.size(); i++)
     {
-        partMat.row(i) = particles[i]->pos;
+        partMat.row(static_cast<Eigen::MatrixXd::Index>(i)) = particles[i]->pos;
     }
     
     std::vector<cellDataArray> data;
@@ -885,8 +885,8 @@ void cpCaseVP::writeParticleData(boost::filesystem::path path){
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(particles.size(),1);
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> shed(particles.size(),1);
     
-    strength.data.resize(particles.size(),3);
-    shedTime.data.resize(particles.size(),1);
+    strength.data.resize(static_cast<Eigen::MatrixXd::Index>(particles.size()),3);
+    shedTime.data.resize(static_cast<Eigen::MatrixXd::Index>(particles.size()),1);
     for (particles_index_type i=0; i<particles.size(); i++)
     {
         strength.data.row(i) = particles[i]->strength;

@@ -20,7 +20,7 @@ class chtlsnd
     Eigen::MatrixXd G;
     Eigen::MatrixXd H;
     
-    Eigen::MatrixXi derivSequence(int q, size_t N);
+    Eigen::MatrixXi derivSequence(int q, int N);
     Eigen::MatrixXi sortBySum(Eigen::MatrixXi m);
     Eigen::MatrixXi insertRow(const Eigen::MatrixXi &m, const Eigen::MatrixXi &insert, int row);
     

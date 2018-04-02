@@ -12,7 +12,7 @@
 #include "surface.h"
 
 bodyPanel::bodyPanel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges,
-		            Eigen::Vector3d bezNorm,surface* pparentSurf, int surfID)
+		            Eigen::Vector3d bezNorm,surface* pparentSurf, size_t surfID)
   : panel(nnodes,ppEdges,bezNorm,surfID), parentSurf(pparentSurf), TSorder(3), upper(false), lower(false),
 	TEpanel(false), TE(nullptr), tipFlag(false), streamFlag(false), index(-1)
 {
@@ -276,7 +276,7 @@ inline Eigen::Vector3d bodyPanel::pntSrcV(const Eigen::Vector3d &pjk)
 void bodyPanel::setCluster()
 {
     int dim;
-    int buffer = 10;
+    size_t buffer = 10;
     if (tipFlag)
     {
         dim = 2;
@@ -286,7 +286,7 @@ void bodyPanel::setCluster()
         dim = 3;
     }
     
-    size_t nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))-1+buffer; // Binomial Coefficient
+    size_t nObs = static_cast<size_t>(chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))-1)+buffer; // Binomial Coefficient
     size_t nPanels = (nObs+1)/2; // ceil(nObs/2) for integers
     bodyPanels_index_type oldSize = cluster.size();
     cluster.push_back(this);
@@ -335,13 +335,13 @@ void bodyPanel::setCluster()
                 
                 // Do Something to fix error when cluster can't be found.
                 
-                nObs = chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder)) + buffer; // Binomial Coefficient
+                nObs = static_cast<size_t>(chtlsnd::factorial(TSorder+dim)/(chtlsnd::factorial(dim)*chtlsnd::factorial(TSorder))) + buffer; // Binomial Coefficient
                 nPanels = (nObs+1)/2; // ceil(nObs/2) for integers
                 
             }
             
             if (cluster.size() > 0) {
-                cluster.erase(cluster.begin()+nPanels+1,cluster.end());
+                cluster.erase(cluster.begin()+static_cast<bodyPanels_type::difference_type>(nPanels+1),cluster.end());
             }
             break;
         }
@@ -410,16 +410,16 @@ Eigen::Vector3d bodyPanel::velocity2D(const Eigen::Vector3d &pnt,double pntPoten
     Eigen::Vector3d pntLocal = global2local(pnt,true);
     Eigen::Vector2d X0 = pntLocal.head(2);
     Eigen::Vector2d V0 = Eigen::Vector2d::Zero();
-    Xf.resize(clust.size(),3);
+    Xf.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),3);
     Xb = Eigen::MatrixXd::Zero(0,dim);
     Vb = Eigen::MatrixXd::Zero(0,dim);
-    df.resize(clust.size());
+    df.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()));
     for (bodyPanels_index_type i=0; i<clust.size(); i++)
     {
-        Xf.row(i) = global2local(clust[i]->getCenter(),true);
-        df(i) = clust[i]->getPotential()-pntPotential;
+        Xf.row(static_cast<Eigen::MatrixXd::Index>(i)) = global2local(clust[i]->getCenter(),true);
+        df(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getPotential()-pntPotential;
     }
-    Eigen::MatrixXd xLocal = Xf.block(0,0,clust.size(),2);
+    Eigen::MatrixXd xLocal = Xf.block(0,0,static_cast<Eigen::MatrixXd::Index>(clust.size()),2);
     chtlsnd tipV(X0,xLocal,TSorder,Xb,Vb,V0);
     Eigen::Vector3d vLocal;
     vLocal(0) = tipV.getF().row(0)*df;
@@ -442,15 +442,15 @@ Eigen::Vector3d bodyPanel::velocity3D(const Eigen::Vector3d &pnt,double pntPoten
     Eigen::MatrixXd Xf,Xb,Vb;
     Eigen::VectorXd df;
     
-    Xf.resize(clust.size(),dim);
-    Xb.resize(clust.size(),dim);
-    Vb.resize(clust.size(),dim);
-    df.resize(clust.size());
+    Xf.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),dim);
+    Xb.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),dim);
+    Vb.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()),dim);
+    df.resize(static_cast<Eigen::MatrixXd::Index>(clust.size()));
     for (bodyPanels_index_type i=0; i<clust.size(); i++)
     {
-        Xf.row(i) = clust[i]->getCenter();
-        Vb.row(i) = clust[i]->getBezNormal();
-        df(i) = clust[i]->getPotential()-pntPotential;
+        Xf.row(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getCenter();
+        Vb.row(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getBezNormal();
+        df(static_cast<Eigen::MatrixXd::Index>(i)) = clust[i]->getPotential()-pntPotential;
     }
     Xb = Xf;
     chtlsnd vWeights(pnt,Xf,TSorder,Xb,Vb,Eigen::Vector3d::Zero());

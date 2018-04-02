@@ -22,9 +22,9 @@ class octree
     using member_index_type = typename member_collection_type::size_type;
 
     node<type> *root_node;
-    short maxMembersPerNode;
+    size_t maxMembersPerNode;
     member_collection_type members;
-    short numLevels;
+    size_t numLevels;
     double maxTheta = 0.5;
 
     void boundingBox(Eigen::Vector3d &boxMin, Eigen::Vector3d &boxMax)
@@ -119,7 +119,7 @@ public:
         return *this;
     }
 
-    void setMaxMembers(const short &maxMembers)
+    void setMaxMembers(const size_t &maxMembers)
     {
         maxMembersPerNode = maxMembers;
     }
@@ -240,9 +240,9 @@ public:
         return current_node;
     }
 
-    short numTreeLevels()
+    size_t numTreeLevels()
     {
-        short levels = 0;
+        size_t levels = 0;
         std::vector<node<type>*> nodes = getNodes();
         for(size_t i=0; i<nodes.size(); i++)
         {
@@ -280,7 +280,7 @@ public:
         return true;
     }
 
-    std::vector<node<type>*> getLevelNodes(short level){
+    std::vector<node<type>*> getLevelNodes(size_t level){
         std::vector<node<type>*> nodes = this->getNodes();
         std::vector<node<type>*> levelNodes;
 
@@ -312,7 +312,7 @@ public:
     virtual Eigen::Vector3d findRefPoint(const type &obj) = 0;
     // Returns 3 element array of X,Y,Z locations of point used to determine which node the member belongs to. i.e. (return center of triangle for unstructured grid)
 
-    int getMaxMembersPerNode() {return maxMembersPerNode;}
+    size_t getMaxMembersPerNode() {return maxMembersPerNode;}
     std::vector<member<type>> getMembers() {return members;}
     node<type> *getRootNode() {return root_node;}
 };

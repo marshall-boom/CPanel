@@ -239,7 +239,7 @@ std::vector<size_t> wakePanel::sort_indexes(std::vector<double> &v) {
     for (size_t i = 0; i !=idx.size(); ++i) idx[i] = i;
     
     // sort indexes based on comparing values in v
-    sort(idx.begin(), idx.end(),[v](int i1, int i2) {return v[i1] < v[i2];});
+    sort(idx.begin(), idx.end(),[v](size_t i1, size_t i2) {return v[i1] < v[i2];});
     
     return idx;
 }

@@ -65,8 +65,8 @@ convexHull::convexHull(Eigen::MatrixXd points, bool bound) : boundary(bound)
             maxBegin = i;
         }
     }
-    std::sort(members.begin()+minBegin,members.begin()+minEnd,compareDistAscending());
-    std::sort(members.begin()+maxBegin,members.end(),compareDistDescending());
+    std::sort(members.begin()+static_cast<members_type::difference_type>(minBegin),members.begin()+static_cast<members_type::difference_type>(minEnd),compareDistAscending());
+    std::sort(members.begin()+static_cast<members_type::difference_type>(maxBegin),members.end(),compareDistDescending());
     computeHull();
 }
 

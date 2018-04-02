@@ -135,11 +135,11 @@ Eigen::Vector3d cpCase::bodyToWind(const Eigen::Vector3d &vec)
 
 void cpCase::setSourceStrengths()
 {
-    sigmas.resize(bPanels->size());
+    sigmas.resize(static_cast<Eigen::VectorXd::Index>(bPanels->size()));
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
         (*bPanels)[i]->setSigma(Vinf,0);
-        sigmas(i) = (*bPanels)[i]->getSigma();
+        sigmas(static_cast<Eigen::VectorXd::Index>(i)) = (*bPanels)[i]->getSigma();
     }
 }
 
@@ -165,7 +165,7 @@ bool cpCase::solveMatrixEq()
 
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
-        (*bPanels)[i]->setMu(doubletStrengths(i));
+        (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
         (*bPanels)[i]->setPotential(Vinf);
     }
     for (wakePanels_index_type i=0; i<wPanels->size(); i++)
@@ -362,15 +362,15 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals"),x("xPosition"),y("yPosition"),z("zPostition");
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
-    mu.data.resize(bPanels->size(),1);
-    sigma.data.resize(bPanels->size(),1);
-    pot.data.resize(bPanels->size(),1);
-    V.data.resize(bPanels->size(),3);
-    Cp.data.resize(bPanels->size(),1);
-    bN.data.resize(bPanels->size(),3);
-    x.data.resize(bPanels->size(),1);
-    y.data.resize(bPanels->size(),1);
-    z.data.resize(bPanels->size(),1);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+    Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+    x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+    z.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
 
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
@@ -410,9 +410,9 @@ void cpCase::writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &
     std::vector<cellDataArray> data;
     cellDataArray mu("Doublet Strengths"),pot("Velocity Potential");
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
-    con.resize(wPanels->size(),3);
-    mu.data.resize(wPanels->size(),1);
-    pot.data.resize(wPanels->size(),1);
+    con.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),3);
+    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
+    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(wPanels->size()),1);
     for (wakePanels_index_type i=0; i<wPanels->size(); i++)
     {
         mu.data(i,0) = (*wPanels)[i]->getMu();
@@ -472,9 +472,9 @@ void cpCase::writeBodyStreamlines(boost::filesystem::path path)
     {
         pnts = bStreamlines[i]->getPnts();
         velocities = bStreamlines[i]->getVelocities();
-        vel.data.resize(velocities.size(),3);
-        pntMat.resize(pnts.size(),3);
-        con.resize(pnts.size()-1,2);
+        vel.data.resize(static_cast<Eigen::MatrixXd::Index>(velocities.size()),3);
+        pntMat.resize(static_cast<Eigen::MatrixXd::Index>(pnts.size()),3);
+        con.resize(static_cast<Eigen::MatrixXd::Index>(pnts.size()-1),2);
         for (size_t j=0; j<pnts.size(); j++)
         {
             pntMat.row(j) = pnts[j];
@@ -505,9 +505,9 @@ void cpCase::writeVolMeshData(boost::filesystem::path path, Eigen::MatrixXd &nod
     std::vector<cellDataArray> data;
     cellDataArray vel("Velocity"), Cp("Cp");
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con;
-    con.resize(nCells,8);
-    vel.data.resize(nCells,3);
-    Cp.data.resize(nCells,1);
+    con.resize(static_cast<Eigen::MatrixXd::Index>(nCells),8);
+    vel.data.resize(static_cast<Eigen::MatrixXd::Index>(nCells),3);
+    Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(nCells),1);
     for (size_t i=0; i<nCells; i++)
     {
         vel.data.row(i) = volMeshDat.velocity[i];
@@ -555,7 +555,7 @@ void cpCase::createVolMesh(){
     zf = params->volMeshBounds[5];
 
     // Retrieve mesh resolution
-    int nX, nY, nZ;
+    size_t nX, nY, nZ;
     nX = params->volMeshRes[0];
     nY = params->volMeshRes[1];
     nZ = params->volMeshRes[2];
@@ -566,17 +566,17 @@ void cpCase::createVolMesh(){
     hz = (zf-z0)/nZ;
 
     // Add one for number of points (nodes)
-    int nXp = nX+1;
-    int nYp = nY+1;
-    int nZp = nZ+1;
-    int numPts = nXp * nYp * nZp;
+    size_t nXp = nX+1;
+    size_t nYp = nY+1;
+    size_t nZp = nZ+1;
+    size_t numPts = nXp * nYp * nZp;
 
     // Creating pnt vector
-    pts.resize(numPts, 3);
+    pts.resize(static_cast<Eigen::MatrixXd::Index>(numPts), 3);
     int count = 0;
-    for (int k=0; k<nZp; k++) {
-        for (int j=0; j<nYp; j++) {
-            for (int i=0; i<nXp; i++) {
+    for (size_t k=0; k<nZp; k++) {
+        for (size_t j=0; j<nYp; j++) {
+            for (size_t i=0; i<nXp; i++) {
                 pts(count,0) = x0 + hx*i;
                 pts(count,1) = y0 + hy*j;
                 pts(count,2) = z0 + hz*k;
@@ -587,9 +587,9 @@ void cpCase::createVolMesh(){
 
 
     // Create cells
-    for (int i=0; i<nX; i++) {
-        for (int j=0; j<nY; j++) {
-            for (int k=0; k<nZ; k++) {
+    for (size_t i=0; i<nX; i++) {
+        for (size_t j=0; j<nY; j++) {
+            for (size_t k=0; k<nZ; k++) {
                 Eigen::Matrix<size_t, Eigen::Dynamic, 1> cell_pts(8);
                 cell_pts[0] = (k*(nXp*nYp) + j*(nXp) + i);
                 cell_pts[1] = (k*(nXp*nYp) + j*(nXp) + i) + 1;
@@ -608,7 +608,7 @@ void cpCase::createVolMesh(){
                 // Find cell center
                 Eigen::MatrixXd cellCorners(8,3);
                 for (int m=0; m<cellCorners.rows(); m++) {
-                    cellCorners.row(m) = pts.row(cell_pts[m]);
+                    cellCorners.row(m) = pts.row(static_cast<Eigen::MatrixXd::Index>(cell_pts[m]));
                 }
 
                 Eigen::Vector3d center;

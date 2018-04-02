@@ -69,13 +69,13 @@ namespace
   // Test adding a member
   TEST_F(OctreeNodeTest, AddMember)
   {
-    short maxMembers = 10;
+    size_t maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
     int nY = 3;
     int nZ = 3;
-    short counter = 0;
+    size_t counter = 0;
     for (int i=0; i<nX; i++)
     {
       for (int j=0; j<nY; j++)
@@ -110,7 +110,7 @@ namespace
   {
     using member_type=member<point_type>;
 
-    int maxMembers = 10;
+    size_t maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
@@ -196,7 +196,7 @@ namespace
 
     using member_type=member<point_type>;
 
-    int maxMembers = 10;
+    size_t maxMembers = 10;
     testNode.setMaxMembers(maxMembers);
 
     int nX = 3;
@@ -299,7 +299,7 @@ namespace
 
   TEST(OctreeTest, MaxMembers)
   {
-    short max = 5;
+    size_t max = 5;
     test_octree_class testOctree;
 
     testOctree.setMaxMembers(max);
@@ -309,17 +309,17 @@ namespace
   TEST(OctreeTest, AddData)
   {
     test_octree_class testOctree;
-    int nX = 3;
-    int nY = 3;
-    int nZ = 3;
+    size_t nX = 3;
+    size_t nY = 3;
+    size_t nZ = 3;
 
     std::vector<test_object *> data;
 
-    for (int i=0; i<nX; i++)
+    for (size_t i=0; i<nX; i++)
     {
-      for (int j=0; j<nY; j++)
+      for (size_t j=0; j<nY; j++)
       {
-        for (int k=0; k<nZ; k++)
+        for (size_t k=0; k<nZ; k++)
         {
           Eigen::Vector3d center;
           center[0] = i;
@@ -330,7 +330,7 @@ namespace
       }
     }
     testOctree.addData(data);
-    for (int i=0; i<nX*nY*nZ; ++i)
+    for (size_t i=0; i<nX*nY*nZ; ++i)
     {
       delete data[i];
       data[i] = nullptr;

@@ -146,7 +146,7 @@ bool inputParams::set()
                             fid >> lim;
                             volMeshBounds.push_back(lim);
                         }
-                        int res;
+                        size_t res;
                         for (int i=0; i<3; i++) {
                             fid >> res;
                             volMeshRes.push_back(res);

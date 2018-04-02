@@ -57,7 +57,7 @@ class bodyPanel : public panel
     Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
     
 public:
-    bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, int surfID);
+    bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
         
     void addNeighbor(bodyPanel* p);
     void setUpper();

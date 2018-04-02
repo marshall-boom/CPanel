@@ -18,7 +18,7 @@ class particleFMM
 
 
     particleOctree* partTree;
-    short levels;
+    size_t levels;
 
     void computeMultExp();
 

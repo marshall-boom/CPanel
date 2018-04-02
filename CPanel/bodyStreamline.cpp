@@ -85,7 +85,7 @@ bodyStreamline::bodyStreamline(Eigen::Vector3d startPnt,bodyPanel* startPan, con
                     {
                         if (possiblePans[j] != possiblePans[i])
                         {
-                            possiblePans.erase(possiblePans.begin()+j);
+                            possiblePans.erase(possiblePans.begin()+static_cast<std::vector<bodyPanel *>::difference_type>(j));
                         }
                     }
                 }

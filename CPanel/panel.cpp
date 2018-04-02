@@ -105,9 +105,9 @@ bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &proje
     for (nodes_index_type i=0; i<nodes.size(); i++)
     {
         nodesLocal.push_back(global2local(nodes[i]->getPnt(), true));
-        points.row(i) = nodesLocal[i];
+        points.row(static_cast<Eigen::Vector3d::Index>(i)) = nodesLocal[i];
     }
-    points.row(nodes.size()) = global2local(POI,true);
+    points.row(static_cast<Eigen::Vector3d::Index>(nodes.size())) = global2local(POI,true);
     
     convexHull hull(points,true);
     
@@ -324,7 +324,7 @@ Eigen::Matrix<size_t, Eigen::Dynamic, 1> panel::getVerts()
     Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts(nodes.size());
     for (nodes_index_type i=0; i<nodes.size(); i++)
     {
-        verts(i) = nodes[i]->getIndex();
+        verts(static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, 1>::Index>(i)) = nodes[i]->getIndex();
     }
     return verts;
 }
