@@ -95,7 +95,7 @@ class octree
 
 public:
 
-    octree() : root_node(NULL), maxMembersPerNode(10), numLevels(-1) {}
+    octree() : root_node(NULL), maxMembersPerNode(10), numLevels(0) {}
 
     virtual ~octree()
     {
