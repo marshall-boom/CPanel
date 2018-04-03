@@ -10,6 +10,8 @@ Chris's work was then used as the starting point for Connor Sousa's thesis (2016
 
 ## Version History
 
+### Version 0.3.2
+* Fix cmake-util dependency to v0.5
 ### Version 0.3.1
 * Fix minor documentation error
 ### Version 0.3
