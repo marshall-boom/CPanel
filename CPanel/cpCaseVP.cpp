@@ -20,6 +20,9 @@
 
 #include "cpCaseVP.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 void cpCaseVP::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag){
     
     if(unsteady){

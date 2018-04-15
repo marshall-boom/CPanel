@@ -17,6 +17,9 @@
 
 #include "vortexFil.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 vortexFil::vortexFil(Eigen::Vector3d pp1, Eigen::Vector3d pp2, double sstrength, wakePanel* pparentPan)
   : p1(pp1), p2(pp2), strength(sstrength), parentPan(pparentPan) {}
 

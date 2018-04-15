@@ -25,6 +25,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
+#include "direct.h"
+
 bool inputParams::set()
 {
     // Set Default Parameters;

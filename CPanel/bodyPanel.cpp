@@ -20,6 +20,9 @@
 #include "cpNode.h"
 #include "surface.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 bodyPanel::bodyPanel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges,
 		            Eigen::Vector3d bezNorm,surface* pparentSurf, size_t surfID)
   : panel(nnodes,ppEdges,bezNorm,surfID), parentSurf(pparentSurf), TSorder(3), upper(false), lower(false),

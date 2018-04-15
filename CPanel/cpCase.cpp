@@ -17,6 +17,9 @@
 
 #include "cpCase.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 cpCase::~cpCase()
 {
     for (streamlines_index_type i=0; i<bStreamlines.size(); i++)
