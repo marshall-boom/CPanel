@@ -20,6 +20,9 @@
 #include "edge.h"
 #include "surface.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 panel::panel(std::vector<cpNode*> nnodes, std::vector<edge*> ppEdges, Eigen::Vector3d bbezNorm, size_t surfID)
   : nodes(nnodes), pEdges(ppEdges), bezNormal(bbezNorm), ID(surfID)
 {

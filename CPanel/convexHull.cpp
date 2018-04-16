@@ -17,6 +17,9 @@
 
 #include "convexHull.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 convexHull::convexHull(Eigen::MatrixXd points, bool bound) : boundary(bound)
 {
     Eigen::Vector3d basePnt = points.row(0);

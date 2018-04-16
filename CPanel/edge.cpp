@@ -21,6 +21,9 @@
 #include "wakePanel.h"
 #include "cpNode.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 
 edge::edge(cpNode* nn1,cpNode* nn2) : n1(nn1), n2(nn2), TE(false)
 {

@@ -23,6 +23,9 @@
 #include "cpNode.h"
 #include "geometry.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 
 wake::~wake()
 {

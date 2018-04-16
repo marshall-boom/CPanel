@@ -19,6 +19,9 @@
 #include <Eigen/Geometry>
 #include "math.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 
 particle::particle(Eigen::Vector3d ppos, Eigen::Vector3d sstrength, double rradius,
 		           Eigen::Vector3d ppreviousVelInfl, Eigen::Vector3d ppreviousStrengthUpdate, int sshedTime)
