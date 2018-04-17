@@ -1,1 +1,23 @@
-stuff
+This document is for the purpose of tracking the flow of CPanel as it exists using constant doublet distributions, up until the point of solving for panel doublet strengths. The code flow will be outlined, and the processes that need to be modified or added to will be identified, such that linearly varying doublet distributions can be implemented.
+
+1. cpanel: essentially main
+2. cpFile: reads in and parses input file
+3. inputParams: reads input parameters
+4. geometry
+  I. readTri()
+    i. read in nodes of geometry, scan surface for unique IDs such as wakes, create surfaces
+////////// SINCE CONTROL POINTS WILL BE JUST UNDER NODES, MAYBE DEFINE THEM HERE (PANEL CENTER CURRENTLY USED AND DEFINED LATER)
+    ii. check vortex particle flag
+    iii. create octree
+    iv. set panel neighbors
+    v. collect all panels and check for tip patches (needed for chtls)
+////////// WHEN USING LINEAR DOUBLET, DON'T NEED CHTLS TO DO VELOCITY CALCS ANYMORE
+    vi. calculate influence coefficient matrices
+  II. setInfCoeff()
+    i. iterate through all body panels and find influence coeffs --> 5.
+    ii. do the same for the wake
+    iii. build A, /////////whats going on here
+    iv. build coefficient matrices for bufferwake panels, C ////////// what's going on here
+5. bodyPanel
+  I. panelPhiInf()
+    i. 
