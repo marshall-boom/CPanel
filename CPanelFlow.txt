@@ -19,5 +19,14 @@ This document is for the purpose of tracking the flow of CPanel as it exists usi
     iii. build A, /////////whats going on here
     iv. build coefficient matrices for bufferwake panels, C ////////// what's going on here
 5. bodyPanel
-  I. panelPhiInf()
-    i. 
+  I. panelPhiInf(ith panel center,B(i,j),A(i,j)): finds velocity potential influence 
+     at ith colocation point due to unit strength singularity at jth panel
+////////// FIRST INPUT IS COLLOCATION POINT, CHANGE TO ITH PANEL CORNER FOR LINEAR
+    i. check that ith and jth panel aren't the same, and flag if so
+////////// DO THE SAME BUT WITH CORNER POINTS
+    ii. transform to local panel coordinate system
+    iii. check for farfield condition
+      a. if condition met, use farfield calcs
+////////// USE BARYCENTRIC CONVERSION PROCESS FOR FAR FIELD DOUBLET CALC
+    iv. if not met, do near field calc
+      a. 
