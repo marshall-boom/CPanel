@@ -14,7 +14,7 @@ This document is for the purpose of tracking the flow of CPanel as it exists usi
 ////////// WHEN USING LINEAR DOUBLET, DON'T NEED CHTLS TO DO VELOCITY CALCS ANYMORE
     vi. calculate influence coefficient matrices
   II. setInfCoeff()
-    i. iterate through all body panels and find influence coeffs --> 5.
+    i. iterate through all body panels and find influence coeffs --------> 5.
     ii. do the same for the wake
     iii. build A, /////////whats going on here
     iv. build coefficient matrices for bufferwake panels, C ////////// what's going on here
@@ -27,6 +27,12 @@ This document is for the purpose of tracking the flow of CPanel as it exists usi
     ii. transform to local panel coordinate system
     iii. check for farfield condition
       a. if condition met, use farfield calcs
+        1. pntSrcPhi() and pntDubPhi()
 ////////// USE BARYCENTRIC CONVERSION PROCESS FOR FAR FIELD DOUBLET CALC
     iv. if not met, do near field calc
-      a. 
+      a. get two points that define an edge of panel j
+      b. compute geometric values
+////////// WILL LIKELY NEED TO MODIFY
+      c. vortexPhi(geometry stuff): compute vel. potential due to one panel edge --------> 6.
+////////// THIS IS THE PLACE
+      d. sum edges to get velocity potential of panel
