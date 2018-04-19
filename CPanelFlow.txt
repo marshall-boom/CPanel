@@ -14,10 +14,12 @@ This document is for the purpose of tracking the flow of CPanel as it exists usi
 ////////// WHEN USING LINEAR DOUBLET, DON'T NEED CHTLS TO DO VELOCITY CALCS ANYMORE
     vi. calculate influence coefficient matrices
   II. setInfCoeff()
-    i. iterate through all body panels and find influence coeffs --------> 5.
-    ii. do the same for the wake
-    iii. build A, /////////whats going on here
-    iv. build coefficient matrices for bufferwake panels, C ////////// what's going on here
+    i. create A, B, and C matrices
+////////// RESIZE TO NUMBER OF NODES
+    ii. iterate through all body panels and find influence coeffs --------> 5.
+    iii. do the same for the wake
+    iv. build A, /////////whats going on here
+    v. build coefficient matrices for bufferwake panels, C ////////// what's going on here
 5. bodyPanel
   I. panelPhiInf(ith panel center,B(i,j),A(i,j)): finds velocity potential influence 
      at ith colocation point due to unit strength singularity at jth panel
