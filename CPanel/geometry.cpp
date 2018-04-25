@@ -423,6 +423,119 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             bPanels[i]->setCluster();
         }
         
+		// Find collocation points of body panels for linear doublet
+
+		Eigen::Vector3d linCPpoints;
+		Eigen::Vector3d tempNode;
+		Eigen::Vector3d tempNorm;
+		float scaleNorm = -0.5;
+		int nCPpoints = 0;
+
+		tempNorm.setZero();
+
+		for (nodes_index_type i=0; i<nodes.size(); i++)
+		{
+			// check if node is part of a body panel
+			if (nodes[i]->getBodyPans().size() > 0)
+			{
+				// check if node is on a trailing edge
+				if (nodes[i]->isTE())
+				{
+					// set collocation point normal to trailing edge, just inside the trailing edge
+
+					std::cout << "i=" << i << ": Trailing Edge Node" << std::endl;
+					
+					tempNorm = nodes[i]->getTE(nodes[i]->getEdges()[0])->getNormal(); // take negative of the norm, right?
+					tempNode = nodes[i]->getPnt();
+					linCPpoints = scaleNorm*tempNorm + tempNode;
+					/*
+					std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
+					std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
+					std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
+					*/
+				}
+				else
+				{
+					bool nodeFlag = false;
+
+					bodyPanels_index_type j = 0;
+					while (!nodeFlag && j < nodes[i]->getBodyPans().size())
+					{
+						// check if node is on a wing tip
+						if (nodes[i]->getBodyPans()[j]->isTipPan())
+						{
+							int count = 0;
+							for (bodyPanels_index_type k=0; k<nodes[i]->getBodyPans().size(); k++)
+							{
+								// check if node is on wing tip edge
+								if (!nodes[i]->getBodyPans()[k]->isTipPan())
+								{
+									tempNorm += nodes[i]->getBodyPans()[k]->getNormal();
+									nodeFlag = true;
+									++count;
+								}
+							}
+							// node is on wing tip edge, compute normal
+							if (nodeFlag)
+							{
+								std::cout << "i=" << i << ": Tip edge node" << std::endl;
+
+								tempNorm = tempNorm / count;
+								tempNode = nodes[i]->getPnt();
+								linCPpoints = scaleNorm*tempNorm + tempNode;
+								/*
+								std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
+								std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
+								std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
+								*/
+							}
+							// node is on tip panel
+							else
+							{
+								std::cout << "i=" << i << ": Tip panel node" << std::endl;
+
+								tempNorm = nodes[i]->getBodyPans()[j]->getNormal();
+								tempNode = nodes[i]->getPnt();
+								linCPpoints = scaleNorm*tempNorm + tempNode;
+								nodeFlag = true;
+								/*
+								std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
+								std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
+								std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
+								*/
+							}
+						}
+						// check if node is on wing-body intersection
+						// elseif (nodes[i]->getBodyPans()[j]->wingBodyInt()) // nodeFLag = true;
+						++j;
+					}
+					// nothing special, so take average of body panel normals
+					if (!nodeFlag)
+					{
+						std::cout << "i=" << i << ": Normal" << std::endl;
+
+						for (bodyPanels_index_type j = 0; j < nodes[i]->getBodyPans().size(); j++)
+						{
+							tempNorm += nodes[i]->getBodyPans()[j]->getNormal();
+						}
+						tempNorm = tempNorm / nodes[i]->getBodyPans().size();
+						tempNode = nodes[i]->getPnt();
+						linCPpoints = scaleNorm * tempNorm + tempNode;
+						/*
+						std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
+						std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
+						std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
+						*/
+					}
+				}
+				++nCPpoints;
+			}
+			else
+			{
+				std::cout << "i=" << i << ": Wake" << std::endl;
+			}
+		}
+		std::cout << "nCPpoints = " << nCPpoints << std::endl;
         
         // Calculate influence coefficient matrices
 
@@ -644,7 +757,10 @@ void geometry::setInfCoeff()
     A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
     B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
     C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
-    
+
+	A.setZero();
+	B.setZero();
+	C.setZero();
     
     Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
