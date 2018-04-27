@@ -197,11 +197,17 @@ class geometry
 	using wakePanels_type = std::vector<wakePanel *>;
 	using wakePanels_index_type = wakePanels_type::size_type;
 
+	using CPpoints_type = std::vector<Eigen::Vector3d>;		//ss
+	using CPpoints_type_index = CPpoints_type::size_type;	//ss
+
     surfaces_type surfaces;
     wakes_type wakes;
     bodyPanels_type bPanels;
     wakePanels_type wPanels;
     wakePanels_type w2Panels; // Buffer wake row two
+
+	CPpoints_type bCPpoints;	//ss
+	CPpoints_type wCPpoints;
 
     std::vector<bool> isFirstPanel;
 
@@ -228,6 +234,8 @@ class geometry
     std::string infCoeffFile;
     double dt;
     double inputV;
+
+	double inputMach;	//ss
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -263,6 +271,8 @@ public:
         inputV = p->velocities(0);
         nNodes=0;
         nTris=0;
+
+		inputMach = p->machs(0);	//ss
 
         readTri(p->geomFile->file, p->normFlag);
 
