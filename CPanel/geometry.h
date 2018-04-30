@@ -197,8 +197,8 @@ class geometry
 	using wakePanels_type = std::vector<wakePanel *>;
 	using wakePanels_index_type = wakePanels_type::size_type;
 
-	using CPpoints_type = std::vector<Eigen::Vector3d>;		//ss
-	using CPpoints_type_index = CPpoints_type::size_type;	//ss
+	using colloPnts_type = std::vector<Eigen::Vector3d>;	//ss
+	using colloPnts_type_index = colloPnts_type::size_type;	//ss
 
     surfaces_type surfaces;
     wakes_type wakes;
@@ -206,8 +206,9 @@ class geometry
     wakePanels_type wPanels;
     wakePanels_type w2Panels; // Buffer wake row two
 
-	CPpoints_type bCPpoints;	//ss
-	CPpoints_type wCPpoints;
+	colloPnts_type bDubCPs;	//ss
+	colloPnts_type wDubCPs;
+	colloPnts_type bSrcCPs;	//ss
 
     std::vector<bool> isFirstPanel;
 
@@ -308,6 +309,8 @@ public:
     double getDt() {return dt;}
 
     void moveGeom( std::vector<double> bodyKin );
+
+	double inMach = 0.1;
 
 };
 

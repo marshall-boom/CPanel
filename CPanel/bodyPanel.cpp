@@ -114,7 +114,7 @@ double bodyPanel::panelPhi(const Eigen::Vector3d &POI)
     double phiSrc,phiDub;
     phiSrc = 0;
     phiDub = 0;
-    
+
     panelPhiInf(POI,phiSrc,phiDub);
     return -sourceStrength*phiSrc-doubletStrength*phiDub;
 }
@@ -186,6 +186,107 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
             phiDub = -0.5;
         }
     }
+}
+
+// Linear doublet influence
+void bodyPanel::linDubPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
+{
+	Eigen::Vector3d pjk = POI - center;
+	Eigen::Matrix3d local = getLocalSys();
+	double PN = pjk.dot(local.row(2));
+
+	bool itselfFlag = false;
+	Eigen::Vector3d nodeDif0, nodeDif1, nodeDif2;
+	nodeDif0 = POI - nodes[0]->getPnt();
+	nodeDif1 = POI - nodes[1]->getPnt();
+	nodeDif2 = POI - nodes[2]->getPnt();
+	if (nodeDif0.norm() < .01 || nodeDif1.norm() < .01 || nodeDif2.norm() < .01)
+	{
+		itselfFlag = true;
+	}
+
+	if (pjk.norm() / longSide > 5)
+	{
+		phi = pntDubPhi(PN, pjk.norm());
+	}
+	else
+	{
+		double Al, phiV;
+		Eigen::Vector3d a, b, s;
+		for (nodes_index_type i = 0; i<nodes.size(); i++)
+		{
+			Eigen::Vector3d p1;
+			Eigen::Vector3d p2;
+			if (i != nodes.size() - 1)
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[i + 1]->getPnt();
+			}
+			else
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[0]->getPnt();
+			}
+			a = POI - p1;
+			b = POI - p2;
+			s = p2 - p1;
+			Al = local.row(2).dot(s.cross(a));
+			// NOTE: last paremeter is not used
+			//            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+			phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+			phi += phiV;
+		}
+		phi /= (4 * M_PI);
+	}
+}
+
+void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
+{
+	Eigen::Vector3d pjk = POI - center;
+	bool itselfFlag = false;
+	if (pjk.norm() < pow(10, -10))
+	{
+		itselfFlag = true;
+	}
+	Eigen::Matrix3d local = getLocalSys();
+	double PN = pjk.dot(local.row(2));
+	if (pjk.norm() / longSide > 5)
+	{
+		phi = pntSrcPhi(pjk.norm());
+	}
+	else
+	{
+		double Al, phiV;
+		Eigen::Vector3d a, b, s;
+		for (nodes_index_type i = 0; i<nodes.size(); i++)
+		{
+			Eigen::Vector3d p1;
+			Eigen::Vector3d p2;
+			if (i != nodes.size() - 1)
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[i + 1]->getPnt();
+			}
+			else
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[0]->getPnt();
+			}
+			a = POI - p1;
+			b = POI - p2;
+			s = p2 - p1;
+			Al = local.row(2).dot(s.cross(a));
+			if (!itselfFlag)
+			{
+				// Note: last parameter was not used
+				//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+				phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+			}
+			phi += srcSidePhi(PN, Al, phiV, a, b, s);
+
+		}
+		phi /= (4 * M_PI);
+	}
 }
 
 void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eigen::Vector3d &vDub)
@@ -948,5 +1049,116 @@ Eigen::Matrix3d bodyPanel::velocityGradientTriSource(Eigen::Vector3d POI){
 }
 
 
+//
+//void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phi, bool dubFlag, bool linFlag)
+//{
+//	bool itselfFlag = false;
+//	Eigen::Vector3d pjk = POI - center;
+//
+//	if (dubFlag)
+//	{
+//		if (linFlag)
+//		{
+//			Eigen::Vector3d nodeDif0, nodeDif1, nodeDif2;
+//			nodeDif0 = POI - nodes[0]->getPnt();
+//			nodeDif1 = POI - nodes[1]->getPnt();
+//			nodeDif2 = POI - nodes[2]->getPnt();
+//			if (nodeDif0.norm() < .01 || nodeDif1.norm() < .01 || nodeDif2.norm() < .01)
+//			{
+//				itselfFlag = true;
+//			}
+//		}
+//	}
+//	if (!linFlag)
+//	{
+//		if (pjk.norm() < pow(10, -10))
+//		{
+//			itselfFlag = true;
+//		}
+//	}
+//
+//	Eigen::Matrix3d local = getLocalSys();
+//	double PN = pjk.dot(local.row(2));
+//	if (pjk.norm() / longSide > 5)
+//	{
+//		if (!dubFlag)
+//		{
+//			phi = pntSrcPhi(pjk.norm());
+//		}
+//		else
+//		{
+//			if (!linFlag)
+//			{
+//				phi = pntDubPhi(PN, pjk.norm());
+//			}
+//			else
+//			{
+//				// linear point doublet calc
+//			}
+//		}
+//	}
+//	else
+//	{
+//		double Al, phiV;
+//		Eigen::Vector3d a, b, s;
+//		for (nodes_index_type i = 0; i<nodes.size(); i++)
+//		{
+//			Eigen::Vector3d p1;
+//			Eigen::Vector3d p2;
+//			if (i != nodes.size() - 1)
+//			{
+//				p1 = nodes[i]->getPnt();
+//				p2 = nodes[i + 1]->getPnt();
+//			}
+//			else
+//			{
+//				p1 = nodes[i]->getPnt();
+//				p2 = nodes[0]->getPnt();
+//			}
+//			a = POI - p1;
+//			b = POI - p2;
+//			s = p2 - p1;
+//			Al = local.row(2).dot(s.cross(a));
+//			if (dubFlag)
+//			{
+//				if (!itselfFlag)
+//				{
+//					if (!linFlag)
+//					{
+//						// Note: last parameter was not used
+//						//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+//						phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+//						phi += phiV;
+//					}
+//					else
+//					{
+//						// linear near field doublet calc
+//					}
+//				}
+//			}
+//			else
+//			{
+//				phi += srcSidePhi(PN, Al, phiV, a, b, s);
+//			}
+//
+//		}
+//		if (!dubFlag)
+//		{
+//			phi /= (4 * M_PI);
+//		}
+//		else
+//		{
+//			if (!itselfFlag)
+//			{
+//				phi /= (4 * M_PI);
+//			}
+//			else
+//			{
+//				phi = -0.5;
+//			}
+//		}
+//	}
+//}
+//
 
 

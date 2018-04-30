@@ -250,6 +250,58 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
     }
 }
 
+// Linear doublet influence
+double panel::linDubPhiInf(const Eigen::Vector3d &POI)
+{
+	Eigen::Vector3d pjk = POI - center;
+	Eigen::Matrix3d local = getLocalSys();
+	double PN = pjk.dot(local.row(2));
+
+	bool itselfFlag = false;
+	Eigen::Vector3d nodeDif0, nodeDif1, nodeDif2;
+	nodeDif0 = POI - nodes[0]->getPnt();
+	nodeDif1 = POI - nodes[1]->getPnt();
+	nodeDif2 = POI - nodes[2]->getPnt();
+	if (nodeDif0.norm() < .01 || nodeDif1.norm() < .01 || nodeDif2.norm() < .01)
+	{
+		return -0.5;
+	}
+
+	if (pjk.norm() / longSide > 5)
+	{
+		return pntDubPhi(PN, pjk.norm());
+	}
+	else
+	{
+		double phi = 0;
+		double Al;
+		Eigen::Vector3d a, b, s;
+		for (nodes_index_type i = 0; i<nodes.size(); i++)
+		{
+			Eigen::Vector3d p1;
+			Eigen::Vector3d p2;
+			if (i != nodes.size() - 1)
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[i + 1]->getPnt();
+			}
+			else
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[0]->getPnt();
+			}
+			a = POI - p1;
+			b = POI - p2;
+			s = p2 - p1;
+			Al = local.row(2).dot(s.cross(a));
+			// NOTE: last paremeter is not used
+			//            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+			phi += vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+		}
+		return phi/(4 * M_PI);
+	}
+}
+
 Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
 {
     // VSAero doublet velocity influence formulation
@@ -521,3 +573,38 @@ bool panel::nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &
     return isNear;
 }
 
+//
+//void panel::setCPpoints(double inputMach, bool bPanelFlag) //ss
+//{
+//	Eigen::Vector3d tempNorm;
+//	tempNorm.setZero();
+//	double scaleNorm = -0.5; // Flips and scales normal
+//
+//	if (inputMach > 1)	//ss
+//	{
+//		CPpoints_type_index k = 0;
+//		for (nodes_index_type i = 0; i < nodes.size(); i++)
+//		{
+//			// check if node is part of a body panel
+//			if (bPanelFlag)
+//			{
+//				for (size_t j = 0; j < nodes[i]->getBodyPans().size(); j++)
+//				{
+//					tempNorm += nodes[i]->getBodyPans()[j]->getNormal();
+//				}
+//				tempNorm /= nodes[i]->getBodyPans().size();
+//				CPpoints.push_back(scaleNorm * tempNorm + nodes[i]->getPnt());
+//			}
+//			// if node is part of wake panel, CPpoint is the node
+//			else
+//			{
+//				CPpoints.push_back(nodes[i]->getPnt());
+//			}
+//			++k;
+//		}
+//	}
+//	else
+//	{
+//		CPpoints.push_back(center);
+//	}
+//}

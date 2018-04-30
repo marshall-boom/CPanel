@@ -45,6 +45,9 @@ protected:
 	using edges_type = std::vector<edge *>;
 	using edges_index_type = edges_type::size_type;
 
+	using CPpoints_type = std::vector<Eigen::Vector3d>;		//ss
+	using CPpoints_type_index = CPpoints_type::size_type;
+
     nodes_type nodes;
     edges_type pEdges;
     Eigen::Vector3d center;
@@ -52,6 +55,8 @@ protected:
     Eigen::Vector3d bezNormal; //Used in derivative calculation
     double area;
     double longSide;
+
+	CPpoints_type CPpoints;	//ss
 
     double doubletStrength = 0;
     double potential = 0;
@@ -113,6 +118,11 @@ public:
     double getPotential() {return potential;}
     
     bool nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI);
+
+	//void setCPpoints(double inputMach, bool bPanelFlag); //ss
+	//CPpoints_type getCPpoints() {return CPpoints;}
+
+	double linDubPhiInf(const Eigen::Vector3d &POI);
     
 };
 

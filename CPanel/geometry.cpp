@@ -426,54 +426,93 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
 		// Compute collocation points
 
-		// In the future, pull mach from inputs.
-		// Case manager will need editing if running subsonic and supersonic cases in one run
+		// Case manager will need editing if running subsonic and supersonic cases in one run, maybe?
 
-		//double mach = 1.2;
-
-		//CPpoints_type CPpoints;
 		Eigen::Vector3d tempNorm;
 		tempNorm.setZero();
-		double scaleNorm = -0.5; // Flips and scales normal
+		Eigen::Vector3d diff;
+		double scaleNorm = 0.01; // Scales normal
 
-		//if (mach > 1)
-		if (inputMach > 1)	//ss
+
+
+		double normTempNorm;
+		Eigen::Vector3d nodePnt;
+		std::ofstream fid;
+		std::string myFile = "name.csv";
+		fid.open(myFile);
+		fid << "nodes_x" << "," << "nodes_y" << "," << "nodes_z" << ",";
+		fid << "norm_x" << "," << "norm_y" << "," << "norm_z" << ",";
+		fid << "CP_x" << "," << "CP_y" << "," << "CP_z";
+		fid << "\n";
+
+
+		if (inMach > 1)	//ss
 		{
-			CPpoints_type_index k = 0;
+			size_t k = 0;
+			size_t m = 0;
 			for (nodes_index_type i = 0; i < nodes.size(); i++)
 			{
+				tempNorm.setZero();
+				nodePnt = nodes[i]->getPnt();
+				fid << nodePnt(0) << "," << nodePnt(1) << "," << nodePnt(2) << ",";
 				// check if node is part of a body panel
 				if (nodes[i]->getBodyPans().size() > 0)
 				{
 					for (bodyPanels_index_type j = 0; j < nodes[i]->getBodyPans().size(); j++)
 					{
+						//std::cout << "panel " << j << ": " << std::endl;
+						//std::cout << nodes[i]->getBodyPans()[j]->getNormal() << std::endl;
 						tempNorm += nodes[i]->getBodyPans()[j]->getNormal();
 					}
-					tempNorm /= nodes[i]->getBodyPans().size();
-					bCPpoints.push_back(scaleNorm * tempNorm + nodes[i]->getPnt());
+
+					tempNorm = tempNorm / nodes[i]->getBodyPans().size();
+					tempNorm.normalize();
+
+					fid << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << ",";
+
+					normTempNorm = tempNorm.norm();
+					diff = -tempNorm - nodes[i]->getPnt();
+					bDubCPs.push_back(nodes[i]->getPnt() + scaleNorm * diff);
+					//bDubCPs.push_back(scaleNorm*(nodes[i]->getPnt() + tempNorm));
+
+					fid << bDubCPs[k](0) << "," << bDubCPs[k](1) << "," << bDubCPs[k](2);
 					++k;
+
 				}
-				// if node is part of wake panel, CPpoint is the node
+				// if node is part of wake panel, CP is the node
 				else
 				{
-					wCPpoints.push_back(nodes[i]->getPnt());
-					++k;
+					wDubCPs.push_back(nodes[i]->getPnt());
+
+					fid << bDubCPs[m](0) << "," << bDubCPs[m](1) << "," << bDubCPs[m](2) << ",";
+					fid << bDubCPs[m](0) << "," << bDubCPs[m](1) << "," << bDubCPs[m](2);
+					++m;
+
 				}
+				fid << "\n";
 			}
 		}
 		else
 		{
 			for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
 			{
-				bCPpoints.push_back(bPanels[i]->getCenter());
+				bDubCPs.push_back(bPanels[i]->getCenter());
 			}
 			for (wakePanels_index_type i = 0; i < wPanels.size(); i++)
 			{
-				wCPpoints.push_back(wPanels[i]->getCenter());
+				wDubCPs.push_back(wPanels[i]->getCenter());
 			}
 		}
+		// Control point for sources is always the panel center, since always constant
+		for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
+		{
+			bSrcCPs.push_back(bPanels[i]->getCenter());
+		}
 
-        
+
+		fid.close();
+
+
         // Calculate influence coefficient matrices
 
         bool read = false;
@@ -686,56 +725,71 @@ void geometry::createOctree()
 
 void geometry::setInfCoeff()
 {
-
-	//ss
-	/*
-	size_t nBodyCPpoints = bCPpoints.size();
-	size_t nWakeCPpoints = wCPpoints.size();
-	size_t nCPpoints = nBodyCPpoints + nWakeCPpoints;
-
-	A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPpoints), static_cast<Eigen::MatrixXd::Index>(nBodyCPpoints));
-	B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPpoints), static_cast<Eigen::MatrixXd::Index>(nBodyCPpoints));
-	C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPpoints), static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
-
-	A.setZero();
-	B.setZero();
-	C.setZero();
-
-	Eigen::Matrix<size_t, 9, 1> percentage;
-	percentage << 10, 20, 30, 40, 50, 60, 70, 80, 90;
-
-	for (size_t j = 0; j<nBodyCPpoints; j++)
-	{
-		for (size_t i = 0; i<nBodyCPpoints; i++)
-		{
-			bPanels[j]->panelPhiInf(bCPpoints[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
-		}
-		for (int i = 0; i<percentage.size(); i++)
-		{
-			if ((100 * j / nCPpoints) <= percentage(i) && 100 * (j + 1) / nCPpoints > percentage(i))
-			{
-				std::cout << percentage(i) << "%\t" << std::flush;
-			}
-		}
-	}
-	*/
-
     // Construct doublet and source influence coefficient matrices for body panels
     size_t nBodyPans = bPanels.size();
     size_t nWakePans = wPanels.size();
     size_t nPans = nBodyPans+nWakePans;
+	
+	size_t nDubBodyCPs = bDubCPs.size();
+	size_t nDubWakeCPs = wDubCPs.size();
+	size_t nSrcBodyCPs = bSrcCPs.size();
 
+	A.resize(static_cast<Eigen::MatrixXd::Index>(nDubBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+	B.resize(static_cast<Eigen::MatrixXd::Index>(nSrcBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+	// What do I do with this one??
+	C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans), static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
+/*
     A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
     B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
     C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
-
+*/
 	A.setZero();
 	B.setZero();
 	C.setZero();
     
     Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
-	
+
+	if (inMach > 1)
+	{
+		for (size_t j = 0; j<nBodyPans; j++)
+		{
+			for (size_t i = 0; i<nDubBodyCPs; i++)
+			{
+				bPanels[j]->linDubPanelPhiInf(bDubCPs[i], A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+			}
+			for (size_t i = 0; i<nSrcBodyCPs; i++)
+			{
+				bPanels[j]->srcPanelPhiInf(bSrcCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+			}
+			for (int i = 0; i<percentage.size(); i++)
+			{
+				if ((100 * j / nPans) <= percentage(i) && 100 * (j + 1) / nPans > percentage(i))
+				{
+					std::cout << percentage(i) << "%\t" << std::flush;
+				}
+			}
+		}
+	}
+	else
+	{
+		for (size_t j = 0; j<nBodyPans; j++)
+		{
+			for (size_t i = 0; i<nBodyPans; i++)
+			{
+				bPanels[j]->panelPhiInf(bPanels[i]->getCenter(), B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+			}
+			for (int i = 0; i<percentage.size(); i++)
+			{
+				if ((100 * j / nPans) <= percentage(i) && 100 * (j + 1) / nPans > percentage(i))
+				{
+					std::cout << percentage(i) << "%\t" << std::flush;
+				}
+			}
+		}
+	}
+
+/*
     for (size_t j=0; j<nBodyPans; j++)
     {
         for (size_t i=0; i<nBodyPans; i++)
@@ -750,7 +804,7 @@ void geometry::setInfCoeff()
             }
         }
     }
-
+*/
     for (size_t i=0; i<nBodyPans; i++)
     {
         bPanels[i]->setIndex(static_cast<int>(i));
@@ -761,6 +815,40 @@ void geometry::setInfCoeff()
     double influence;
     Eigen::Vector4i indices;
 
+	for (size_t j = 0; j<nWakePans; j++)
+	{
+		wPanels[j]->interpPanels(interpPans, interpCoeff);
+		indices = interpIndices(interpPans);
+		//for (size_t i = 0; i<nBodyPans; i++)
+		for (size_t i = 0; i<nDubBodyCPs; i++)
+		{
+			Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+			//influence = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
+			if (inMach > 1)
+			{
+				influence = wPanels[j]->linDubPhiInf(bDubCPs[i]);
+			}
+			else
+			{
+				influence = wPanels[j]->dubPhiInf(bDubCPs[i]);
+			}
+			A(ii, indices(0)) += influence * (1 - interpCoeff);
+			A(ii, indices(1)) += influence * (interpCoeff - 1);
+			A(ii, indices(2)) += influence * interpCoeff;
+			A(ii, indices(3)) -= influence * interpCoeff;
+		}
+		for (int i = 0; i<percentage.size(); i++)
+		{
+			if ((100 * (nBodyPans + j) / nPans) <= percentage(i) && 100 * (nBodyPans + j + 1) / nPans > percentage(i))
+			{
+				std::cout << percentage(i) << "%\t" << std::flush;
+			}
+		}
+
+	}
+
+
+/*
     for (size_t j=0; j<nWakePans; j++)
     {
         wPanels[j]->interpPanels(interpPans,interpCoeff);
@@ -783,9 +871,9 @@ void geometry::setInfCoeff()
         }
 
     }
-    
+    */
     // Construct doublet influence coefficient matrices for bufferWake panels
-    
+    /*
     for (size_t i=0; i<nBodyPans; i++)
     {
         for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
@@ -793,7 +881,7 @@ void geometry::setInfCoeff()
             C(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
         }
     }
-    
+    */
     std::cout << "Complete" << std::endl;
     
     if (writeCoeffFlag)
@@ -1118,111 +1206,28 @@ void geometry::createVPWakeSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, 
 
 
 
-/*
-// check if node is on a trailing edge
-if (nodes[i]->isTE())
-{
-// set collocation point normal to trailing edge, just inside the trailing edge
+//bool linDubFlag = false;
+//if (inputMach > 1)
+//{
+//	linDubFlag = true;
+//}
 
-std::cout << "i=" << i << ": Trailing Edge Node" << std::endl;
-
-tempNorm = nodes[i]->getTE(nodes[i]->getEdges()[0])->getNormal(); // take negative of the norm, right?
-tempNode = nodes[i]->getPnt();
-linCPpoints = scaleNorm*tempNorm + tempNode;
-/*
-std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
-std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
-std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
-
-}
-else
-{
-bool nodeFlag = false;
-
-bodyPanels_index_type j = 0;
-while (!nodeFlag && j < nodes[i]->getBodyPans().size())
-{
-// check if node is on a wing tip
-if (nodes[i]->getBodyPans()[j]->isTipPan())
-{
-int count = 0;
-for (bodyPanels_index_type k=0; k<nodes[i]->getBodyPans().size(); k++)
-{
-// check if node is on wing tip edge
-if (!nodes[i]->getBodyPans()[k]->isTipPan())
-{
-tempNorm += nodes[i]->getBodyPans()[k]->getNormal();
-nodeFlag = true;
-++count;
-}
-}
-// node is on wing tip edge, compute normal
-if (nodeFlag)
-{
-std::cout << "i=" << i << ": Tip edge node" << std::endl;
-
-tempNorm = tempNorm / count;
-tempNode = nodes[i]->getPnt();
-linCPpoints = scaleNorm*tempNorm + tempNode;
-
-std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
-std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
-std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
-
-}
-// node is on tip panel
-else
-{
-std::cout << "i=" << i << ": Tip panel node" << std::endl;
-
-tempNorm = nodes[i]->getBodyPans()[j]->getNormal();
-tempNode = nodes[i]->getPnt();
-linCPpoints = scaleNorm*tempNorm + tempNode;
-nodeFlag = true;
-
-std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
-std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
-std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
-
-}
-}
-// check if node is on wing-body intersection
-// elseif (nodes[i]->getBodyPans()[j]->wingBodyInt()) // nodeFLag = true;
-++j;
-}
-// nothing special, so take average of body panel normals
-if (!nodeFlag)
-{
-std::cout << "i=" << i << ": Normal" << std::endl;
-
-for (bodyPanels_index_type j = 0; j < nodes[i]->getBodyPans().size(); j++)
-{
-tempNorm += nodes[i]->getBodyPans()[j]->getNormal();
-}
-tempNorm = tempNorm / nodes[i]->getBodyPans().size();
-tempNode = nodes[i]->getPnt();
-linCPpoints = scaleNorm * tempNorm + tempNode;
-
-std::cout << "\tunit normal: " << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << std::endl;
-std::cout << "\tnode point: " << tempNode(0) << "," << tempNode(1) << "," << tempNode(2) << std::endl;
-std::cout << "\tcollocation point: " << linCPpoints(0) << "," << linCPpoints(1) << "," << linCPpoints(2) << std::endl;
-
-}
-}
-++nCPpoints;
-}
-else
-{
-std::cout << "i=" << i << ": Wake" << std::endl;
-}
-}
-std::cout << "nCPpoints = " << nCPpoints << std::endl;
-*/
-
-
-
-
-
-
-
-
+//for (size_t j = 0; j<nBodyPans; j++)
+//{
+//	for (size_t i = 0; i<nDubBodyCPs; i++)
+//	{
+//		bPanels[j]->panelPhiInf(bDubCPs[i], A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), true, linDubFlag);
+//	}
+//	for (size_t i = 0; i<nSrcBodyCPs; i++)
+//	{
+//		bPanels[j]->panelPhiInf(bSrcCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), false, linDubFlag);
+//	}
+//	/////////////////////////////////// UPDATE //////////////////////////////////////
+//	for (int i = 0; i<percentage.size(); i++)
+//	{
+//		if ((100 * j / nPans) <= percentage(i) && 100 * (j + 1) / nPans > percentage(i))
+//		{
+//			std::cout << percentage(i) << "%\t" << std::flush;
+//		}
+//	}
+//}

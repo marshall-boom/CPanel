@@ -79,7 +79,7 @@ public:
     
     double panelPhi(const Eigen::Vector3d &POI);
     Eigen::Vector3d panelV(const Eigen::Vector3d &POI);
-    
+
     void panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &phiDub);
     void panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eigen::Vector3d &vDub);
     Eigen::Vector3d pntVInf(const Eigen::Vector3d &POI);
@@ -118,6 +118,10 @@ public:
     std::vector<bodyPanel*> getCluster() {return cluster;}
     
     Eigen::Vector3d partStretching(particle* part);
+
+	// ss
+	void linDubPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
+	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
     
 };
 
