@@ -251,31 +251,32 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
 }
 
 // Linear doublet influence
-double panel::linDubPhiInf(const Eigen::Vector3d &POI)
+void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow)
 {
+	// Define and get stuff
 	Eigen::Vector3d pjk = POI - center;
 	Eigen::Matrix3d local = getLocalSys();
-	double PN = pjk.dot(local.row(2));
+	Eigen::Vector3d POIloc, vertsPhi;
+	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();;
+	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
+	POIloc = global2local(POI, true);
 
-	bool itselfFlag = false;
-	Eigen::Vector3d nodeDif0, nodeDif1, nodeDif2;
-	nodeDif0 = POI - nodes[0]->getPnt();
-	nodeDif1 = POI - nodes[1]->getPnt();
-	nodeDif2 = POI - nodes[2]->getPnt();
-	if (nodeDif0.norm() < .01 || nodeDif1.norm() < .01 || nodeDif2.norm() < .01)
-	{
-		return -0.5;
-	}
-
+	// Check far field condition
 	if (pjk.norm() / longSide > 5)
 	{
-		return pntDubPhi(PN, pjk.norm());
+		std::cout << "\tFar Field" << std::endl;
+		vertsPhi = linPntDubPhi(PN, pjk.norm(), POIloc);
 	}
 	else
 	{
-		double phi = 0;
+		// Define stuff
 		double Al;
 		Eigen::Vector3d a, b, s;
+		Eigen::Vector3d Hints, Iints, Imat;
+		Hints.setZero();
+		Eigen::Matrix3d vertsMat;
+
+		// Iterate through panel edges and get H integrals
 		for (nodes_index_type i = 0; i<nodes.size(); i++)
 		{
 			Eigen::Vector3d p1;
@@ -294,13 +295,90 @@ double panel::linDubPhiInf(const Eigen::Vector3d &POI)
 			b = POI - p2;
 			s = p2 - p1;
 			Al = local.row(2).dot(s.cross(a));
-			// NOTE: last paremeter is not used
-			//            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
-			phi += vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+
+			linHintegrals(Hints, PN, Al, a, b, s, local.row(0), local.row(1));
 		}
-		return phi/(4 * M_PI);
+
+		// Get final H integrals and compute I integrals
+		Hints[0] = Hints[0] / PN;
+		Hints[1] = -Hints[1];
+		Hints[2] = -Hints[2];				// Hints = [H113 H213 H123]
+		Iints = PN * Hints / (4 * M_PI);	// Iints = [I11 I21 I12]
+		
+		// Build I matrix
+		Imat[0] = Iints[0];
+		Imat[1] = POIloc.x()*Iints[0] + Iints[1];
+		Imat[2] = POIloc.y()*Iints[0] + Iints[2];
+		/*Imat[1] = 0;
+		Imat[2] = 0;*/
+		// Convert linear doublet equation to vertex based linear doublet equations
+		vertsMat = linVertsMatrix();
+
+		// Compute influence of each vertex on the field point
+		vertsPhi = Imat.transpose() * vertsMat.inverse();
+	}
+	// Fill A matrix
+	for (size_t i = 0; i < verts.size(); i++)
+	{
+		// Check if influencing node is the same as the influenced node
+		if (((POI - nodes[i]->getPnt()).norm()) < 0.01)
+		{
+			Arow[nodes[i]->getIndex()] = -0.5;
+		}
+		else
+		{
+			Arow[verts(i)] += vertsPhi(i);
+		}
 	}
 }
+
+void panel::linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
+{
+	// Define stuff
+	double l1, l2, g, nuXi, nuEta, F111;	// (from Johnson, App. D)
+	l1 = -a.dot(m)*s.dot(m) + -a.dot(l)*s.dot(l);
+	l2 = -b.dot(m)*s.dot(m) + -b.dot(l)*s.dot(l);
+	nuXi  = (-s).dot(l) / s.norm();
+	nuEta = s.dot(m) / s.norm();
+	g = sqrt(pow(Al, 2) + pow(PN, 2));
+
+	// Compute F111 integral
+	if (l1 >= 0 && l2 >= 0)
+	{
+		F111 = log((sqrt(pow(l2, 2) + pow(g, 2)) + l2) / (sqrt(pow(l1, 2) + pow(g, 2)) + l1));
+	}
+	else if (l1 < 0 && l2 < 0)
+	{
+		F111 = log((sqrt(pow(l1, 2) + pow(g, 2)) - l1) / (sqrt(pow(l2, 2) + pow(g, 2)) - l2));
+	}
+	else if (l1 < 0 && l2 >= 0)
+	{
+		F111 = log((sqrt(pow(l1, 2) + pow(g, 2)) - l1) * (sqrt(pow(l2, 2) + pow(g, 2)) + l2) / pow(g,2));
+	}
+
+	Hints[0] += vortexPhi(PN, Al, a, b, s, l, m);	// H113 integral
+	Hints[1] += F111 * nuXi;	// H213 integral
+	Hints[2] += F111 * nuEta;	// H123 integral
+	/*Hints[1] = 0;
+	Hints[2] = 0;*/
+}
+
+
+Eigen::Matrix3d panel::linVertsMatrix()
+{
+	Eigen::Vector3d vertLoc;
+	Eigen::Matrix3d vertsMat;
+
+	for (nodes_index_type i = 0; i < nodes.size(); i++)
+	{
+		vertLoc = global2local(nodes[i]->getPnt(), true);
+		vertsMat(i, 0) = 1;
+		vertsMat(i, 1) = vertLoc.x();
+		vertsMat(i, 2) = vertLoc.y();
+	}
+	return vertsMat;
+}
+
 
 Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)
 {
@@ -349,7 +427,7 @@ Eigen::Vector3d panel::vortexV(const Eigen::Vector3d &a, const Eigen::Vector3d &
     return (a.cross(b)*(a.norm()+b.norm()))/(a.norm()*b.norm()*((a.norm()*b.norm())+a.dot(b))+pow(core*s.norm(),2)); // Connor: s is side length and was not included before. Excluding side length makes for an arbitrary core size for different geometry
 }
 
-double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l,const Eigen::Vector3d &m)
+double panel::vortexPhi(const double &PN, const double &Al, const Eigen::Vector3d &a,const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
 {
     double eps = pow(10, -15);
     double PA,PB,num,denom;
@@ -376,6 +454,23 @@ double panel::vortexPhi(const double &PN,const double &Al, const Eigen::Vector3d
 double panel::pntDubPhi(const double &PN, const double &PJK)
 {
     return PN*area/(4*M_PI*pow(PJK,3));
+}
+
+Eigen::Vector3d panel::linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc)
+{
+	double unitInf;
+	Eigen::Vector3d farImat, vertsPhi;
+	Eigen::Matrix3d vertsMat;
+		
+	unitInf = pntDubPhi(PN, PJK);
+	farImat[0] = unitInf;
+	farImat[1] = unitInf * POIloc.x();
+	farImat[2] = unitInf * POIloc.y();
+	vertsMat = linVertsMatrix();
+
+	vertsPhi = farImat.transpose() * vertsMat.inverse();
+
+	return vertsPhi;
 }
 
 Eigen::Vector3d panel::pntDubV(const Eigen::Vector3d n,const Eigen::Vector3d &pjk)

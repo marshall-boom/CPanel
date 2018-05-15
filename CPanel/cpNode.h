@@ -73,7 +73,6 @@ public:
     Eigen::Vector3d secProjNode(double dt, double inputV);
     
     bool isTE() {return TEnode;}
-
     
 };
 

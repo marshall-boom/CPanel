@@ -146,7 +146,8 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
     }
     else
     {
-        double Al,phiV;
+		double Al;
+		double phiV = 0;
         Eigen::Vector3d a,b,s;
         for (nodes_index_type i=0; i<nodes.size(); i++)
         {
@@ -188,58 +189,6 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
     }
 }
 
-// Linear doublet influence
-void bodyPanel::linDubPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
-{
-	Eigen::Vector3d pjk = POI - center;
-	Eigen::Matrix3d local = getLocalSys();
-	double PN = pjk.dot(local.row(2));
-
-	bool itselfFlag = false;
-	Eigen::Vector3d nodeDif0, nodeDif1, nodeDif2;
-	nodeDif0 = POI - nodes[0]->getPnt();
-	nodeDif1 = POI - nodes[1]->getPnt();
-	nodeDif2 = POI - nodes[2]->getPnt();
-	if (nodeDif0.norm() < .01 || nodeDif1.norm() < .01 || nodeDif2.norm() < .01)
-	{
-		itselfFlag = true;
-	}
-
-	if (pjk.norm() / longSide > 5)
-	{
-		phi = pntDubPhi(PN, pjk.norm());
-	}
-	else
-	{
-		double Al, phiV;
-		Eigen::Vector3d a, b, s;
-		for (nodes_index_type i = 0; i<nodes.size(); i++)
-		{
-			Eigen::Vector3d p1;
-			Eigen::Vector3d p2;
-			if (i != nodes.size() - 1)
-			{
-				p1 = nodes[i]->getPnt();
-				p2 = nodes[i + 1]->getPnt();
-			}
-			else
-			{
-				p1 = nodes[i]->getPnt();
-				p2 = nodes[0]->getPnt();
-			}
-			a = POI - p1;
-			b = POI - p2;
-			s = p2 - p1;
-			Al = local.row(2).dot(s.cross(a));
-			// NOTE: last paremeter is not used
-			//            phi += vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
-			phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
-			phi += phiV;
-		}
-		phi /= (4 * M_PI);
-	}
-}
-
 void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
 {
 	Eigen::Vector3d pjk = POI - center;
@@ -256,7 +205,8 @@ void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
 	}
 	else
 	{
-		double Al, phiV;
+		double Al;
+		double phiV = 0;
 		Eigen::Vector3d a, b, s;
 		for (nodes_index_type i = 0; i<nodes.size(); i++)
 		{
@@ -280,10 +230,9 @@ void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
 			{
 				// Note: last parameter was not used
 				//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
-				phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+			phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
 			}
 			phi += srcSidePhi(PN, Al, phiV, a, b, s);
-
 		}
 		phi /= (4 * M_PI);
 	}

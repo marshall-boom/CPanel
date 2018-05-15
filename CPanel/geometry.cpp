@@ -426,69 +426,57 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
 		// Compute collocation points
 
-		// Case manager will need editing if running subsonic and supersonic cases in one run, maybe?
-
+		Eigen::Vector3d nodePnt;
 		Eigen::Vector3d tempNorm;
 		tempNorm.setZero();
-		Eigen::Vector3d diff;
-		double scaleNorm = 0.01; // Scales normal
 
-
-
-		double normTempNorm;
-		Eigen::Vector3d nodePnt;
+		// WRITE TO
 		std::ofstream fid;
-		std::string myFile = "name.csv";
+		std::string myFile = "cntrlPnts.csv";
 		fid.open(myFile);
 		fid << "nodes_x" << "," << "nodes_y" << "," << "nodes_z" << ",";
 		fid << "norm_x" << "," << "norm_y" << "," << "norm_z" << ",";
 		fid << "CP_x" << "," << "CP_y" << "," << "CP_z";
 		fid << "\n";
 
-
-		if (inMach > 1)	//ss
+		if (inMach > 1)
 		{
+			// WRITE TO
 			size_t k = 0;
 			size_t m = 0;
+
 			for (nodes_index_type i = 0; i < nodes.size(); i++)
 			{
 				tempNorm.setZero();
 				nodePnt = nodes[i]->getPnt();
-				fid << nodePnt(0) << "," << nodePnt(1) << "," << nodePnt(2) << ",";
+
 				// check if node is part of a body panel
 				if (nodes[i]->getBodyPans().size() > 0)
 				{
 					for (bodyPanels_index_type j = 0; j < nodes[i]->getBodyPans().size(); j++)
 					{
-						//std::cout << "panel " << j << ": " << std::endl;
-						//std::cout << nodes[i]->getBodyPans()[j]->getNormal() << std::endl;
 						tempNorm += nodes[i]->getBodyPans()[j]->getNormal();
 					}
-
-					tempNorm = tempNorm / nodes[i]->getBodyPans().size();
 					tempNorm.normalize();
+					bodyCPs.push_back(nodes[i]->getPnt() - scaleNorm * tempNorm);
 
+					// WRITE TO
+					fid << nodePnt(0) << "," << nodePnt(1) << "," << nodePnt(2) << ",";
 					fid << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << ",";
-
-					normTempNorm = tempNorm.norm();
-					diff = -tempNorm - nodes[i]->getPnt();
-					bDubCPs.push_back(nodes[i]->getPnt() + scaleNorm * diff);
-					//bDubCPs.push_back(scaleNorm*(nodes[i]->getPnt() + tempNorm));
-
-					fid << bDubCPs[k](0) << "," << bDubCPs[k](1) << "," << bDubCPs[k](2);
+					fid << bodyCPs[k](0) << "," << bodyCPs[k](1) << "," << bodyCPs[k](2);
 					++k;
-
 				}
 				// if node is part of wake panel, CP is the node
 				else
 				{
-					wDubCPs.push_back(nodes[i]->getPnt());
+					wakeCPs.push_back(nodes[i]->getPnt());
 
-					fid << bDubCPs[m](0) << "," << bDubCPs[m](1) << "," << bDubCPs[m](2) << ",";
-					fid << bDubCPs[m](0) << "," << bDubCPs[m](1) << "," << bDubCPs[m](2);
+					// WRITE TO
+					fid << wakeCPs[m](0) << "," << wakeCPs[m](1) << "," << wakeCPs[m](2) << ",";
+					fid << wakeCPs[m](0) << "," << wakeCPs[m](1) << "," << wakeCPs[m](2);
 					++m;
-
 				}
+				// WRITE TO
 				fid << "\n";
 			}
 		}
@@ -496,20 +484,14 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 		{
 			for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
 			{
-				bDubCPs.push_back(bPanels[i]->getCenter());
+				bodyCPs.push_back(bPanels[i]->getCenter());
 			}
 			for (wakePanels_index_type i = 0; i < wPanels.size(); i++)
 			{
-				wDubCPs.push_back(wPanels[i]->getCenter());
+				wakeCPs.push_back(wPanels[i]->getCenter());
 			}
 		}
-		// Control point for sources is always the panel center, since always constant
-		for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
-		{
-			bSrcCPs.push_back(bPanels[i]->getCenter());
-		}
-
-
+		// WRITE TO
 		fid.close();
 
 
@@ -730,14 +712,15 @@ void geometry::setInfCoeff()
     size_t nWakePans = wPanels.size();
     size_t nPans = nBodyPans+nWakePans;
 	
-	size_t nDubBodyCPs = bDubCPs.size();
-	size_t nDubWakeCPs = wDubCPs.size();
-	size_t nSrcBodyCPs = bSrcCPs.size();
+	size_t nBodyCPs = bodyCPs.size();
+	size_t nWakeCPs = wakeCPs.size();
 
-	A.resize(static_cast<Eigen::MatrixXd::Index>(nDubBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
-	B.resize(static_cast<Eigen::MatrixXd::Index>(nSrcBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+	A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyCPs));
+	B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
 	// What do I do with this one??
 	C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans), static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
+
+	Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
 /*
     A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
     B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
@@ -746,27 +729,38 @@ void geometry::setInfCoeff()
 	A.setZero();
 	B.setZero();
 	C.setZero();
+
+	Eigen::MatrixXd Atemp;
+	Eigen::MatrixXd Btemp;
+	Atemp.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyCPs));
+	Btemp.resize(static_cast<Eigen::MatrixXd::Index>(nBodyCPs), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+	Atemp.setZero();
+	Btemp.setZero();
     
     Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
 
 	if (inMach > 1)
 	{
-		for (size_t j = 0; j<nBodyPans; j++)
+		for (size_t i = 0; i < nBodyCPs; i++)
 		{
-			for (size_t i = 0; i<nDubBodyCPs; i++)
+			Arow = A.row(i);
+			//bool itselfFlag = false;
+			for (size_t j = 0; j < nBodyPans; j++)
 			{
-				bPanels[j]->linDubPanelPhiInf(bDubCPs[i], A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+				std::cout << "j = " << j << std::endl;
+				bPanels[j]->linDubPhiInf(bodyCPs[i], Arow);
+				bPanels[j]->srcPanelPhiInf(bodyCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+				//bPanels[j]->panelPhiInf(bodyCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), Atemp(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
 			}
-			for (size_t i = 0; i<nSrcBodyCPs; i++)
+			A.row(i) = Arow;
+			std::cout << B << "\n" << std::endl;
+		
+			for (int j = 0; j<percentage.size(); j++)
 			{
-				bPanels[j]->srcPanelPhiInf(bSrcCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
-			}
-			for (int i = 0; i<percentage.size(); i++)
-			{
-				if ((100 * j / nPans) <= percentage(i) && 100 * (j + 1) / nPans > percentage(i))
+				if ((100 * i / nBodyCPs) <= percentage(j) && 100 * (i + 1) / nBodyCPs > percentage(j))
 				{
-					std::cout << percentage(i) << "%\t" << std::flush;
+					std::cout << percentage(j) << "%\t" << std::flush;
 				}
 			}
 		}
@@ -789,66 +783,22 @@ void geometry::setInfCoeff()
 		}
 	}
 
-/*
-    for (size_t j=0; j<nBodyPans; j++)
-    {
-        for (size_t i=0; i<nBodyPans; i++)
-        {
-            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)),A(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)));
-        }
-        for (int i=0; i<percentage.size(); i++)
-        {
-            if ((100*j/nPans) <= percentage(i) && 100*(j+1)/nPans > percentage(i))
-            {
-                std::cout << percentage(i) << "%\t" << std::flush;
-            }
-        }
-    }
-*/
+	std::cout << "\n" << "A Matrix: " << "\n" << std::endl;
+	std::cout << A << "\n" << std::endl;
+
+	std::cout << "B Matrix: " << "\n" << std::endl;
+	std::cout << B << "\n" << std::endl;
+
     for (size_t i=0; i<nBodyPans; i++)
     {
         bPanels[i]->setIndex(static_cast<int>(i));
     }
-
+	
     std::vector<bodyPanel*> interpPans(4); // [Upper1 Lower1 Upper2 Lower2]  Panels that start the bounding wakelines of the wake panel.  Doublet strength is constant along wakelines (muUpper-muLower) and so the doublet strength used for influence of wake panel is interpolated between wakelines.
     double interpCoeff;
     double influence;
     Eigen::Vector4i indices;
 
-	for (size_t j = 0; j<nWakePans; j++)
-	{
-		wPanels[j]->interpPanels(interpPans, interpCoeff);
-		indices = interpIndices(interpPans);
-		//for (size_t i = 0; i<nBodyPans; i++)
-		for (size_t i = 0; i<nDubBodyCPs; i++)
-		{
-			Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
-			//influence = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
-			if (inMach > 1)
-			{
-				influence = wPanels[j]->linDubPhiInf(bDubCPs[i]);
-			}
-			else
-			{
-				influence = wPanels[j]->dubPhiInf(bDubCPs[i]);
-			}
-			A(ii, indices(0)) += influence * (1 - interpCoeff);
-			A(ii, indices(1)) += influence * (interpCoeff - 1);
-			A(ii, indices(2)) += influence * interpCoeff;
-			A(ii, indices(3)) -= influence * interpCoeff;
-		}
-		for (int i = 0; i<percentage.size(); i++)
-		{
-			if ((100 * (nBodyPans + j) / nPans) <= percentage(i) && 100 * (nBodyPans + j + 1) / nPans > percentage(i))
-			{
-				std::cout << percentage(i) << "%\t" << std::flush;
-			}
-		}
-
-	}
-
-
-/*
     for (size_t j=0; j<nWakePans; j++)
     {
         wPanels[j]->interpPanels(interpPans,interpCoeff);
@@ -871,9 +821,9 @@ void geometry::setInfCoeff()
         }
 
     }
-    */
+    
     // Construct doublet influence coefficient matrices for bufferWake panels
-    /*
+    
     for (size_t i=0; i<nBodyPans; i++)
     {
         for (wakePanels_index_type j=0; j<w2Panels.size(); j++)
@@ -881,7 +831,7 @@ void geometry::setInfCoeff()
             C(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)) = w2Panels[j]->dubPhiInf(bPanels[i]->getCenter());
         }
     }
-    */
+    
     std::cout << "Complete" << std::endl;
     
     if (writeCoeffFlag)

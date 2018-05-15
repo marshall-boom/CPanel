@@ -165,14 +165,20 @@ bool cpCase::solveMatrixEq()
     Eigen::MatrixXd* B = geom->getB();
     Eigen::VectorXd RHS = -(*B)*sigmas;
     Eigen::VectorXd doubletStrengths(bPanels->size());
+	std::cout << "\n" << "sigmas" << "\n" << sigmas << std::endl << "\n";
+	std::cout << "\n" << "RHS" << "\n" << RHS << std::endl << "\n";
 
 
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
+	//Eigen::LeastSquaresConjugateGradient<Eigen::MatrixXd> res;
+	//Eigen::BDCSVD<Eigen::MatrixXd> res;
+	//Eigen::FullPivLU<Eigen::MatrixXd> res;
     res.compute((*A));
     doubletStrengths = res.solve(RHS);
+	std::cout << "mu" << "\n" << doubletStrengths << std::endl;
     if (res.error() > pow(10,-10))
     {
-        converged = false;
+		converged = false;
     }
 
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)

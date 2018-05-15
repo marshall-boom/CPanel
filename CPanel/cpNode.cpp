@@ -131,5 +131,3 @@ Eigen::Vector3d cpNode::secProjNode(double dt, double inputV){
 
 }
 
-
-

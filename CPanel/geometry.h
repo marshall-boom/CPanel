@@ -206,9 +206,9 @@ class geometry
     wakePanels_type wPanels;
     wakePanels_type w2Panels; // Buffer wake row two
 
-	colloPnts_type bDubCPs;	//ss
-	colloPnts_type wDubCPs;
-	colloPnts_type bSrcCPs;	//ss
+	colloPnts_type bodyCPs;	//ss
+	colloPnts_type wakeCPs;
+	//colloPnts_type bSrcCPs;	//ss
 
     std::vector<bool> isFirstPanel;
 
@@ -310,7 +310,8 @@ public:
 
     void moveGeom( std::vector<double> bodyKin );
 
-	double inMach = 0.1;
+	double inMach = 1.5;
+	double scaleNorm = 0.005; // Scales normal
 
 };
 

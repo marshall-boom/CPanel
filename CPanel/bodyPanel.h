@@ -120,7 +120,6 @@ public:
     Eigen::Vector3d partStretching(particle* part);
 
 	// ss
-	void linDubPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
 	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
     
 };

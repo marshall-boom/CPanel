@@ -122,8 +122,12 @@ public:
 	//void setCPpoints(double inputMach, bool bPanelFlag); //ss
 	//CPpoints_type getCPpoints() {return CPpoints;}
 
-	double linDubPhiInf(const Eigen::Vector3d &POI);
+	void linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow);
+	void linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
     
+	Eigen::Vector3d linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc);
+	Eigen::Matrix3d linVertsMatrix();
+
 };
 
 #endif /* defined(__CPanel__panel__) */
