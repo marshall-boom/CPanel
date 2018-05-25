@@ -45,9 +45,6 @@ protected:
 	using edges_type = std::vector<edge *>;
 	using edges_index_type = edges_type::size_type;
 
-	using CPpoints_type = std::vector<Eigen::Vector3d>;		//ss
-	using CPpoints_type_index = CPpoints_type::size_type;
-
     nodes_type nodes;
     edges_type pEdges;
     Eigen::Vector3d center;
@@ -56,7 +53,9 @@ protected:
     double area;
     double longSide;
 
-	CPpoints_type CPpoints;	//ss
+	//lin
+	nodes_type bodyNodes;
+	nodes_type wakeNodes;
 
     double doubletStrength = 0;
     double potential = 0;
@@ -124,7 +123,7 @@ public:
 
 	void linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow);
 	void linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
-    
+
 	Eigen::Vector3d linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc);
 	Eigen::Matrix3d linVertsMatrix();
 

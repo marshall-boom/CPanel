@@ -40,6 +40,15 @@ class cpNode
     double c_w = 1.3; //vpp
     
     bool TEnode;
+
+	// lin
+	Eigen::Vector3d linCPnormal;
+	//double CPoffset = 0.0000001; // Scales normal
+	double linCPoffset = 1.0e-7;
+
+	double linDoubletStrength = 0;
+	double linPotential = 0;
+	double linPrevPotential = 0;
     
 public:
     cpNode(Eigen::Vector3d pnt,size_t iindex);
@@ -73,6 +82,13 @@ public:
     Eigen::Vector3d secProjNode(double dt, double inputV);
     
     bool isTE() {return TEnode;}
+
+	// lin
+	void setLinCPnormal();
+	Eigen::Vector3d calcCP();
+	void linSetMu(double linDubStrength);
+	void linSetPotential(Eigen::Vector3d Vinf);
+	void linComputeVelocity(double PG, const Eigen::Vector3d &Vinf);
     
 };
 

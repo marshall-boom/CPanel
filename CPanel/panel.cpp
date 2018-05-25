@@ -106,7 +106,7 @@ void panel::setPotential(Eigen::Vector3d Vinf)
 {
     prevPotential = potential;
     
-    potential = Vinf.dot(center) - doubletStrength; // Katz 11.74, 13.157
+	potential = Vinf.dot(center) - doubletStrength; // Katz 11.74, 13.157
 }
 
 bool panel::inPanelProjection(const Eigen::Vector3d &POI, Eigen::Vector3d &projectedPnt)
@@ -276,6 +276,8 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 		Hints.setZero();
 		Eigen::Matrix3d vertsMat;
 
+		Eigen::Vector3d HintsLoc;
+
 		// Iterate through panel edges and get H integrals
 		for (nodes_index_type i = 0; i<nodes.size(); i++)
 		{
@@ -336,10 +338,10 @@ void panel::linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double
 {
 	// Define stuff
 	double l1, l2, g, nuXi, nuEta, F111;	// (from Johnson, App. D)
-	l1 = -a.dot(m)*s.dot(m) + -a.dot(l)*s.dot(l);
-	l2 = -b.dot(m)*s.dot(m) + -b.dot(l)*s.dot(l);
-	nuXi  = (-s).dot(l) / s.norm();
+	nuXi = s.dot(l) / s.norm();
 	nuEta = s.dot(m) / s.norm();
+	l1 = -a.dot(m)*nuEta + -a.dot(l)*nuXi;
+	l2 = -b.dot(m)*nuEta + -b.dot(l)*nuXi;
 	g = sqrt(pow(Al, 2) + pow(PN, 2));
 
 	// Compute F111 integral
@@ -359,8 +361,6 @@ void panel::linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double
 	Hints[0] += vortexPhi(PN, Al, a, b, s, l, m);	// H113 integral
 	Hints[1] += F111 * nuXi;	// H213 integral
 	Hints[2] += F111 * nuEta;	// H123 integral
-	/*Hints[1] = 0;
-	Hints[2] = 0;*/
 }
 
 

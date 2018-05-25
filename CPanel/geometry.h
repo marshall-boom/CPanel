@@ -197,8 +197,8 @@ class geometry
 	using wakePanels_type = std::vector<wakePanel *>;
 	using wakePanels_index_type = wakePanels_type::size_type;
 
-	using colloPnts_type = std::vector<Eigen::Vector3d>;	//ss
-	using colloPnts_type_index = colloPnts_type::size_type;	//ss
+	using ctrlPnts_type = std::vector<Eigen::Vector3d>;	//ss
+	using ctrlPnts_type_index = ctrlPnts_type::size_type;	//ss
 
     surfaces_type surfaces;
     wakes_type wakes;
@@ -206,9 +206,9 @@ class geometry
     wakePanels_type wPanels;
     wakePanels_type w2Panels; // Buffer wake row two
 
-	colloPnts_type bodyCPs;	//ss
-	colloPnts_type wakeCPs;
-	//colloPnts_type bSrcCPs;	//ss
+	//ctrlPnts_type bodyCPs;	//ss
+	//ctrlPnts_type wakeCPs;
+	////colloPnts_type bSrcCPs;	//ss
 
     std::vector<bool> isFirstPanel;
 
@@ -223,6 +223,9 @@ class geometry
 //    std::vector<cpNode*> TEnodes;
     size_t nNodes;
     size_t nTris;
+
+	nodes_type bodyNodes;
+	nodes_type wakeNodes;
 
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
@@ -311,7 +314,13 @@ public:
     void moveGeom( std::vector<double> bodyKin );
 
 	double inMach = 1.5;
-	double scaleNorm = 0.005; // Scales normal
+	double scaleNorm = 0.0000001; // Scales normal
+
+	double getInMach() { return inMach; }
+	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
+
+	/*ctrlPnts_type* getBodyCPs() { return &bodyCPs; }
+	ctrlPnts_type* getWakeCPs() { return &wakeCPs; }*/
 
 };
 

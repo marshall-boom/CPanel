@@ -170,9 +170,6 @@ bool cpCase::solveMatrixEq()
 
 
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
-	//Eigen::LeastSquaresConjugateGradient<Eigen::MatrixXd> res;
-	//Eigen::BDCSVD<Eigen::MatrixXd> res;
-	//Eigen::FullPivLU<Eigen::MatrixXd> res;
     res.compute((*A));
     doubletStrengths = res.solve(RHS);
 	std::cout << "mu" << "\n" << doubletStrengths << std::endl;
@@ -181,6 +178,31 @@ bool cpCase::solveMatrixEq()
 		converged = false;
     }
 
+
+	if (geom->getInMach() > 1)
+	{
+		for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
+		{
+			(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+			(nodes)[i]->linSetPotential(Vinf);
+		}
+	}
+	else
+	{
+		for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
+		{
+			(*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+			(*bPanels)[i]->setPotential(Vinf);
+		}
+		for (wakePanels_index_type i = 0; i<wPanels->size(); i++)
+		{
+			(*wPanels)[i]->setMu();
+			(*wPanels)[i]->setPotential(Vinf);
+		}
+		return converged;
+	}
+
+/*
     for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
     {
         (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
@@ -191,31 +213,69 @@ bool cpCase::solveMatrixEq()
         (*wPanels)[i]->setMu();
         (*wPanels)[i]->setPotential(Vinf);
     }
-    return converged;
+    return converged;*/
 }
-
 
 
 void cpCase::compVelocity()
 {
-    //  Velocity Survey with known doublet and source strengths
-    CM.setZero();
-    Eigen::Vector3d moment;
-    Fbody = Eigen::Vector3d::Zero();
-    bodyPanel* p;
-    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
-    {
-        p = (*bPanels)[i];
-        p->computeVelocity(PG,Vinf);
-        p->computeCp(Vmag);
-        Fbody += -p->getCp()*p->getArea()*p->getBezNormal()/params->Sref;
-        moment = p->computeMoments(params->cg);
-        CM(0) += moment(0)/(params->Sref*params->bref);
-        CM(1) += moment(1)/(params->Sref*params->cref);
-        CM(2) += moment(2)/(params->Sref*params->bref);
-    }
-    Fwind = bodyToWind(Fbody);
+	//  Velocity Survey with known doublet and source strengths
+	CM.setZero();
+	Eigen::Vector3d moment;
+	Fbody = Eigen::Vector3d::Zero();
+
+	if (geom->getInMach() > 1)
+	{
+		// Compute velocity at each CP via sum of influence of all panels at each CP
+		cpNode* n;
+		for (nodes_index_type i = 0; i < nodes.size(); i++)
+		{
+			for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
+			{
+
+			}
+		}
+	}
+	else
+	{
+		bodyPanel* p;
+		for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
+		{
+			p = (*bPanels)[i];
+			p->computeVelocity(PG, Vinf);
+			p->computeCp(Vmag);
+			Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+			moment = p->computeMoments(params->cg);
+			CM(0) += moment(0) / (params->Sref*params->bref);
+			CM(1) += moment(1) / (params->Sref*params->cref);
+			CM(2) += moment(2) / (params->Sref*params->bref);
+		}
+	}
+
+	Fwind = bodyToWind(Fbody);
 }
+
+
+//void cpCase::compVelocity()
+//{
+//    //  Velocity Survey with known doublet and source strengths
+//    CM.setZero();
+//    Eigen::Vector3d moment;
+//    Fbody = Eigen::Vector3d::Zero();
+//    bodyPanel* p;
+//    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
+//    {
+//        p = (*bPanels)[i];
+//        p->computeVelocity(PG,Vinf);
+//        p->computeCp(Vmag);
+//        Fbody += -p->getCp()*p->getArea()*p->getBezNormal()/params->Sref;
+//        moment = p->computeMoments(params->cg);
+//        CM(0) += moment(0)/(params->Sref*params->bref);
+//        CM(1) += moment(1)/(params->Sref*params->cref);
+//        CM(2) += moment(2)/(params->Sref*params->bref);
+//    }
+//    Fwind = bodyToWind(Fbody);
+//}
 
 
 void cpCase::trefftzPlaneAnalysis()
