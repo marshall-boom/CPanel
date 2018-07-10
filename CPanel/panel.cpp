@@ -257,14 +257,14 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 	Eigen::Vector3d pjk = POI - center;
 	Eigen::Matrix3d local = getLocalSys();
 	Eigen::Vector3d POIloc, vertsPhi;
-	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();;
+	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();
 	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
 	POIloc = global2local(POI, true);
 
 	// Check far field condition
 	if (pjk.norm() / longSide > 5)
 	{
-		std::cout << "\tFar Field" << std::endl;
+		//std::cout << "\tFar Field" << std::endl;
 		vertsPhi = linPntDubPhi(PN, pjk.norm(), POIloc);
 	}
 	else
@@ -272,11 +272,14 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 		// Define stuff
 		double Al;
 		Eigen::Vector3d a, b, s;
-		Eigen::Vector3d Hints, Iints, Imat;
+		/*Eigen::Vector3d Hints, Iints, Imat;*/
+		Eigen::Vector3d Iints, Imat;
+		Eigen::VectorXd Hints;
+		Hints.resize(Eigen::Index(3));
 		Hints.setZero();
 		Eigen::Matrix3d vertsMat;
-
-		Eigen::Vector3d HintsLoc;
+		//Eigen::Vector3d HintsLoc;
+		double l1, l2, c1, c2, g, nuXi, nuEta;
 
 		// Iterate through panel edges and get H integrals
 		for (nodes_index_type i = 0; i<nodes.size(); i++)
@@ -298,7 +301,16 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 			s = p2 - p1;
 			Al = local.row(2).dot(s.cross(a));
 
-			linHintegrals(Hints, PN, Al, a, b, s, local.row(0), local.row(1));
+			nuXi = s.dot(local.row(0)) / s.norm();
+			nuEta = s.dot(local.row(1)) / s.norm();
+			l1 = -a.dot(local.row(1))*nuEta + -a.dot(local.row(0))*nuXi;
+			l2 = -b.dot(local.row(1))*nuEta + -b.dot(local.row(0))*nuXi;
+			g = sqrt(pow(Al, 2) + pow(PN, 2));
+			c1 = a.norm();
+			c2 = b.norm();
+
+			//linHintegrals(Hints, PN, Al, a, b, s, local.row(0), local.row(1));
+			linPhiHintegrals(Hints,g,Al,l1,l2,c1,c2,nuEta,nuXi,PN,a,b,s, local.row(0), local.row(1));
 		}
 
 		// Get final H integrals and compute I integrals
@@ -319,11 +331,14 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 		// Compute influence of each vertex on the field point
 		vertsPhi = Imat.transpose() * vertsMat.inverse();
 	}
+	/*std::cout << "\n" << "vertsPhi: " << "\n" << vertsPhi << std::endl;
+	std::cout << "\n" << "vertsPhiSum: " << "\n" << vertsPhi.sum() << std::endl;*/
 	// Fill A matrix
 	for (size_t i = 0; i < verts.size(); i++)
 	{
 		// Check if influencing node is the same as the influenced node
-		if (((POI - nodes[i]->getPnt()).norm()) < 0.01)
+		//if (abs((POI - nodes[i]->getPnt()).norm()) < 1.0e-6 || pjk.norm() < 0.0001)
+		if (abs((POI - nodes[i]->getPnt()).norm()) < 1.0e-4)
 		{
 			Arow[nodes[i]->getIndex()] = -0.5;
 		}
@@ -334,15 +349,18 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 	}
 }
 
-void panel::linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
+//void panel::linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
+void panel::linPhiHintegrals(Eigen::VectorXd &Hints, const double g, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
 {
 	// Define stuff
-	double l1, l2, g, nuXi, nuEta, F111;	// (from Johnson, App. D)
-	nuXi = s.dot(l) / s.norm();
-	nuEta = s.dot(m) / s.norm();
-	l1 = -a.dot(m)*nuEta + -a.dot(l)*nuXi;
-	l2 = -b.dot(m)*nuEta + -b.dot(l)*nuXi;
-	g = sqrt(pow(Al, 2) + pow(PN, 2));
+	double F111, num, denom;
+	double Htest = 0;
+	//double l1, l2, g, nuXi, nuEta, F111;	// (from Johnson, App. D)
+	//nuXi = s.dot(l) / s.norm();
+	//nuEta = s.dot(m) / s.norm();
+	//l1 = -a.dot(m)*nuEta + -a.dot(l)*nuXi;
+	//l2 = -b.dot(m)*nuEta + -b.dot(l)*nuXi;
+	//g = sqrt(pow(Al, 2) + pow(PN, 2));
 
 	// Compute F111 integral
 	if (l1 >= 0 && l2 >= 0)
@@ -358,9 +376,16 @@ void panel::linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double
 		F111 = log((sqrt(pow(l1, 2) + pow(g, 2)) - l1) * (sqrt(pow(l2, 2) + pow(g, 2)) + l2) / pow(g,2));
 	}
 
+	/*num = -Al * (l2*c1 - l1*c2);
+	denom = c1 * c2 + pow(Al, 2)*l1*l2;*/
+	/*Hints[0] += atan2(num,denom);*/
 	Hints[0] += vortexPhi(PN, Al, a, b, s, l, m);	// H113 integral
 	Hints[1] += F111 * nuXi;	// H213 integral
 	Hints[2] += F111 * nuEta;	// H123 integral
+	//Hints.push_back()
+	//Hints.push_bavortexPhi(PN, Al, a, b, s, l, m);	// H113 integral
+	//Hints[1] += F111 * nuXi;	// H213 integral
+	//Hints[2] += F111 * nuEta;	// H123 integral
 }
 
 
@@ -378,6 +403,197 @@ Eigen::Matrix3d panel::linVertsMatrix()
 	}
 	return vertsMat;
 }
+
+
+void panel::linComputeVelocity(double PG,Eigen::Vector3d &Vinf)
+{
+	double mu_x, mu_y;
+	Eigen::Vector3d vertDubStrengths, linDubConsts, panVel;
+	Eigen::Matrix3d vertsMat = linVertsMatrix();
+	vertDubStrengths = linGetDubStrengths();
+	
+	linDubConsts = vertsMat.inverse() * vertDubStrengths;
+	//mu_0 = linDubConsts[0];
+	mu_x = linDubConsts[1];
+	mu_y = linDubConsts[2];
+
+	panVel[0] = -mu_x;
+	panVel[1] = -mu_y;
+	panVel[2] = 0.0;
+	
+	velocity = local2global(panVel, false);
+	velocity(0) /= PG;
+	//std::cout << velocity << "\n" << std::endl;
+}
+
+
+Eigen::Vector3d panel::linDubVInf(const Eigen::Vector3d &POI)
+{
+	// Define and get stuff
+	Eigen::Vector3d V;
+	Eigen::Vector3d pjk = POI - center;
+	Eigen::Matrix3d local = getLocalSys();
+	Eigen::Vector3d POIloc, vertsPhi;
+	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();
+	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
+	POIloc = global2local(POI, true);
+
+	// Check far field condition
+	if (pjk.norm() / longSide > 5)
+	{
+		std::cout << "\tFar Field" << std::endl;
+		///////////////////////////////////////////////////////////////////// UPDATE
+		vertsPhi = linPntDubPhi(PN, pjk.norm(), POIloc);
+	}
+	else
+	{
+		// Define stuff
+		double Al;
+		Eigen::Vector3d a, b, s;
+		Eigen::VectorXd Hints; // Hints = [H113 H213 H123 H115 H215 H125 H225 H135 H315]
+		Eigen::Vector2d Fints;
+		std::vector<Eigen::Vector3d> Jints;
+		Hints.resize(Eigen::Index(9));
+		Hints.setZero();
+		Fints.setZero();
+
+		double l1, l2, c1, c2, g, nuXi, nuEta;
+
+		// Iterate through panel edges and get H integrals
+		for (nodes_index_type i = 0; i<nodes.size(); i++)
+		{
+			Eigen::Vector3d p1;
+			Eigen::Vector3d p2;
+			if (i != nodes.size() - 1)
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[i + 1]->getPnt();
+			}
+			else
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[0]->getPnt();
+			}
+			a = POI - p1;
+			b = POI - p2;
+			s = p2 - p1;
+			Al = local.row(2).dot(s.cross(a));
+
+			nuXi = s.dot(local.row(0)) / s.norm();
+			nuEta = s.dot(local.row(1)) / s.norm();
+			l1 = -a.dot(local.row(1))*nuEta + -a.dot(local.row(0))*nuXi;
+			l2 = -b.dot(local.row(1))*nuEta + -b.dot(local.row(0))*nuXi;
+			g = sqrt(pow(Al, 2) + pow(PN, 2));
+			c1 = a.norm();
+			c2 = b.norm();
+
+			linVelHintegrals(Hints, Fints, g, Al, l1, l2, c1, c2, nuEta, nuXi, PN, a, b, s, local.row(0), local.row(1));
+		}
+		Jints = linVelJintegrals(Hints, Fints, PN);
+		
+		// get mu's
+		Eigen::Vector3d vertDubStrengths, linDubConsts;
+		Eigen::Matrix3d vertsMat = linVertsMatrix();
+		double mu, mu_0, mu_x, mu_y;
+
+		vertDubStrengths = linGetDubStrengths();
+		linDubConsts = vertsMat.inverse() * vertDubStrengths;
+		mu_0 = linDubConsts[0];
+		mu_x = linDubConsts[1];
+		mu_y = linDubConsts[2];
+		mu = mu_0 + mu_x * POIloc.x() + mu_y * POIloc.y();
+
+		V = mu * Jints[0] + mu_x * Jints[1] + mu_y * Jints[2];
+	}
+	return V;
+}
+
+
+Eigen::Vector3d panel::linGetDubStrengths()
+{
+	Eigen::Vector3d vertDubStrengths;	// [mu1 mu2 mu3]
+
+	for (nodes_index_type i = 0; i < nodes.size(); i++)
+	{
+		vertDubStrengths[i] = nodes[i]->linGetMu();
+		vertDubStrengths[i] = nodes[i]->linGetPotential();
+	}
+
+	return vertDubStrengths;
+}
+
+
+std::vector<Eigen::Vector3d> panel::linVelJintegrals(Eigen::VectorXd &Hints, Eigen::Vector2d &Fints, const double &PN)
+{
+	Hints(0) = Hints(0) / PN;	// H113
+	Hints(1) = -Hints(1);		// H213
+	Hints(2) = -Hints(2);		// H123
+
+	Hints(3) = (1 / (3*pow(PN, 2))) * (Hints(0) + Hints(3));	// H115						
+	Hints(4) = (-Hints(4)) / 3;									// H215
+	Hints(5) = (-Hints(5)) / 3;									// H125
+
+	Hints(6) = (-Hints(6)) / 3;									// H225
+	Hints(7) = (-Hints(0) - Fints(1)) / 3;						// H135
+	Hints(8) = (-Hints(7)) - pow(PN, 2)*Hints(3) + Hints(0);	// H315
+
+	std::vector<Eigen::Vector3d> Jints;
+	Eigen::Vector3d J11, J21, J12;
+
+	J11(0) = 3 * PN*Hints(4);
+	J21(0) = -(Hints(0))/PN + 3 * PN*Hints(8);
+	J12(0) = 3 * PN*Hints(6);
+
+	J11(1) = 3 * PN*Hints(5);
+	J21(1) = 3 * PN*Hints(6);
+	J12(1) = 3 * PN*Hints(7);
+
+	J11(2) = Hints(0) - 3 * pow(PN,2)*Hints(3);
+	J21(2) = -Hints(1) - 3 * pow(PN, 2)*Hints(4);
+	J12(2) = -Hints(2) - 3 * pow(PN, 2)*Hints(5);
+
+	Jints.push_back((1 / (4*M_PI))*J11);
+	Jints.push_back((1 / (4*M_PI))*J21);
+	Jints.push_back((1 / (4*M_PI))*J12);
+
+	return Jints;
+}
+
+
+void panel::linVelHintegrals(Eigen::VectorXd &Hints, Eigen::Vector2d &Fints, const double g, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
+{
+	double E111, E211, E121, F113, F123;
+
+	E111 = 1 / b.norm() - 1 / a.norm();
+	E211 = -b.dot(l) / b.norm() - (-a).dot(l) / a.norm();
+	E121 = -b.dot(m) / b.norm() - (-a).dot(m) / a.norm();
+
+	F113 = (1 / pow(g, 2)) * (-nuEta * E211 + nuXi * E121);
+	Fints[0] += F113;
+	F123 = nuEta * Al * F113 - nuXi * E111;
+	Fints[1] += nuEta * F123;
+
+	linPhiHintegrals(Hints, g, Al, l1, l2, c1, c2, nuEta, nuXi, PN, a, b, s, l, m);	// [H113 H213 H123]
+
+	Hints[3] += Al * F113;		// H115
+	Hints[4] += nuXi * F113;	// H215
+	Hints[5] += nuEta * F113;	// H125
+	Hints[6] += nuXi * F123;	// H225
+}
+
+
+//void panel::linVelFintegrals(Eigen::Vector2d &Fints, const double Al, const double g, const double nuXi, const double nuEta, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &l, const Eigen::Vector3d &m)
+//{
+//	double E111, E211, E121, F113;
+//
+//	E111 = 1 / b.norm() - 1 / a.norm();
+//	E211 = -b.dot(l) / b.norm() - (-a).dot(l) / a.norm();
+//	E121 = -b.dot(m) / b.norm() - (-a).dot(m) / a.norm();
+//
+//	F113 = (1 / pow(g, 2)) * (-nuEta * E211 + nuXi * E121);
+//	Fints[0] += F113;
+//	Fints[1] += nuEta * -Al * F113 - nuXi * E111;
+//}
 
 
 Eigen::Vector3d panel::dubVInf(const Eigen::Vector3d &POI)

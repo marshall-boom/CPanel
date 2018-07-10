@@ -314,7 +314,8 @@ public:
     void moveGeom( std::vector<double> bodyKin );
 
 	double inMach = 1.5;
-	double scaleNorm = 0.0000001; // Scales normal
+	//double scaleNorm = 0.0000001; // Scales normal
+	//double scaleNorm = 1.0e-10; // Scales normal
 
 	double getInMach() { return inMach; }
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }

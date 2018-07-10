@@ -187,6 +187,7 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
             phiDub = -0.5;
         }
     }
+	//std::cout << "\n" << "phiDub: " << "\n" << phiDub << std::endl;
 }
 
 void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
@@ -230,7 +231,7 @@ void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
 			{
 				// Note: last parameter was not used
 				//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
-			phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+				phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
 			}
 			phi += srcSidePhi(PN, Al, phiV, a, b, s);
 		}
@@ -527,6 +528,8 @@ Eigen::Vector3d bodyPanel::velocity3D(const Eigen::Vector3d &pnt,double pntPoten
 void bodyPanel::computeCp(double Vinf)
 {
     Cp = (1-pow(velocity.norm()/Vinf,2));
+	//Cp = (1 - pow(getVel().norm() / Vinf, 2));
+	std::cout << Cp << "\n" << std::endl;
 }
 
 void bodyPanel::computeCp(double Vinf,double dt){
@@ -538,6 +541,7 @@ void bodyPanel::computeCp(double Vinf,double dt){
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
     velocity = pntVelocity(center,potential,PG,Vinf);
+	//std::cout << velocity << "\n" << std::endl;
 }
 
 
@@ -995,6 +999,28 @@ Eigen::Matrix3d bodyPanel::velocityGradientTriSource(Eigen::Vector3d POI){
     velGradMat *= derConst;
     
     return velGradMat;
+}
+
+
+void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
+{
+	double mu_x, mu_y;
+	Eigen::Vector3d vertDubStrengths, linDubConsts, panVel;
+	Eigen::Matrix3d vertsMat = linVertsMatrix();
+	vertDubStrengths = linGetDubStrengths();
+
+	linDubConsts = vertsMat.inverse() * vertDubStrengths;
+	//mu_0 = linDubConsts[0];
+	mu_x = linDubConsts[1];
+	mu_y = linDubConsts[2];
+
+	panVel[0] = -mu_x;
+	panVel[1] = -mu_y;
+	panVel[2] = 0.0;
+
+	velocity = local2global(panVel, false);
+	velocity(0) /= PG;
+	//std::cout << velocity << "\n" << std::endl;
 }
 
 

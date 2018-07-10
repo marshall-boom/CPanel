@@ -122,10 +122,22 @@ public:
 	//CPpoints_type getCPpoints() {return CPpoints;}
 
 	void linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow);
-	void linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
-
+	//void linHintegrals(Eigen::Vector3d &Hints, const double &PN, const double &Al, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
+	void linPhiHintegrals(Eigen::VectorXd &Hints, const double g, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
 	Eigen::Vector3d linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc);
 	Eigen::Matrix3d linVertsMatrix();
+	Eigen::Vector3d linDubVInf(const Eigen::Vector3d &POI);
+
+	//void linVelFintegrals(Eigen::Vector2d &Fints, const double Al, const double g, const double nuXi, const double nuEta, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
+
+	void linVelHintegrals(Eigen::VectorXd &Hints, Eigen::Vector2d &Fints, const double g, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
+	std::vector<Eigen::Vector3d> linVelJintegrals(Eigen::VectorXd &Hints, Eigen::Vector2d &Fints, const double &PN);
+
+	Eigen::Vector3d linGetDubStrengths();
+	void linComputeVelocity(double PG,Eigen::Vector3d &Vinf);
+	Eigen::Vector3d linVelocity;
+
+	Eigen::Vector3d getVel() { return velocity; }
 
 };
 

@@ -441,20 +441,20 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				}
 			}
 
-			nodes_index_type j;
-			for (nodes_index_type i = 0; i < bodyNodes.size(); i++)
-			{
-				nodes[i] = bodyNodes[i];
-				nodes[i]->setIndex(i);
-				j = i+1;
-			}
-			nodes_index_type k = 0;
-			for (nodes_index_type i = j; i < wakeNodes.size() + j; i++)
-			{
-				nodes[i] = wakeNodes[k];
-				nodes[i]->setIndex(i);
-				++k;
-			}
+			//nodes_index_type j;
+			//for (nodes_index_type i = 0; i < bodyNodes.size(); i++)
+			//{
+			//	nodes[i] = bodyNodes[i];
+			//	nodes[i]->setIndex(i);
+			//	j = i+1;
+			//}
+			//nodes_index_type k = 0;
+			//for (nodes_index_type i = j; i < wakeNodes.size() + j; i++)
+			//{
+			//	nodes[i] = wakeNodes[k];
+			//	nodes[i]->setIndex(i);
+			//	++k;
+			//}
 		}
 
 
@@ -691,14 +691,17 @@ void geometry::setInfCoeff()
 		//C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans), static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
 
 		Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
-		Eigen::Vector3d ctrlPnt;
+		Eigen::Vector3d ctrlPnt, ctrlPntTest;
 
 		for (size_t i = 0; i < nBodyNodes; i++)
 		{
 			ctrlPnt = bodyNodes[i]->calcCP();
+			//ctrlPntTest = bodyNodes[i]->getBodyPans()[0]->getCenter();
 			Arow = A.row(i);
 			for (size_t j = 0; j < nBodyPans; j++)
 			{
+				//std::cout << "\n" << "j = " << j << std::endl;
+				//bPanels[j]->linDubPhiInf(ctrlPntTest, Arow);
 				bPanels[j]->linDubPhiInf(ctrlPnt, Arow);
 				bPanels[j]->srcPanelPhiInf(ctrlPnt, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
 				/*bPanels[j]->linDubPhiInf(bodyCPs[i], Arow);
@@ -727,8 +730,11 @@ void geometry::setInfCoeff()
 
 		for (size_t j = 0; j<nBodyPans; j++)
 		{
+			Eigen::Matrix<double, 1, Eigen::Dynamic> Arow = A.row(j);
 			for (size_t i = 0; i<nBodyPans; i++)
 			{
+				//std::cout << "\n" << "i = " << i << std::endl;
+				//bPanels[j]->linDubPhiInf(bPanels[i]->getCenter(), Arow);
 				bPanels[j]->panelPhiInf(bPanels[i]->getCenter(), B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
 			}
 			for (int i = 0; i<percentage.size(); i++)
@@ -741,11 +747,11 @@ void geometry::setInfCoeff()
 		}
 	}
 
-	std::cout << "\n" << "A Matrix: " << "\n" << std::endl;
+	/*std::cout << "\n" << "A Matrix: " << "\n" << std::endl;
 	std::cout << A << "\n" << std::endl;
 
 	std::cout << "B Matrix: " << "\n" << std::endl;
-	std::cout << B << "\n" << std::endl;
+	std::cout << B << "\n" << std::endl;*/
 
     for (size_t i=0; i<nBodyPans; i++)
     {

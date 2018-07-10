@@ -166,9 +166,8 @@ void cpNode::linSetPotential(Eigen::Vector3d Vinf)
 	linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
 }
 
-
-void cpNode::linComputeVelocity(double PG, const Eigen::Vector3d &Vinf)
+void cpNode::linSetVelocity(Eigen::Vector3d Vel)
 {
-
+	linVelocity = Vel;
 }
 

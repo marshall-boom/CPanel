@@ -164,9 +164,10 @@ bool cpCase::solveMatrixEq()
     Eigen::MatrixXd* A = geom->getA();
     Eigen::MatrixXd* B = geom->getB();
     Eigen::VectorXd RHS = -(*B)*sigmas;
-    Eigen::VectorXd doubletStrengths(bPanels->size());
-	std::cout << "\n" << "sigmas" << "\n" << sigmas << std::endl << "\n";
-	std::cout << "\n" << "RHS" << "\n" << RHS << std::endl << "\n";
+    /*Eigen::VectorXd doubletStrengths(bPanels->size());*/
+	Eigen::VectorXd doubletStrengths(nodes.size());
+	/*std::cout << "\n" << "sigmas" << "\n" << sigmas << std::endl << "\n";
+	std::cout << "\n" << "RHS" << "\n" << RHS << std::endl << "\n";*/
 
 
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
@@ -178,6 +179,20 @@ bool cpCase::solveMatrixEq()
 		converged = false;
     }
 
+	std::ofstream fid;
+	//std::string myFile;
+	if (geom->getInMach() > 1)
+	{
+		std::string myFile = "dubsLin216tri2.csv";
+		fid.open(myFile);
+	}
+	else
+	{
+		std::string myFile = "dubsConst216tri2.csv";
+		fid.open(myFile);
+	}
+	/*fid.open(myFile);*/
+	fid << "dubStrengths" << "\n";
 
 	if (geom->getInMach() > 1)
 	{
@@ -185,7 +200,10 @@ bool cpCase::solveMatrixEq()
 		{
 			(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
 			(nodes)[i]->linSetPotential(Vinf);
+			fid << nodes[i]->linGetMu() << "\n";
 		}
+		fid.close();
+		return converged;
 	}
 	else
 	{
@@ -193,12 +211,14 @@ bool cpCase::solveMatrixEq()
 		{
 			(*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
 			(*bPanels)[i]->setPotential(Vinf);
+			fid << (*bPanels)[i]->getMu() << "\n";
 		}
 		for (wakePanels_index_type i = 0; i<wPanels->size(); i++)
 		{
 			(*wPanels)[i]->setMu();
 			(*wPanels)[i]->setPotential(Vinf);
 		}
+		fid.close();
 		return converged;
 	}
 
@@ -226,15 +246,29 @@ void cpCase::compVelocity()
 
 	if (geom->getInMach() > 1)
 	{
-		// Compute velocity at each CP via sum of influence of all panels at each CP
-		cpNode* n;
-		for (nodes_index_type i = 0; i < nodes.size(); i++)
+		// Calc local vel. at each panel by taking partial deriv. of doublet strength
+		bodyPanel* p;
+		for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 		{
-			for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
-			{
-
-			}
+			p = (*bPanels)[i];
+			p->linComputeVelocity(PG,Vinf);
+			p->computeCp(Vmag);
+			//std::cout << getV() << std::endl;
 		}
+		
+
+	//	// Compute velocity at each CP via sum of influence of all panels at each CP
+	//	cpNode* n;
+	//	for (nodes_index_type i = 0; i < nodes.size(); i++)
+	//	{
+	//		n = nodes[i];
+	//		Eigen::Vector3d vel = vel.setZero();
+	//		for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
+	//		{
+	//			vel += (*bPanels)[i]->linDubVInf(n->calcCP());
+	//		}
+	//		nodes[i]->linSetVelocity(vel);
+	//	}
 	}
 	else
 	{
@@ -249,6 +283,7 @@ void cpCase::compVelocity()
 			CM(0) += moment(0) / (params->Sref*params->bref);
 			CM(1) += moment(1) / (params->Sref*params->cref);
 			CM(2) += moment(2) / (params->Sref*params->bref);
+			//std::cout << getV() << std::endl;
 		}
 	}
 
