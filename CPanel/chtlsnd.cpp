@@ -76,7 +76,8 @@ chtlsnd::chtlsnd(const Eigen::Matrix<double,1,Eigen::Dynamic> &X0, const Eigen::
     // Generate list of derivatives included in Taylor Series
     Eigen::MatrixXi ms = derivSequence(order,static_cast<int>(N));
     ms = sortBySum(ms);
-    ms = ms.block(1, 0, ms.rows()-1, ms.cols());
+    Eigen::MatrixXi ms_old = ms;
+    ms = ms_old.block(1, 0, ms.rows()-1, ms.cols());
     Eigen::VectorXi sums = ms.rowwise().sum();
  
     index_type t = ms.rows();
