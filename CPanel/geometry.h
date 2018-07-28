@@ -206,10 +206,6 @@ class geometry
     wakePanels_type wPanels;
     wakePanels_type w2Panels; // Buffer wake row two
 
-	//ctrlPnts_type bodyCPs;	//ss
-	//ctrlPnts_type wakeCPs;
-	////colloPnts_type bSrcCPs;	//ss
-
     std::vector<bool> isFirstPanel;
 
     using nodes_type = std::vector<cpNode *>;
@@ -239,7 +235,7 @@ class geometry
     double dt;
     double inputV;
 
-	double inputMach;	//ss
+	//double inputMach;	//ss
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -276,10 +272,7 @@ public:
         nNodes=0;
         nTris=0;
 
-		inputMach = p->machs(0);	//ss
-
         readTri(p->geomFile->file, p->normFlag);
-
     }
 
     virtual ~geometry();
@@ -313,15 +306,13 @@ public:
 
     void moveGeom( std::vector<double> bodyKin );
 
+	// Currently used to control whether code runs through const. or lin. dub. scheme
+	// Will eventually add to input file
+	// -Jake
 	double inMach = 1.5;
-	//double scaleNorm = 0.0000001; // Scales normal
-	//double scaleNorm = 1.0e-10; // Scales normal
 
 	double getInMach() { return inMach; }
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
-
-	/*ctrlPnts_type* getBodyCPs() { return &bodyCPs; }
-	ctrlPnts_type* getWakeCPs() { return &wakeCPs; }*/
 
 };
 

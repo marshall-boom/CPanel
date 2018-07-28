@@ -144,6 +144,21 @@ void cpNode::setLinCPnormal()
 }
 
 
+void cpNode::setLinCPoffset()
+{
+	double edgeLenSum = 0;
+	double edgeLenAvg;
+
+	for (edges_index_type i = 0; i < getEdges().size(); i++)
+	{
+		edgeLenSum += getEdges()[i]->length();
+	}
+
+	edgeLenAvg = edgeLenSum / getEdges().size();
+	linCPoffset = 0.05 * edgeLenAvg;
+}
+
+
 Eigen::Vector3d cpNode::calcCP()
 {
 	Eigen::Vector3d ctrlPnt;

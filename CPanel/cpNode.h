@@ -43,10 +43,7 @@ class cpNode
 
 	// lin
 	Eigen::Vector3d linCPnormal;
-	//double CPoffset = 0.0000001; // Scales normal
-	//double linCPoffset = 1.0e-7;
-	double linCPoffset = 1.0e-10;
-	//double linCPoffset = 1.0e-3;
+	double linCPoffset;
 
 	double linDoubletStrength = 0;
 	double linPotential = 0;
@@ -88,6 +85,7 @@ public:
 
 	// lin
 	void setLinCPnormal();
+	void setLinCPoffset();
 	Eigen::Vector3d calcCP();
 	void linSetMu(double linDubStrength);
 	void linSetPotential(Eigen::Vector3d Vinf);
@@ -95,6 +93,7 @@ public:
 
 	double linGetMu() { return linDoubletStrength; }
 	double linGetPotential() { return linPotential; }
+	double linGetCPoffset() { return linCPoffset; }
     
 };
 

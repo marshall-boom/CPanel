@@ -426,7 +426,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
 		// Organize nodes and get control point data
 
-		if (inMach > 1)
+		if (inMach > 1.0)
 		{
 			for (nodes_index_type i = 0; i < nodes.size(); i++)
 			{
@@ -434,27 +434,13 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				{
 					bodyNodes.push_back(nodes[i]);
 					nodes[i]->setLinCPnormal();
+					nodes[i]->setLinCPoffset();
 				}
 				else
 				{
 					wakeNodes.push_back(nodes[i]);
 				}
 			}
-
-			//nodes_index_type j;
-			//for (nodes_index_type i = 0; i < bodyNodes.size(); i++)
-			//{
-			//	nodes[i] = bodyNodes[i];
-			//	nodes[i]->setIndex(i);
-			//	j = i+1;
-			//}
-			//nodes_index_type k = 0;
-			//for (nodes_index_type i = j; i < wakeNodes.size() + j; i++)
-			//{
-			//	nodes[i] = wakeNodes[k];
-			//	nodes[i]->setIndex(i);
-			//	++k;
-			//}
 		}
 
 
@@ -678,7 +664,7 @@ void geometry::setInfCoeff()
     Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
 
-	if (inMach > 1)
+	if (inMach > 1.0)
 	{
 		size_t nBodyNodes = bodyNodes.size();
 		size_t nWakeNodes = wakeNodes.size();
@@ -687,25 +673,19 @@ void geometry::setInfCoeff()
 		B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyNodes), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
 		A.setZero();
 		B.setZero();
-		// What do I do with this one?? Pretty sure I don't need it
-		//C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans), static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
 
 		Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
-		Eigen::Vector3d ctrlPnt, ctrlPntTest;
+		Eigen::Vector3d ctrlPnt;
 
 		for (size_t i = 0; i < nBodyNodes; i++)
 		{
 			ctrlPnt = bodyNodes[i]->calcCP();
-			//ctrlPntTest = bodyNodes[i]->getBodyPans()[0]->getCenter();
+			/////////////////////////////////////////// Do I need to use static cast here??
 			Arow = A.row(i);
 			for (size_t j = 0; j < nBodyPans; j++)
 			{
-				//std::cout << "\n" << "j = " << j << std::endl;
-				//bPanels[j]->linDubPhiInf(ctrlPntTest, Arow);
 				bPanels[j]->linDubPhiInf(ctrlPnt, Arow);
 				bPanels[j]->srcPanelPhiInf(ctrlPnt, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
-				/*bPanels[j]->linDubPhiInf(bodyCPs[i], Arow);
-				bPanels[j]->srcPanelPhiInf(bodyCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));*/
 			}
 			A.row(i) = Arow;
 		
@@ -733,8 +713,6 @@ void geometry::setInfCoeff()
 			Eigen::Matrix<double, 1, Eigen::Dynamic> Arow = A.row(j);
 			for (size_t i = 0; i<nBodyPans; i++)
 			{
-				//std::cout << "\n" << "i = " << i << std::endl;
-				//bPanels[j]->linDubPhiInf(bPanels[i]->getCenter(), Arow);
 				bPanels[j]->panelPhiInf(bPanels[i]->getCenter(), B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
 			}
 			for (int i = 0; i<percentage.size(); i++)
@@ -747,12 +725,6 @@ void geometry::setInfCoeff()
 		}
 	}
 
-	/*std::cout << "\n" << "A Matrix: " << "\n" << std::endl;
-	std::cout << A << "\n" << std::endl;
-
-	std::cout << "B Matrix: " << "\n" << std::endl;
-	std::cout << B << "\n" << std::endl;*/
-
     for (size_t i=0; i<nBodyPans; i++)
     {
         bPanels[i]->setIndex(static_cast<int>(i));
@@ -762,6 +734,8 @@ void geometry::setInfCoeff()
     double interpCoeff;
     double influence;
     Eigen::Vector4i indices;
+
+	// Wake calculations not yet incorporated into linear dub scheme -Jake
 
     for (size_t j=0; j<nWakePans; j++)
     {
