@@ -1,0 +1,40 @@
+This document is for the purpose of tracking the flow of CPanel as it exists using constant doublet distributions, up until the point of solving for panel doublet strengths. The code flow will be outlined, and the processes that need to be modified or added to will be identified, such that linearly varying doublet distributions can be implemented.
+
+1. cpanel: essentially main
+2. cpFile: reads in and parses input file
+3. inputParams: reads input parameters
+4. geometry
+  I. readTri()
+    i. read in nodes of geometry, scan surface for unique IDs such as wakes, create surfaces
+////////// SINCE CONTROL POINTS WILL BE JUST UNDER NODES, MAYBE DEFINE THEM HERE (PANEL CENTER CURRENTLY USED AND DEFINED LATER)
+    ii. check vortex particle flag
+    iii. create octree
+    iv. set panel neighbors
+    v. collect all panels and check for tip patches (needed for chtls)
+////////// WHEN USING LINEAR DOUBLET, DON'T NEED CHTLS TO DO VELOCITY CALCS ANYMORE
+    vi. calculate influence coefficient matrices
+  II. setInfCoeff()
+    i. create A, B, and C matrices
+////////// RESIZE TO NUMBER OF NODES
+    ii. iterate through all body panels and find influence coeffs --------> 5.
+    iii. do the same for the wake
+    iv. build A, /////////whats going on here
+    v. build coefficient matrices for bufferwake panels, C ////////// what's going on here
+5. bodyPanel
+  I. panelPhiInf(ith panel center,B(i,j),A(i,j)): finds velocity potential influence 
+     at ith colocation point due to unit strength singularity at jth panel
+////////// FIRST INPUT IS COLLOCATION POINT, CHANGE TO ITH PANEL CORNER FOR LINEAR
+    i. check that ith and jth panel aren't the same, and flag if so
+////////// DO THE SAME BUT WITH CORNER POINTS
+    ii. transform to local panel coordinate system
+    iii. check for farfield condition
+      a. if condition met, use farfield calcs
+        1. pntSrcPhi() and pntDubPhi()
+////////// USE BARYCENTRIC CONVERSION PROCESS FOR FAR FIELD DOUBLET CALC
+    iv. if not met, do near field calc
+      a. get two points that define an edge of panel j
+      b. compute geometric values
+////////// WILL LIKELY NEED TO MODIFY
+      c. vortexPhi(geometry stuff): compute vel. potential due to one panel edge --------> 6.
+////////// THIS IS THE PLACE
+      d. sum edges to get velocity potential of panel

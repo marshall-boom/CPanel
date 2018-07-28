@@ -423,7 +423,27 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             bPanels[i]->setCluster();
         }
         
-        
+
+		// Organize nodes and get control point data
+
+		if (inMach > 1.0)
+		{
+			for (nodes_index_type i = 0; i < nodes.size(); i++)
+			{
+				if (nodes[i]->getBodyPans().size() > 0)
+				{
+					bodyNodes.push_back(nodes[i]);
+					nodes[i]->setLinCPnormal();
+					nodes[i]->setLinCPoffset();
+				}
+				else
+				{
+					wakeNodes.push_back(nodes[i]);
+				}
+			}
+		}
+
+
         // Calculate influence coefficient matrices
 
         bool read = false;
@@ -640,39 +660,82 @@ void geometry::setInfCoeff()
     size_t nBodyPans = bPanels.size();
     size_t nWakePans = wPanels.size();
     size_t nPans = nBodyPans+nWakePans;
-
-    A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
-    B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
-    C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
-    
     
     Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
 
-    for (size_t j=0; j<nBodyPans; j++)
-    {
-        for (size_t i=0; i<nBodyPans; i++)
-        {
-            bPanels[j]->panelPhiInf(bPanels[i]->getCenter(),B(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)),A(static_cast<Eigen::MatrixXd::Index>(i),static_cast<Eigen::MatrixXd::Index>(j)));
-        }
-        for (int i=0; i<percentage.size(); i++)
-        {
-            if ((100*j/nPans) <= percentage(i) && 100*(j+1)/nPans > percentage(i))
-            {
-                std::cout << percentage(i) << "%\t" << std::flush;
-            }
-        }
-    }
+	if (inMach > 1.0)
+	{
+		size_t nBodyNodes = bodyNodes.size();
+		size_t nWakeNodes = wakeNodes.size();
+
+		A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyNodes), static_cast<Eigen::MatrixXd::Index>(nBodyNodes));
+		B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyNodes), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+		A.setZero();
+		B.setZero();
+
+		Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
+		Eigen::Vector3d ctrlPnt;
+
+		for (size_t i = 0; i < nBodyNodes; i++)
+		{
+			ctrlPnt = bodyNodes[i]->calcCP();
+			/////////////////////////////////////////// Do I need to use static cast here??
+			Arow = A.row(i);
+			for (size_t j = 0; j < nBodyPans; j++)
+			{
+				bPanels[j]->linDubPhiInf(ctrlPnt, Arow);
+				bPanels[j]->srcPanelPhiInf(ctrlPnt, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+			}
+			A.row(i) = Arow;
+		
+			for (int j = 0; j<percentage.size(); j++)
+			{
+				if ((100 * i / nBodyNodes) <= percentage(j) && 100 * (i + 1) / nBodyNodes > percentage(j))
+				{
+					std::cout << percentage(j) << "%\t" << std::flush;
+				}
+			}
+		}
+	}
+	else
+	{
+		A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+		B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(nBodyPans));
+		C.resize(static_cast<Eigen::MatrixXd::Index>(nBodyPans),static_cast<Eigen::MatrixXd::Index>(w2Panels.size()));
+		
+		A.setZero();
+		B.setZero();
+		C.setZero();
+
+		for (size_t j = 0; j<nBodyPans; j++)
+		{
+			Eigen::Matrix<double, 1, Eigen::Dynamic> Arow = A.row(j);
+			for (size_t i = 0; i<nBodyPans; i++)
+			{
+				bPanels[j]->panelPhiInf(bPanels[i]->getCenter(), B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+			}
+			for (int i = 0; i<percentage.size(); i++)
+			{
+				if ((100 * j / nPans) <= percentage(i) && 100 * (j + 1) / nPans > percentage(i))
+				{
+					std::cout << percentage(i) << "%\t" << std::flush;
+				}
+			}
+		}
+	}
 
     for (size_t i=0; i<nBodyPans; i++)
     {
         bPanels[i]->setIndex(static_cast<int>(i));
     }
-
+	
     std::vector<bodyPanel*> interpPans(4); // [Upper1 Lower1 Upper2 Lower2]  Panels that start the bounding wakelines of the wake panel.  Doublet strength is constant along wakelines (muUpper-muLower) and so the doublet strength used for influence of wake panel is interpolated between wakelines.
     double interpCoeff;
     double influence;
     Eigen::Vector4i indices;
+
+	// Wake calculations not yet incorporated into linear dub scheme -Jake
 
     for (size_t j=0; j<nWakePans; j++)
     {
@@ -1031,9 +1094,97 @@ void geometry::createVPWakeSurfaces(const Eigen::Matrix<size_t, Eigen::Dynamic, 
 
 
 
+//bool linDubFlag = false;
+//if (inputMach > 1)
+//{
+//	linDubFlag = true;
+//}
+
+//for (size_t j = 0; j<nBodyPans; j++)
+//{
+//	for (size_t i = 0; i<nDubBodyCPs; i++)
+//	{
+//		bPanels[j]->panelPhiInf(bDubCPs[i], A(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), true, linDubFlag);
+//	}
+//	for (size_t i = 0; i<nSrcBodyCPs; i++)
+//	{
+//		bPanels[j]->panelPhiInf(bSrcCPs[i], B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), false, linDubFlag);
+//	}
+//	/////////////////////////////////// UPDATE //////////////////////////////////////
+//	for (int i = 0; i<percentage.size(); i++)
+//	{
+//		if ((100 * j / nPans) <= percentage(i) && 100 * (j + 1) / nPans > percentage(i))
+//		{
+//			std::cout << percentage(i) << "%\t" << std::flush;
+//		}
+//	}
+//}
 
 
+//Eigen::Vector3d nodePnt;
+//Eigen::Vector3d tempNorm;
+//tempNorm.setZero();
 
+//// WRITE TO
+//std::ofstream fid;
+//std::string myFile = "cntrlPnts.csv";
+//fid.open(myFile);
+//fid << "nodes_x" << "," << "nodes_y" << "," << "nodes_z" << ",";
+//fid << "norm_x" << "," << "norm_y" << "," << "norm_z" << ",";
+//fid << "CP_x" << "," << "CP_y" << "," << "CP_z";
+//fid << "\n";
 
+//if (inMach > 1)
+//{
+//	// WRITE TO
+//	size_t k = 0;
+//	size_t m = 0;
 
+//	for (nodes_index_type i = 0; i < nodes.size(); i++)
+//	{
+//		tempNorm.setZero();
+//		nodePnt = nodes[i]->getPnt();
 
+//		// check if node is part of a body panel
+//		if (nodes[i]->getBodyPans().size() > 0)
+//		{
+//			for (bodyPanels_index_type j = 0; j < nodes[i]->getBodyPans().size(); j++)
+//			{
+//				tempNorm += nodes[i]->getBodyPans()[j]->getNormal();
+//			}
+//			tempNorm.normalize();
+//			bodyCPs.push_back(nodes[i]->getPnt() - scaleNorm * tempNorm);
+
+//			// WRITE TO
+//			fid << nodePnt(0) << "," << nodePnt(1) << "," << nodePnt(2) << ",";
+//			fid << tempNorm(0) << "," << tempNorm(1) << "," << tempNorm(2) << ",";
+//			fid << bodyCPs[k](0) << "," << bodyCPs[k](1) << "," << bodyCPs[k](2);
+//			++k;
+//		}
+//		// if node is part of wake panel, CP is the node
+//		else
+//		{
+//			wakeCPs.push_back(nodes[i]->getPnt());
+
+//			// WRITE TO
+//			fid << wakeCPs[m](0) << "," << wakeCPs[m](1) << "," << wakeCPs[m](2) << ",";
+//			fid << wakeCPs[m](0) << "," << wakeCPs[m](1) << "," << wakeCPs[m](2);
+//			++m;
+//		}
+//		// WRITE TO
+//		fid << "\n";
+//	}
+//}
+//else
+//{
+//	for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
+//	{
+//		bodyCPs.push_back(bPanels[i]->getCenter());
+//	}
+//	for (wakePanels_index_type i = 0; i < wPanels.size(); i++)
+//	{
+//		wakeCPs.push_back(wPanels[i]->getCenter());
+//	}
+//}
+//// WRITE TO
+//fid.close();

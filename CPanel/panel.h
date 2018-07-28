@@ -53,6 +53,11 @@ protected:
     double area;
     double longSide;
 
+	//lin
+	nodes_type bodyNodes;
+	nodes_type wakeNodes;
+	Eigen::Vector3d linVelocity;
+
     double doubletStrength = 0;
     double potential = 0;
     double prevPotential = 0;
@@ -113,7 +118,17 @@ public:
     double getPotential() {return potential;}
     
     bool nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI);
-    
+
+	void linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow);
+	void linPhiHintegrals(Eigen::VectorXd &Hints, const double g, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
+	Eigen::Vector3d linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc);
+	Eigen::Matrix3d linVertsMatrix();
+
+	Eigen::Vector3d linGetDubStrengths();
+	void linComputeVelocity(double PG,Eigen::Vector3d &Vinf);
+
+	Eigen::Vector3d getVel() { return velocity; }
+
 };
 
 #endif /* defined(__CPanel__panel__) */

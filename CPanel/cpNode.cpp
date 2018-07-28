@@ -132,4 +132,57 @@ Eigen::Vector3d cpNode::secProjNode(double dt, double inputV){
 }
 
 
+// lin
+void cpNode::setLinCPnormal()
+{
+	linCPnormal.setZero();
+	for (bodyPanels_index_type i = 0; i < getBodyPans().size(); i++)
+	{
+		linCPnormal += getBodyPans()[i]->getNormal();
+	}
+	linCPnormal.normalize();
+}
+
+
+void cpNode::setLinCPoffset()
+{
+	double edgeLenSum = 0;
+	double edgeLenAvg;
+
+	for (edges_index_type i = 0; i < getEdges().size(); i++)
+	{
+		edgeLenSum += getEdges()[i]->length();
+	}
+
+	edgeLenAvg = edgeLenSum / getEdges().size();
+	linCPoffset = 0.05 * edgeLenAvg;
+}
+
+
+Eigen::Vector3d cpNode::calcCP()
+{
+	Eigen::Vector3d ctrlPnt;
+	ctrlPnt = getPnt() - linCPoffset * linCPnormal;
+
+	return ctrlPnt;
+}
+
+
+void cpNode::linSetMu(double linDubStrength)
+{
+	linDoubletStrength = linDubStrength;
+}
+
+
+void cpNode::linSetPotential(Eigen::Vector3d Vinf)
+{
+	linPrevPotential = linPotential;
+
+	linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
+}
+
+void cpNode::linSetVelocity(Eigen::Vector3d Vel)
+{
+	linVelocity = Vel;
+}
 

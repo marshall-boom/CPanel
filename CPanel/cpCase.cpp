@@ -152,6 +152,8 @@ void cpCase::setSourceStrengths()
     {
         (*bPanels)[i]->setSigma(Vinf,0);
         sigmas(static_cast<Eigen::VectorXd::Index>(i)) = (*bPanels)[i]->getSigma();
+		////////////////////////
+		std::cout << sigmas(static_cast<Eigen::VectorXd::Index>(i)) << std::endl;
     }
 }
 
@@ -164,51 +166,87 @@ bool cpCase::solveMatrixEq()
     Eigen::MatrixXd* A = geom->getA();
     Eigen::MatrixXd* B = geom->getB();
     Eigen::VectorXd RHS = -(*B)*sigmas;
-    Eigen::VectorXd doubletStrengths(bPanels->size());
-
+	Eigen::VectorXd doubletStrengths;
+	if (geom->getInMach() > 1.0)
+	{
+		doubletStrengths.resize(nodes.size());
+	}
+	else
+	{
+		doubletStrengths.resize(bPanels->size());
+	}
 
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
     res.compute((*A));
     doubletStrengths = res.solve(RHS);
+	////////////////////////////////////////
+	std::cout << "mu" << "\n" << doubletStrengths << std::endl;
     if (res.error() > pow(10,-10))
     {
-        converged = false;
+		converged = false;
     }
 
-    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
-    {
-        (*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
-        (*bPanels)[i]->setPotential(Vinf);
-    }
-    for (wakePanels_index_type i=0; i<wPanels->size(); i++)
-    {
-        (*wPanels)[i]->setMu();
-        (*wPanels)[i]->setPotential(Vinf);
-    }
-    return converged;
+	if (geom->getInMach() > 1.0)
+	{
+		for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
+		{
+			(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+			(nodes)[i]->linSetPotential(Vinf);
+		}
+		return converged;
+	}
+	else
+	{
+		for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
+		{
+			(*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+			(*bPanels)[i]->setPotential(Vinf);
+		}
+		for (wakePanels_index_type i = 0; i<wPanels->size(); i++)
+		{
+			(*wPanels)[i]->setMu();
+			(*wPanels)[i]->setPotential(Vinf);
+		}
+		return converged;
+	}
 }
-
 
 
 void cpCase::compVelocity()
 {
-    //  Velocity Survey with known doublet and source strengths
-    CM.setZero();
-    Eigen::Vector3d moment;
-    Fbody = Eigen::Vector3d::Zero();
-    bodyPanel* p;
-    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
-    {
-        p = (*bPanels)[i];
-        p->computeVelocity(PG,Vinf);
-        p->computeCp(Vmag);
-        Fbody += -p->getCp()*p->getArea()*p->getBezNormal()/params->Sref;
-        moment = p->computeMoments(params->cg);
-        CM(0) += moment(0)/(params->Sref*params->bref);
-        CM(1) += moment(1)/(params->Sref*params->cref);
-        CM(2) += moment(2)/(params->Sref*params->bref);
-    }
-    Fwind = bodyToWind(Fbody);
+	//  Velocity Survey with known doublet and source strengths
+	CM.setZero();
+	Eigen::Vector3d moment;
+	Fbody = Eigen::Vector3d::Zero();
+
+	if (geom->getInMach() > 1.0)
+	{
+		// Calc local vel. at each panel by taking partial deriv. of doublet strength
+		bodyPanel* p;
+		for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+		{
+			p = (*bPanels)[i];
+			p->linComputeVelocity(PG,Vinf);
+			p->computeCp(Vmag);
+		}
+	}
+	else
+	{
+		bodyPanel* p;
+		for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
+		{
+			p = (*bPanels)[i];
+			p->computeVelocity(PG, Vinf);
+			p->computeCp(Vmag);
+			Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+			moment = p->computeMoments(params->cg);
+			CM(0) += moment(0) / (params->Sref*params->bref);
+			CM(1) += moment(1) / (params->Sref*params->cref);
+			CM(2) += moment(2) / (params->Sref*params->bref);
+		}
+	}
+
+	Fwind = bodyToWind(Fbody);
 }
 
 
@@ -371,33 +409,99 @@ void cpCase::writeFiles()
 
 void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat)
 {
-    std::vector<cellDataArray> data;
-    cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals"),x("xPosition"),y("yPosition"),z("zPostition");
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
-    mu.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
-    sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
-    pot.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
-    V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
-    Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
-    bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
-    x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
-    y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
-    z.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+	//// Original
+ //   std::vector<cellDataArray> data;
+ //   cellDataArray mu("Doublet Strengths"),sigma("Source Strengths"),pot("Velocity Potential"),V("Velocity"),Cp("Cp"),bN("bezNormals"),x("xPosition"),y("yPosition"),z("zPostition");
+ //   Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(),3);
+ //   mu.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+ //   sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+ //   pot.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+ //   V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+ //   Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+ //   bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+ //   x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+ //   y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+ //   z.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
 
-    for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
-    {
-    	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
-        mu.data(ii,0) = (*bPanels)[i]->getMu();
-        sigma.data(ii,0) = (*bPanels)[i]->getSigma();
-        pot.data(ii,0) = (*bPanels)[i]->getPotential();
-        V.data.row(ii) = (*bPanels)[i]->getGlobalV();
-        Cp.data(ii,0) = (*bPanels)[i]->getCp();
-        con.row(ii) = (*bPanels)[i]->getVerts();
-        bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
-        x.data(ii,0) = (*bPanels)[i]->getCenter().x();
-        y.data(ii,0) = (*bPanels)[i]->getCenter().y();
-        z.data(ii,0) = (*bPanels)[i]->getCenter().z();
-    }
+ //   for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
+ //   {
+ //   	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+ //       mu.data(ii,0) = (*bPanels)[i]->getMu();
+ //       sigma.data(ii,0) = (*bPanels)[i]->getSigma();
+ //       pot.data(ii,0) = (*bPanels)[i]->getPotential();
+ //       V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+ //       Cp.data(ii,0) = (*bPanels)[i]->getCp();
+ //       con.row(ii) = (*bPanels)[i]->getVerts();
+ //       bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
+ //       x.data(ii,0) = (*bPanels)[i]->getCenter().x();
+ //       y.data(ii,0) = (*bPanels)[i]->getCenter().y();
+ //       z.data(ii,0) = (*bPanels)[i]->getCenter().z();
+ //   }
+
+	// Mine
+	std::vector<cellDataArray> data;
+	cellDataArray mu("Doublet Strengths"), sigma("Source Strengths"), pot("Velocity Potential"), V("Velocity"), Cp("Cp"), bN("bezNormals"), x("xPosition"), y("yPosition"), z("zPostition");
+	Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(), 3);
+
+	//if (geom->getInMach() > 1)
+	//{
+	//	mu.data.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()), 1);		///////////////
+	//	sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	//	pot.data.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()), 1);		///////////////
+	//	V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 3);
+	//	Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	//	bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 3);
+	//	x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	//	y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	//	z.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+
+	//	for (nodes_index_type i = 0; i < nodes.size(); i++)
+	//	{
+	//		Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+	//		mu.data(ii, 0) = (nodes)[i]->linGetMu();
+	//		pot.data(ii, 0) = (nodes)[i]->linGetPotential();
+	//	}
+
+	//	for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
+	//	{
+	//		Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+	//		sigma.data(ii, 0) = (*bPanels)[i]->getSigma();
+	//		V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+	//		Cp.data(ii, 0) = (*bPanels)[i]->getCp();
+	//		con.row(ii) = (*bPanels)[i]->getVerts();
+	//		bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
+	//		x.data(ii, 0) = (*bPanels)[i]->getCenter().x();
+	//		y.data(ii, 0) = (*bPanels)[i]->getCenter().y();
+	//		z.data(ii, 0) = (*bPanels)[i]->getCenter().z();
+	//	}
+	//}
+	//else
+	//{
+		mu.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+		sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+		pot.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+		V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+		Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+		bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),3);
+		x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+		y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+		z.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()),1);
+
+		for (bodyPanels_index_type i=0; i<bPanels->size(); i++)
+		{
+			Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+			mu.data(ii,0) = (*bPanels)[i]->getMu();
+			sigma.data(ii,0) = (*bPanels)[i]->getSigma();
+			pot.data(ii,0) = (*bPanels)[i]->getPotential();
+			V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+			Cp.data(ii,0) = (*bPanels)[i]->getCp();
+			con.row(ii) = (*bPanels)[i]->getVerts();
+			bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
+			x.data(ii,0) = (*bPanels)[i]->getCenter().x();
+		    y.data(ii,0) = (*bPanels)[i]->getCenter().y();
+		    z.data(ii,0) = (*bPanels)[i]->getCenter().z();
+		}
+	//}
 
     data.push_back(mu);
     data.push_back(sigma);

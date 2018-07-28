@@ -114,7 +114,10 @@ protected:
     
     Eigen::MatrixXd solnMat; // For unsteady sims, but needs to be in parent class for simple output
     
-    
+	using nodes_type = std::vector<cpNode *>;
+	using nodes_index_type = nodes_type::size_type;
+	//nodes_type nodes;
+	std::vector<cpNode*> nodes;
     
 public:
     cpCase(geometry *ggeom, double V, double aalpha, double bbeta, double mmach, inputParams* inParams)
@@ -124,6 +127,8 @@ public:
         bPanels = geom->getBodyPanels();
         wPanels = geom->getWakePanels();
         PG = sqrt(1-pow(mach,2));
+
+		nodes = geom->getNodes();
     }
     
     virtual ~cpCase();

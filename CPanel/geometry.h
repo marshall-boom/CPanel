@@ -197,6 +197,9 @@ class geometry
 	using wakePanels_type = std::vector<wakePanel *>;
 	using wakePanels_index_type = wakePanels_type::size_type;
 
+	using ctrlPnts_type = std::vector<Eigen::Vector3d>;	//ss
+	using ctrlPnts_type_index = ctrlPnts_type::size_type;	//ss
+
     surfaces_type surfaces;
     wakes_type wakes;
     bodyPanels_type bPanels;
@@ -217,6 +220,9 @@ class geometry
     size_t nNodes;
     size_t nTris;
 
+	nodes_type bodyNodes;
+	nodes_type wakeNodes;
+
     Eigen::MatrixXd A; // Doublet Influence Coefficient Matrix
     Eigen::MatrixXd B; // Source Influence Coefficient Matrix
     Eigen::MatrixXd C; // 2nd Row Buffer Wake Doublet Influence Coefficient Matrix
@@ -228,6 +234,8 @@ class geometry
     std::string infCoeffFile;
     double dt;
     double inputV;
+
+	//double inputMach;	//ss
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -265,7 +273,6 @@ public:
         nTris=0;
 
         readTri(p->geomFile->file, p->normFlag);
-
     }
 
     virtual ~geometry();
@@ -298,6 +305,14 @@ public:
     double getDt() {return dt;}
 
     void moveGeom( std::vector<double> bodyKin );
+
+	// Currently used to control whether code runs through const. or lin. dub. scheme
+	// Will eventually add to input file
+	// -Jake
+	double inMach = 1.5;
+
+	double getInMach() { return inMach; }
+	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
 
 };
 

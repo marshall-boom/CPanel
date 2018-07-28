@@ -114,7 +114,7 @@ double bodyPanel::panelPhi(const Eigen::Vector3d &POI)
     double phiSrc,phiDub;
     phiSrc = 0;
     phiDub = 0;
-    
+
     panelPhiInf(POI,phiSrc,phiDub);
     return -sourceStrength*phiSrc-doubletStrength*phiDub;
 }
@@ -146,7 +146,8 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
     }
     else
     {
-        double Al,phiV;
+		double Al;
+		double phiV = 0;
         Eigen::Vector3d a,b,s;
         for (nodes_index_type i=0; i<nodes.size(); i++)
         {
@@ -186,6 +187,55 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
             phiDub = -0.5;
         }
     }
+}
+
+void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
+{
+	Eigen::Vector3d pjk = POI - center;
+	bool itselfFlag = false;
+	if (pjk.norm() < pow(10, -10))
+	{
+		itselfFlag = true;
+	}
+	Eigen::Matrix3d local = getLocalSys();
+	double PN = pjk.dot(local.row(2));
+	if (pjk.norm() / longSide > 5)
+	{
+		phi = pntSrcPhi(pjk.norm());
+	}
+	else
+	{
+		double Al;
+		double phiV = 0;
+		Eigen::Vector3d a, b, s;
+		for (nodes_index_type i = 0; i<nodes.size(); i++)
+		{
+			Eigen::Vector3d p1;
+			Eigen::Vector3d p2;
+			if (i != nodes.size() - 1)
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[i + 1]->getPnt();
+			}
+			else
+			{
+				p1 = nodes[i]->getPnt();
+				p2 = nodes[0]->getPnt();
+			}
+			a = POI - p1;
+			b = POI - p2;
+			s = p2 - p1;
+			Al = local.row(2).dot(s.cross(a));
+			if (!itselfFlag)
+			{
+				// Note: last parameter was not used
+				//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+				phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+			}
+			phi += srcSidePhi(PN, Al, phiV, a, b, s);
+		}
+		phi /= (4 * M_PI);
+	}
 }
 
 void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eigen::Vector3d &vDub)
@@ -488,6 +538,7 @@ void bodyPanel::computeCp(double Vinf,double dt){
 void bodyPanel::computeVelocity(double PG, const Eigen::Vector3d &Vinf)
 {
     velocity = pntVelocity(center,potential,PG,Vinf);
+	//std::cout << velocity << "\n" << std::endl;
 }
 
 
@@ -948,5 +999,26 @@ Eigen::Matrix3d bodyPanel::velocityGradientTriSource(Eigen::Vector3d POI){
 }
 
 
+void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
+{
+	double mu_x, mu_y;
+	Eigen::Vector3d vertDubStrengths, linDubConsts, panVel;
+	Eigen::Matrix3d vertsMat = linVertsMatrix();
+	vertDubStrengths = linGetDubStrengths();
 
+	linDubConsts = vertsMat.inverse() * vertDubStrengths;
+	//mu_0 = linDubConsts[0];
+	mu_x = linDubConsts[1];
+	mu_y = linDubConsts[2];
+
+	panVel[0] = mu_x;
+	panVel[1] = mu_y;
+	/*panVel[0] = -mu_x;
+	panVel[1] = -mu_y;*/
+	panVel[2] = 0.0;
+
+	velocity = local2global(panVel, false);
+	velocity(0) /= PG;
+	//std::cout << velocity << "\n" << std::endl;
+}
 
