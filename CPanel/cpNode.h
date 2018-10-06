@@ -48,7 +48,7 @@ class cpNode
 	double linDoubletStrength = 0;
 	double linPotential = 0;
 	double linPrevPotential = 0;
-	Eigen::Vector3d linVelocity = Eigen::Vector3d::Zero();
+	//Eigen::Vector3d linVelocity = Eigen::Vector3d::Zero();	// not used
     
 public:
     cpNode(Eigen::Vector3d pnt,size_t iindex);
@@ -89,7 +89,7 @@ public:
 	Eigen::Vector3d calcCP();
 	void linSetMu(double linDubStrength);
 	void linSetPotential(Eigen::Vector3d Vinf);
-	void linSetVelocity(Eigen::Vector3d Vel);
+	//void linSetVelocity(Eigen::Vector3d Vel);	// not used
 
 	double linGetMu() { return linDoubletStrength; }
 	double linGetPotential() { return linPotential; }

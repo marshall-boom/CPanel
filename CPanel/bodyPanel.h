@@ -123,6 +123,10 @@ public:
 	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
 
 	void linComputeVelocity(double PG, Eigen::Vector3d &Vinf);
+
+	Eigen::Vector3d linComputeVelocity2(double PG, Eigen::Vector3d &Vinf, Eigen::Vector3d &POI);
+
+	double linGetTEdubStrength();
     
 };
 

@@ -1003,7 +1003,7 @@ void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
 {
 	double mu_x, mu_y;
 	Eigen::Vector3d vertDubStrengths, linDubConsts, panVel;
-	Eigen::Matrix3d vertsMat = linVertsMatrix();
+	Eigen::Matrix3d vertsMat = linVertsMatrix(true);
 	vertDubStrengths = linGetDubStrengths();
 
 	linDubConsts = vertsMat.inverse() * vertDubStrengths;
@@ -1013,12 +1013,67 @@ void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
 
 	panVel[0] = mu_x;
 	panVel[1] = mu_y;
-	/*panVel[0] = -mu_x;
-	panVel[1] = -mu_y;*/
-	panVel[2] = 0.0;
+	panVel[2] = 0;
 
 	velocity = local2global(panVel, false);
 	velocity(0) /= PG;
-	//std::cout << velocity << "\n" << std::endl;
+}
+
+
+Eigen::Vector3d bodyPanel::linComputeVelocity2(double PG, Eigen::Vector3d &Vinf, Eigen::Vector3d &POI)
+{
+	//double mu_x, mu_y;
+	Eigen::Vector3d vertDubStrengths, linDubConsts, panVel, dubVec, POIloc;
+	Eigen::Matrix3d vertsMat, Jints;
+	double mu;
+
+	POIloc = global2local(POI, true);
+
+	vertsMat = linVertsMatrix(true);
+	vertDubStrengths = linGetDubStrengths();
+
+	linDubConsts = vertsMat.inverse() * vertDubStrengths;
+	mu = linDubConsts[0] + linDubConsts[1] * POIloc.x() + linDubConsts[2] * POIloc.y();
+	dubVec[0] = mu;
+	dubVec[1] = linDubConsts[1];
+	dubVec[2] = linDubConsts[2];
+
+	//Jints = linDubVInf(POI) / (4.0*M_PI);
+	Jints = linDubVInf(POI);
+
+	panVel = Jints * dubVec;
+
+	/*mu_0 = linDubConsts[0];
+	mu_x = linDubConsts[1];
+	mu_y = linDubConsts[2];*/
+
+	//velocity += local2global(panVel, false);
+	//velocity += panVel;
+	//velocity(0) /= PG;
+
+	return panVel;
+}
+
+
+double bodyPanel::linGetTEdubStrength()
+{
+	edge* trailEdge;
+	double mu_0, mu_x, mu_y, mu;
+	Eigen::Vector3d vertDubStrengths, linDubConsts, midPntTE;
+
+	Eigen::Matrix3d vertsMat = linVertsMatrix(true);
+	vertDubStrengths = linGetOrigDubStrengths();
+
+	linDubConsts = vertsMat.inverse() * vertDubStrengths;
+	mu_0 = linDubConsts[0];
+	mu_x = linDubConsts[1];
+	mu_y = linDubConsts[2];
+
+	trailEdge = getTrailingEdge();
+	midPntTE = global2local(trailEdge->getMidPoint(), true);
+
+	mu = mu_0 + mu_x * midPntTE.x() + mu_y * midPntTE.y();
+
+	return mu_0;
 }
 

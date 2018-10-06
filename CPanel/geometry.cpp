@@ -424,7 +424,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
         
 
-		// Organize nodes and get control point data
+		// Organize body nodes and get control point data for linear scheme
 
 		if (inMach > 1.0)
 		{
@@ -440,6 +440,32 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				{
 					wakeNodes.push_back(nodes[i]);
 				}
+			}
+
+			nodes_index_type j = 0;
+			nodes_index_type k = bodyNodes.size();
+			nodes_type tempNodes;
+			tempNodes.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()));
+			for (nodes_index_type i = 0; i < nodes.size(); i++)
+			{
+				if (nodes[i]->getBodyPans().size() > 0)
+				{
+					tempNodes[j] = nodes[i];
+					tempNodes[j]->setLinCPnormal();
+					tempNodes[j]->setLinCPoffset();
+					j += 1;
+				}
+				else
+				{
+					tempNodes[k] = nodes[i];
+					k += 1;
+				}
+			}
+			nodes = tempNodes;
+
+			for (size_t i = 0; i < nodes.size(); i++)
+			{
+				nodes[i]->setIndex(static_cast<int>(i));
 			}
 		}
 
@@ -660,15 +686,14 @@ void geometry::setInfCoeff()
     size_t nBodyPans = bPanels.size();
     size_t nWakePans = wPanels.size();
     size_t nPans = nBodyPans+nWakePans;
+
+	size_t nBodyNodes = bodyNodes.size();
     
     Eigen::Matrix<size_t, 9, 1> percentage;
     percentage << 10,20,30,40,50,60,70,80,90;
 
 	if (inMach > 1.0)
 	{
-		size_t nBodyNodes = bodyNodes.size();
-		size_t nWakeNodes = wakeNodes.size();
-
 		A.resize(static_cast<Eigen::MatrixXd::Index>(nBodyNodes), static_cast<Eigen::MatrixXd::Index>(nBodyNodes));
 		B.resize(static_cast<Eigen::MatrixXd::Index>(nBodyNodes), static_cast<Eigen::MatrixXd::Index>(nBodyPans));
 		A.setZero();
@@ -679,8 +704,8 @@ void geometry::setInfCoeff()
 
 		for (size_t i = 0; i < nBodyNodes; i++)
 		{
-			ctrlPnt = bodyNodes[i]->calcCP();
-			/////////////////////////////////////////// Do I need to use static cast here??
+			ctrlPnt = nodes[i]->calcCP();
+			/////////////////////////////////////////// Do I need to use static cast here?? Probably
 			Arow = A.row(i);
 			for (size_t j = 0; j < nBodyPans; j++)
 			{
@@ -725,6 +750,8 @@ void geometry::setInfCoeff()
 		}
 	}
 
+	//std::cout << "\n" << A << std::endl;
+
     for (size_t i=0; i<nBodyPans; i++)
     {
         bPanels[i]->setIndex(static_cast<int>(i));
@@ -733,33 +760,98 @@ void geometry::setInfCoeff()
     std::vector<bodyPanel*> interpPans(4); // [Upper1 Lower1 Upper2 Lower2]  Panels that start the bounding wakelines of the wake panel.  Doublet strength is constant along wakelines (muUpper-muLower) and so the doublet strength used for influence of wake panel is interpolated between wakelines.
     double interpCoeff;
     double influence;
-    Eigen::Vector4i indices;
-
-	// Wake calculations not yet incorporated into linear dub scheme -Jake
-
-    for (size_t j=0; j<nWakePans; j++)
-    {
-        wPanels[j]->interpPanels(interpPans,interpCoeff);
-        indices = interpIndices(interpPans);
-        for (size_t i=0; i<nBodyPans; i++)
-        {
-        	Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
-            influence = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
-            A(ii,indices(0)) += influence*(1-interpCoeff);
-            A(ii,indices(1)) += influence*(interpCoeff-1);
-            A(ii,indices(2)) += influence*interpCoeff;
-            A(ii,indices(3)) -= influence*interpCoeff;
-        }
-        for (int i=0; i<percentage.size(); i++)
-        {
-            if ((100*(nBodyPans+j)/nPans) <= percentage(i) && 100*(nBodyPans+j+1)/nPans > percentage(i))
-            {
-                std::cout << percentage(i) << "%\t" << std::flush;
-            }
-        }
-
-    }
     
+	if (inMach > 1.0)
+	{
+		std::vector<Eigen::VectorXi::Index> indices;
+		Eigen::Vector3d ctrlPnt;
+		for (size_t j = 0; j<nWakePans; j++)
+		{
+			wPanels[j]->interpPanels(interpPans, interpCoeff);
+			indices = interpNodeIndices(interpPans);
+
+			//Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts0, verts1, verts2, verts3;
+			//std::vector<cpNode*> interpNodes;
+
+			for (size_t i = 0; i<nBodyNodes; i++)
+			{
+				/*ctrlPnt = nodes[i]->calcCP();
+				Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+				influence = wPanels[j]->dubPhiInf(ctrlPnt);
+
+				for (size_t k = 0; k < indices.size(); k++)
+				{
+					if (k < 2)
+					{
+						A(ii, indices[(static_cast<Eigen::VectorXi::Index>(k))]) += influence * interpCoeff;
+					}
+					else if (k > 2 && k < 4)
+					{
+						A(ii, indices[(static_cast<Eigen::VectorXi::Index>(k))]) -= influence * interpCoeff;
+					}
+				}*/
+
+				//// My old stuff
+
+				//verts0 = bPanels[indices(0)]->getVerts();
+				//verts1 = bPanels[indices(1)]->getVerts();
+				//verts2 = bPanels[indices(2)]->getVerts();
+				//verts3 = bPanels[indices(3)]->getVerts();
+
+				//for (size_t k = 0; k < verts0.size(); k++)
+				//{
+				//	//std::cout << '\n' << A(ii, verts0(k)) << std::endl;
+				//	A(ii, verts0(k)) += influence * (1 - interpCoeff);
+				//	//std::cout << '\n' << A(ii, verts0(k)) << std::endl;
+				//}
+				//for (size_t k = 0; k < verts1.size(); k++)
+				//{
+				//	A(ii, verts1(k)) += influence * (interpCoeff - 1);
+				//}
+				//for (size_t k = 0; k < verts2.size(); k++)
+				//{
+				//	A(ii, verts2(k)) += influence * interpCoeff;
+				//}
+				//for (size_t k = 0; k < verts3.size(); k++)
+				//{
+				//	A(ii, verts3(k)) -= influence * interpCoeff;
+				//}
+			}
+			for (int i = 0; i<percentage.size(); i++)
+			{
+				if ((100 * (nBodyPans + j) / nPans) <= percentage(i) && 100 * (nBodyPans + j + 1) / nPans > percentage(i))
+				{
+					std::cout << percentage(i) << "%\t" << std::flush;
+				}
+			}
+		}
+	}
+	else
+	{
+		Eigen::Vector4i indices;
+		for (size_t j = 0; j<nWakePans; j++)
+		{
+			wPanels[j]->interpPanels(interpPans, interpCoeff);
+			indices = interpIndices(interpPans);
+			for (size_t i = 0; i<nBodyPans; i++)
+			{
+				Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+				influence = wPanels[j]->dubPhiInf(bPanels[i]->getCenter());
+				A(ii, indices(0)) += influence * (1 - interpCoeff);
+				A(ii, indices(1)) += influence * (interpCoeff - 1);
+				A(ii, indices(2)) += influence * interpCoeff;
+				A(ii, indices(3)) -= influence * interpCoeff;
+			}
+			for (int i = 0; i<percentage.size(); i++)
+			{
+				if ((100 * (nBodyPans + j) / nPans) <= percentage(i) && 100 * (nBodyPans + j + 1) / nPans > percentage(i))
+				{
+					std::cout << percentage(i) << "%\t" << std::flush;
+				}
+			}
+		}
+	}
+
     // Construct doublet influence coefficient matrices for bufferWake panels
     
     for (size_t i=0; i<nBodyPans; i++)
@@ -786,6 +878,113 @@ Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
         indices(static_cast<Eigen::Vector4i::Index>(i)) = interpPans[i]->getIndex();
     }
     return indices;
+}
+
+
+std::vector<Eigen::VectorXi::Index> geometry::interpNodeIndices(std::vector<bodyPanel*> interpPans)
+{
+	// interpPans organization: [Upper1 Lower1 Upper2 Lower2]
+
+	// indices organziation: [upperNodes lowerNodes TEnodes]
+
+	std::vector<cpNode*> interpPanNodes0, interpPanNodes1, interpPanNodes2, interpPanNodes3;
+	std::vector<Eigen::VectorXi::Index> indices;
+
+	// Get interpPan nodes
+	interpPanNodes0 = interpPans[0]->getNodes();	// Upper1
+	interpPanNodes1 = interpPans[1]->getNodes();	// Lower1
+	interpPanNodes2 = interpPans[2]->getNodes();	// Upper2
+	interpPanNodes3 = interpPans[3]->getNodes();	// Lower2
+
+	// Get indices of internPan nodes
+
+	// skip trailing edge nodes
+	for (size_t i = 0; i < interpPanNodes0.size(); i++)
+	{
+		if (!interpPanNodes0[i]->isTE())
+		{
+			indices.push_back(interpPanNodes0[i]->getIndex());
+		}
+	}
+	for (size_t i = 0; i < interpPanNodes2.size(); i++)
+	{
+		if (!interpPanNodes2[i]->isTE())
+		{
+			indices.push_back(interpPanNodes2[i]->getIndex());
+		}
+	}
+	for (size_t i = 0; i < interpPanNodes1.size(); i++)
+	{
+		if (!interpPanNodes1[i]->isTE())
+		{
+			indices.push_back(interpPanNodes1[i]->getIndex());
+		}
+	}
+	for (size_t i = 0; i < interpPanNodes3.size(); i++)
+	{
+		if (!interpPanNodes3[i]->isTE())
+		{
+			indices.push_back(interpPanNodes3[i]->getIndex());
+		}
+	}
+
+	// only get trailing edge nodes
+	for (size_t i = 0; i < interpPanNodes0.size(); i++)
+	{
+		if (interpPanNodes0[i]->isTE())
+		{
+			indices.push_back(interpPanNodes0[i]->getIndex());
+		}
+	}
+	for (size_t i = 0; i < interpPanNodes2.size(); i++)
+	{
+		if (interpPanNodes2[i]->isTE())
+		{
+			indices.push_back(interpPanNodes2[i]->getIndex());
+		}
+	}
+	for (size_t i = 0; i < interpPanNodes1.size(); i++)
+	{
+		if (interpPanNodes1[i]->isTE())
+		{
+			indices.push_back(interpPanNodes1[i]->getIndex());
+		}
+	}
+	for (size_t i = 0; i < interpPanNodes3.size(); i++)
+	{
+		if (interpPanNodes3[i]->isTE())
+		{
+			indices.push_back(interpPanNodes3[i]->getIndex());
+		}
+	}
+
+
+	// Delete duplicate indices, without changing the order
+	for (size_t i = 0; i < indices.size(); i++)
+	{
+		size_t j = 0;
+		while (j < indices.size())
+		{
+			if (i != j)
+			{
+				if (indices[(static_cast<Eigen::VectorXi::Index>(i))] == indices[(static_cast<Eigen::VectorXi::Index>(j))])
+				{
+					indices.erase(indices.begin() + j);
+				}
+				else
+				{
+					j += 1;
+				}
+			}
+			else
+			{
+				j += 1;
+			}
+		}
+		
+	}
+
+	return indices;
 }
 
 
