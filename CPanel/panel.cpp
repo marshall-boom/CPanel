@@ -309,6 +309,8 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 			g = sqrt(pow(myAl, 2) + pow(PN, 2));
 			l1 = (p1.x() - POI.x())*nuEta + (p1.y() - POI.y())*nuXi;
 			l2 = (p2.x() - POI.x())*nuEta + (p2.y() - POI.y())*nuXi;
+			double m = (p2.y() - p1.y()) / (p2.x() - p1.x());
+			double mt = -nuXi / nuEta;
 
 			s1 = sqrt(pow(l1,2) + pow(g,2));
 			s2 = sqrt(pow(l2, 2) + pow(g, 2));
@@ -583,6 +585,22 @@ Eigen::Matrix3d panel::linVertsMatrix(bool translate)
 }
 
 
+Eigen::Matrix3d panel::supVertsMatrix(std::vector<Eigen::Vector3d> &supPnts)
+{
+	//Eigen::Vector3d vertLoc;
+	Eigen::Matrix3d vertsMat;
+
+	for (size_t i = 0; i < supPnts.size(); i++)
+	{
+		//vertLoc = global2local(nodes[i]->getPnt(), translate);
+		vertsMat(i, 0) = 1.0;
+		vertsMat(i, 1) = supPnts[i].x();
+		vertsMat(i, 2) = supPnts[i].y();
+	}
+	return vertsMat;
+}
+
+
 void panel::linComputeVelocity(double PG,Eigen::Vector3d &Vinf)
 {
 	double mu_x, mu_y;
@@ -604,21 +622,21 @@ void panel::linComputeVelocity(double PG,Eigen::Vector3d &Vinf)
 }
 
 
-void panel::linGetConstDubStrength()
-{
-	double mu_0; //mu_x, mu_y;
-	Eigen::Vector3d vertDubStrengths, linDubConsts;
-	Eigen::Matrix3d vertsMat = linVertsMatrix(true);
-	vertDubStrengths = linGetDubStrengths();
-
-	linDubConsts = vertsMat.inverse() * vertDubStrengths;
-	mu_0 = linDubConsts(0);
-	/*mu_x = linDubConsts(1);
-	mu_y = linDubConsts(2);*/
-
-	doubletStrength = mu_0;
-	//doubletStrength = linDubConsts[0];
-}
+//void panel::linGetConstDubStrength()
+//{
+//	double mu_0; //mu_x, mu_y;
+//	Eigen::Vector3d vertDubStrengths, linDubConsts;
+//	Eigen::Matrix3d vertsMat = linVertsMatrix(true);
+//	vertDubStrengths = linGetDubStrengths();
+//
+//	linDubConsts = vertsMat.inverse() * vertDubStrengths;
+//	mu_0 = linDubConsts(0);
+//	/*mu_x = linDubConsts(1);
+//	mu_y = linDubConsts(2);*/
+//
+//	doubletStrength = mu_0;
+//	//doubletStrength = linDubConsts[0];
+//}
 
 
 Eigen::Vector3d panel::linGetDubStrengths()

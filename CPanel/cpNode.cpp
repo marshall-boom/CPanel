@@ -182,6 +182,15 @@ void cpNode::linSetPotential(Eigen::Vector3d Vinf)
 	linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
 }
 
+
+void cpNode::supSetPotential(Eigen::Vector3d Vinf)
+{
+	linPrevPotential = linPotential;
+
+	//linPotential = Vinf.dot(calcCP()) - linDoubletStrength;
+	linPotential = -linDoubletStrength; // Katz 11.74, 13.157 -- phi_i = 0
+}
+
 // not used
 
 //void cpNode::linSetVelocity(Eigen::Vector3d Vel)

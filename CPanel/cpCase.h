@@ -82,6 +82,8 @@ protected:
     Eigen::Vector3d bodyToWind(const Eigen::Vector3d &vec);
     void setSourceStrengths();
     bool solveMatrixEq();
+	bool linSolveMatrixEq();
+	bool supSolveMatrixEq();
     void compVelocity();
     void trefftzPlaneAnalysis();
     void createStreamlines();
@@ -93,7 +95,7 @@ protected:
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
     
-    
+	void linCompVelocity();
     
     
     struct meshDat {

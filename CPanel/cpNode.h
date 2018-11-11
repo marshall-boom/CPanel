@@ -95,6 +95,7 @@ public:
 	double linGetPotential() { return linPotential; }
 	double linGetCPoffset() { return linCPoffset; }
     
+	void supSetPotential(Eigen::Vector3d Vinf);
 };
 
 #endif /* defined(__CPanel___Unstructured_Panel_Code__cpNode__) */

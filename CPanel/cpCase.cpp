@@ -32,14 +32,35 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
 {
     bool converged;
     std::string check = "\u2713";
-    setSourceStrengths();
-    converged = solveMatrixEq();
+
+	setSourceStrengths();
+	if (geom->getInMach() > 1.0) // linear doublet scheme flag
+	{
+		converged = linSolveMatrixEq();
+	}
+	else if (getMach() > 1.0) // supersonic
+	{
+		converged = supSolveMatrixEq();
+	}
+	else // 'original' subsonic
+	{
+		converged = solveMatrixEq();
+	}
+
+
     if (printFlag)
     {
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
 
-    compVelocity();
+	if (geom->getInMach() > 1.0 || getMach() > 1.0)
+	{
+		linCompVelocity();
+	}
+	else
+	{
+		compVelocity();
+	}
 
     if (printFlag)
     {
@@ -152,73 +173,116 @@ void cpCase::setSourceStrengths()
     {
         (*bPanels)[i]->setSigma(Vinf,0);
         sigmas(static_cast<Eigen::VectorXd::Index>(i)) = (*bPanels)[i]->getSigma();
-		////////////////////////
-		std::cout << sigmas(static_cast<Eigen::VectorXd::Index>(i)) << std::endl;
     }
 }
 
 
 bool cpCase::solveMatrixEq()
 {
+	bool converged = true;
+
+	// Solve matrix equations and set potential for all panels;
+	Eigen::MatrixXd* A = geom->getA();
+	Eigen::MatrixXd* B = geom->getB();
+	Eigen::VectorXd RHS = -(*B)*sigmas;
+	Eigen::VectorXd doubletStrengths;
+	doubletStrengths.resize(bPanels->size());
+
+	Eigen::BiCGSTAB<Eigen::MatrixXd> res;
+	res.compute((*A));
+	doubletStrengths = res.solve(RHS);
+	if (res.error() > pow(10, -10))
+	{
+		converged = false;
+	}
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		(*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+		(*bPanels)[i]->setPotential(Vinf);
+	}
+	for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
+	{
+		(*wPanels)[i]->setMu();
+		(*wPanels)[i]->setPotential(Vinf);
+	}
+	return converged;
+}
+
+
+bool cpCase::linSolveMatrixEq()
+{
     bool converged = true;
 
-    // Solve matrix equations and set potential for all panels;
+    // Solve matrix equations and set potential for all panels
     Eigen::MatrixXd* A = geom->getA();
     Eigen::MatrixXd* B = geom->getB();
     Eigen::VectorXd RHS = -(*B)*sigmas;
 	Eigen::VectorXd doubletStrengths;
-	if (geom->getInMach() > 1.0)
-	{
-		doubletStrengths.resize(nodes.size());
-	}
-	else
-	{
-		doubletStrengths.resize(bPanels->size());
-	}
+	doubletStrengths.resize(nodes.size());
 
     Eigen::BiCGSTAB<Eigen::MatrixXd> res;
     res.compute((*A));
     doubletStrengths = res.solve(RHS);
-	////////////////////////////////////////
-	std::cout << "mu" << "\n" << doubletStrengths << std::endl;
+
+	std::cout << "\n" << "sources" << "\n" << sigmas << std::endl;
+	std::cout << "\n" << "doublets" << "\n" << doubletStrengths << std::endl;
+
     if (res.error() > pow(10,-10))
     {
 		converged = false;
     }
 
-	if (geom->getInMach() > 1.0)
+	for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
 	{
-		for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
-		{
-			(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
-			(nodes)[i]->linSetPotential(Vinf);
-		}
-		/*for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
-		{
-			(*bPanels)[i]->linGetConstDubStrength();
-			(*bPanels)[i]->setPotential(Vinf);
-		}*/
-		for (wakePanels_index_type i = 0; i<wPanels->size(); i++)
-		{
-			(*wPanels)[i]->linSetMu();
-			(*wPanels)[i]->setPotential(Vinf);
-		}
-		return converged;
+		(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+		(nodes)[i]->linSetPotential(Vinf);
 	}
-	else
+	/////////////////// wake currently not accounted for -11/08/2018
+	for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
 	{
-		for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
-		{
-			(*bPanels)[i]->setMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
-			(*bPanels)[i]->setPotential(Vinf);
-		}
-		for (wakePanels_index_type i = 0; i<wPanels->size(); i++)
-		{
-			(*wPanels)[i]->setMu();
-			(*wPanels)[i]->setPotential(Vinf);
-		}
-		return converged;
+		(*wPanels)[i]->linSetMu();
+		(*wPanels)[i]->setPotential(Vinf);
 	}
+	return converged;
+}
+
+
+bool cpCase::supSolveMatrixEq()
+{
+	bool converged = true;
+
+	// Solve matrix equations and set potential for all panels
+	Eigen::MatrixXd* A = geom->getA();
+	Eigen::MatrixXd* B = geom->getB();
+	//Eigen::VectorXd RHS = (*B)*sigmas; ////////// Flipped sign for supersonic case???
+	Eigen::VectorXd RHS = -(*B)*sigmas;
+	Eigen::VectorXd doubletStrengths;
+	doubletStrengths.resize(nodes.size());
+
+	Eigen::BiCGSTAB<Eigen::MatrixXd> res;
+	res.compute((*A));
+	doubletStrengths = res.solve(RHS);
+
+	std::cout << "\n" << "sources" << "\n" << sigmas << std::endl;
+	std::cout << "\n" << "doublets" << "\n" << doubletStrengths << std::endl;
+
+	if (res.error() > pow(10, -10))
+	{
+		converged = false;
+	}
+
+	for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
+	{
+		(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
+		(nodes)[i]->supSetPotential(Vinf);
+	}
+	/////////////////// wake currently not accounted for -- 11/08/2018
+	for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
+	{
+		(*wPanels)[i]->linSetMu();
+		(*wPanels)[i]->setPotential(Vinf);
+	}
+	return converged;
 }
 
 
@@ -231,59 +295,74 @@ void cpCase::compVelocity()
 	Eigen::Vector3d Vel;
 	Vel.setZero();
 
-	if (geom->getInMach() > 1.0)
+	bodyPanel* p;
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
-		/*for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
-		{
-			for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
-			{
-				Vel += (*bPanels)[j]->linComputeVelocity2(PG, Vinf, (*bPanels)[i]->getCenter());
-			}
-			(*bPanels)[i]->setPanelVel(Vel);
-			std::cout << (*bPanels)[i]->getVel() << "\n" << std::endl;
-			(*bPanels)[i]->computeCp(Vmag);
-		}*/
-
-		/*for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
-		{
-			for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
-			{
-				(*bPanels)[j]->linComputeVelocity2(PG, Vinf, (*bPanels)[i]->getCenter());
-			}
-			std::cout << (*bPanels)[j]->getVel() << "\n" << std::endl;
-			(*bPanels)[j]->computeCp(Vmag);
-		}*/
-
-
-		// Calc local vel. at each panel by taking partial deriv. of doublet strength
-		bodyPanel* p;
-		for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
-		{
-			p = (*bPanels)[i];
-			p->linComputeVelocity(PG,Vinf);
-			p->computeCp(Vmag);
-
-			Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
-			moment = p->computeMoments(params->cg);
-			CM(0) += moment(0) / (params->Sref*params->bref);
-			CM(1) += moment(1) / (params->Sref*params->cref);
-			CM(2) += moment(2) / (params->Sref*params->bref);
-		}
+		p = (*bPanels)[i];
+		p->computeVelocity(PG, Vinf);
+		p->computeCp(Vmag);
+		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+		moment = p->computeMoments(params->cg);
+		CM(0) += moment(0) / (params->Sref*params->bref);
+		CM(1) += moment(1) / (params->Sref*params->cref);
+		CM(2) += moment(2) / (params->Sref*params->bref);
 	}
-	else
+
+	Fwind = bodyToWind(Fbody);
+}
+
+
+void cpCase::linCompVelocity()
+{
+	//  Velocity Survey with known doublet and source strengths
+	CM.setZero();
+	Eigen::Vector3d moment;
+	Fbody = Eigen::Vector3d::Zero();
+	Eigen::Vector3d Vel;
+	Vel.setZero();
+
+	/*for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
-		bodyPanel* p;
-		for (bodyPanels_index_type i = 0; i<bPanels->size(); i++)
+	for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
+	{
+	Vel += (*bPanels)[j]->linComputeVelocity2(PG, Vinf, (*bPanels)[i]->getCenter());
+	}
+	(*bPanels)[i]->setPanelVel(Vel);
+	std::cout << (*bPanels)[i]->getVel() << "\n" << std::endl;
+	(*bPanels)[i]->computeCp(Vmag);
+	}*/
+
+	/*for (bodyPanels_index_type j = 0; j < bPanels->size(); j++)
+	{
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+	(*bPanels)[j]->linComputeVelocity2(PG, Vinf, (*bPanels)[i]->getCenter());
+	}
+	std::cout << (*bPanels)[j]->getVel() << "\n" << std::endl;
+	(*bPanels)[j]->computeCp(Vmag);
+	}*/
+
+
+	// Calc local vel. at each panel by taking partial deriv. of doublet strength
+	bodyPanel* p;
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		p = (*bPanels)[i];
+		if (getMach() > 1.0)
 		{
-			p = (*bPanels)[i];
-			p->computeVelocity(PG, Vinf);
-			p->computeCp(Vmag);
-			Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
-			moment = p->computeMoments(params->cg);
-			CM(0) += moment(0) / (params->Sref*params->bref);
-			CM(1) += moment(1) / (params->Sref*params->cref);
-			CM(2) += moment(2) / (params->Sref*params->bref);
+			p->supComputeVelocity(Vinf);
 		}
+		else
+		{
+			p->linComputeVelocity(PG, Vinf);
+		}
+		p->computeCp(Vmag);
+
+		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+		moment = p->computeMoments(params->cg);
+		CM(0) += moment(0) / (params->Sref*params->bref);
+		CM(1) += moment(1) / (params->Sref*params->cref);
+		CM(2) += moment(2) / (params->Sref*params->bref);
 	}
 
 	Fwind = bodyToWind(Fbody);
@@ -449,7 +528,7 @@ void cpCase::writeFiles()
 
 void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &nodeMat)
 {	
-	if (geom->getInMach() > 1)
+	if (geom->getInMach() > 1.0 || getMach() > 1.0)
 	{
 		std::vector<cellDataArray> cellData;
 		std::vector<pntDataArray> pntData;

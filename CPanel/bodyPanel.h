@@ -34,6 +34,9 @@ class bodyPanel : public panel
 	using bodyPanels_type = std::vector<bodyPanel *>;
 	using bodyPanels_index_type = bodyPanels_type::size_type;
 
+	/*using nodes_type = std::vector<cpNode *>;
+	using nodes_index_type = nodes_type::size_type;*/
+
     surface* parentSurf;
     bodyPanels_type neighbors;
     bodyPanels_type cluster;
@@ -64,6 +67,11 @@ class bodyPanel : public panel
     Eigen::Matrix3d velocityGradientPointSource(Eigen::Vector3d POI);
     Eigen::Matrix3d velocityGradientQuadSource(Eigen::Vector3d POI);
     Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
+
+	//std::vector<bool> edgeFlags;
+
+	Eigen::Matrix3d supTransMat;
+	std::vector<Eigen::Vector3d> supLocalNodes;
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
@@ -121,12 +129,26 @@ public:
 
 	// ss
 	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
-
 	void linComputeVelocity(double PG, Eigen::Vector3d &Vinf);
-
 	Eigen::Vector3d linComputeVelocity2(double PG, Eigen::Vector3d &Vinf, Eigen::Vector3d &POI);
-
 	double linGetTEdubStrength();
+
+	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach, Eigen::Vector3d &windDir, const double alpha, const double beta);
+	bool supDOIcheck(Eigen::Vector3d &POI,const double Mach, Eigen::Vector3d &windDir);
+	//bool supEdgeCheck(edge* myEdge, Eigen::Vector3d &P, const double B);
+	std::vector<Eigen::Vector3d> supGlobal2LocalScaled(Eigen::Vector3d &localPOI, const double Bmach, double alpha, double beta);
+	Eigen::Matrix3d supG2LSmatrix(const double Bmach);
+	void supSetG2LSmatrix(const double Bmach, const double a, const double b);
+	Eigen::Vector3d supConePanelInter(const Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
+	Eigen::Matrix3d supGetLocalSys(Eigen::Vector3d &windDir);
+
+	Eigen::Vector2d supEdgeInfSon(const double ym1, const double ym2, const double xmc, const double ym1c, const double ym2c, const double R1, const double R2, const double lam, const double z);
+	Eigen::Vector2d supEdgeInfSub(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
+	Eigen::Vector2d supEdgeInfSup(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
+
+	void supComputeVelocity(Eigen::Vector3d &Vinf);
+
+	//std::vector<bool> getEdgeFlags() { return edgeFlags; }
     
 };
 

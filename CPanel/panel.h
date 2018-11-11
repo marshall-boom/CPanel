@@ -136,6 +136,8 @@ public:
 	void setPanelVel(Eigen::Vector3d Vel);
 	Eigen::Vector3d linGetOrigDubStrengths();
 
+	Eigen::Matrix3d supVertsMatrix(std::vector<Eigen::Vector3d> &supNodes);
+
 };
 
 #endif /* defined(__CPanel__panel__) */

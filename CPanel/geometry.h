@@ -235,7 +235,10 @@ class geometry
     double dt;
     double inputV;
 
-	//double inputMach;	//ss
+	double inputMach;	//ss
+	double alpha;
+	double beta;
+	Eigen::Vector3d windDir;
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -250,6 +253,8 @@ class geometry
     liftingSurf* getParentSurf(int wakeID);
 
     void setInfCoeff();
+	void linSetInfCoeff();
+	void supSetInfCoeff();
     Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
 
     bool infCoeffFileExists();
@@ -271,6 +276,11 @@ public:
         inputV = p->velocities(0);
         nNodes=0;
         nTris=0;
+
+		// Jake: How are these handled if there are multiple input Mach numbers
+		inputMach = p->machs(0);
+		alpha = p->alphas(0);
+		beta = p->betas(0);
 
         readTri(p->geomFile->file, p->normFlag);
     }
@@ -309,11 +319,13 @@ public:
 	// Currently used to control whether code runs through const. or lin. dub. scheme
 	// Will eventually add to input file
 	// -Jake
-	double inMach = 1.5;
+	double inMach = 0.1;
 
 	double getInMach() { return inMach; }
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
 	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);
+
+	void computeWindDir();
 
 };
 
