@@ -1022,10 +1022,24 @@ void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
 
 void bodyPanel::supComputeVelocity(Eigen::Vector3d &Vinf)
 {
+	nodes_type myNodes = getNodes();
+
 	double mu_x, mu_y;
 	Eigen::Vector3d vertDubStrengths, linDubConsts, panVel;
 	Eigen::Matrix3d vertsMat = supVertsMatrix(supLocalNodes);
 	vertDubStrengths = linGetDubStrengths();
+
+	/*std::cout << "\n" << myNodes[0]->getPnt() << std::endl;
+	std::cout << "\n" << myNodes[1]->getPnt() << std::endl;
+	std::cout << "\n" << myNodes[2]->getPnt() << std::endl;
+
+	std::cout << "\n" << supLocalNodes[0] << std::endl;
+	std::cout << "\n" << supLocalNodes[1] << std::endl;
+	std::cout << "\n" << supLocalNodes[2] << std::endl;
+
+	std::cout << "\n" << vertsMat << std::endl;
+	std::cout << "\n" << vertDubStrengths << std::endl;
+	std::cout << "\n" << supTransMat << std::endl;*/
 
 	linDubConsts = vertsMat.inverse() * vertDubStrengths;
 	//mu_0 = linDubConsts[0];
@@ -1036,8 +1050,11 @@ void bodyPanel::supComputeVelocity(Eigen::Vector3d &Vinf)
 	panVel[1] = mu_y;
 	panVel[2] = 0;
 
-	supTransMat.transposeInPlace();
+	std::cout << panVel[0] << "\t" << panVel[1] << std::endl;
+
+	//supTransMat.transposeInPlace();
 	velocity = supTransMat.inverse() * panVel;
+	//velocity = supTransMat.transpose() * panVel;
 }
 
 
@@ -1153,100 +1170,114 @@ bool bodyPanel::supDOIcheck(Eigen::Vector3d &P, const double Mach, Eigen::Vector
 				return DOIflag = true;
 			}
 		}
-		else
-		{
-			double RBvert;
-			Eigen::Vector3d vert;
-			std::vector<bool> pntFlags;
-			//size_t i = 0;
-			//while (!DOIflag && i < nodes.size()) // check if any panel corner is inside Mach cone
-			for (size_t i = 0; i < nodes.size(); i++)
-			{
-				vert = nodes[i]->getPnt();
-				RBvert = pow(P.x() - vert.x(), 2) - pow(B, 2)*pow(P.y() - vert.y(), 2) - pow(B, 2)*pow(P.z() - vert.z(), 2);
-				if (RBvert >= 0 && (P - vert).dot(windDir) >= 0)
-				{
-					return DOIflag = true;
-				}
-				//i += 1;
-			}
-			// Find intersection point of Mach cone and panel
-			Eigen::Vector3d interPnt;
-			interPnt = supConePanelInter(P, Mach, windDir);
+		//else
+		//{
+		//	double RBvert;
+		//	Eigen::Vector3d vert;
+		//	std::vector<bool> pntFlags;
+		//	//size_t i = 0;
+		//	//while (!DOIflag && i < nodes.size()) // check if any panel corner is inside Mach cone
+		//	for (size_t i = 0; i < nodes.size(); i++)
+		//	{
+		//		vert = nodes[i]->getPnt();
+		//		RBvert = pow(P.x() - vert.x(), 2) - pow(B, 2)*pow(P.y() - vert.y(), 2) - pow(B, 2)*pow(P.z() - vert.z(), 2);
+		//		if (RBvert >= 0 && (P - vert).dot(windDir) >= 0)
+		//		{
+		//			return DOIflag = true;
+		//		}
+		//		//i += 1;
+		//	}
+		//	// Find intersection point of Mach cone and panel
+		//	Eigen::Vector3d interPnt;
+		//	interPnt = supConePanelInter(P, Mach, windDir);
 
-			///////////////// need to account for FS direction eventually
+		//	// Check that intersection point is forward of P
+		//	//if (interPnt.x() < P.x())
+		//	//{
+		//		// Check if inter. pnt. is within perimiter of panel or downstream of panel
+		//		Eigen::Vector3d p0, p1, p2, AB, AC, AP, myNorm;
+		//		double alpha, beta, gamma;
+		//		p0 = nodes[0]->getPnt();
+		//		p1 = nodes[1]->getPnt();
+		//		p2 = nodes[2]->getPnt();
+		//		AB = p1 - p0;
+		//		AC = p2 - p0;
+		//		AP = interPnt - p0;
 
-			// Check that intersection point is forward of P
-			//if (interPnt.x() < P.x())
-			//{
-				// Check if inter. pnt. is within perimiter of panel or downstream of panel
-				Eigen::Vector3d p0, p1, p2, AB, AC, AP;
-				double alpha, beta, gamma;
-				p0 = nodes[0]->getPnt();
-				p1 = nodes[1]->getPnt();
-				p2 = nodes[2]->getPnt();
-				AB = p1 - p0;
-				AC = p2 - p0;
-				AP = interPnt - p0;
+		//		// Need to use normal computed here due to sign issues
+		//		myNorm = AB.cross(AC);
 
-				gamma = normal.dot(AB.cross(AP)) / normal.dot(normal);
-				beta = normal.dot(AP.cross(AC)) / normal.dot(normal);
-				alpha = 1.0 - gamma - beta;
+		//		gamma = myNorm.dot(AB.cross(AP)) / myNorm.dot(normal);
+		//		beta = myNorm.dot(AP.cross(AC)) / myNorm.dot(normal);
+		//		alpha = 1.0 - gamma - beta;
 
-				if ((alpha >= 0) && (beta >= 0) && (gamma >= 0))
-				{
-					return DOIflag = true;
-				}
-				else
-				{
-					if ((interPnt - center).dot(windDir) >= 0)
-					{
-						return DOIflag = true;
-					}
-				}
+		//		if ((alpha >= 0) && (beta >= 0) && (gamma >= 0))
+		//		{
+		//			return DOIflag = true;
+		//		}
+		//		else
+		//		{
+		//			if ((interPnt - center).dot(windDir) >= 0)
+		//			{
+		//				return DOIflag = true;
+		//			}
+		//		}
 
-			//}
+		//	//}
 
-			
+		//	
 
-			//size_t j = 0;
-			//while (!DOIflag && i < nodes.size()) // check if Mach cone intersects any panel edges
-			//{
-			//	if (supEdgeCheck(getEdges()[j], P, B))
-			//	{
-			//		DOIflag = true;
-			//	}
-			//	j += 1;
-			//}
-		}
+		//	//size_t j = 0;
+		//	//while (!DOIflag && i < nodes.size()) // check if Mach cone intersects any panel edges
+		//	//{
+		//	//	if (supEdgeCheck(getEdges()[j], P, B))
+		//	//	{
+		//	//		DOIflag = true;
+		//	//	}
+		//	//	j += 1;
+		//	//}
+		//}
 	}
 
 	return DOIflag;
 }
 
 
-std::vector<Eigen::Vector3d> bodyPanel::supGlobal2LocalScaled(Eigen::Vector3d &localPOI, double Bmach, double alpha, double beta)
+void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta)
 {
-	std::vector<Eigen::Vector3d> localNodes;
 	alpha *= 180 / M_PI;
 	beta *= 180 / M_PI;
 	supSetG2LSmatrix(Bmach, alpha, beta);
-	//Eigen::Matrix3d transMat = supG2LSmatrix(Bmach);
-
-	/*for (size_t i = 0; i < nodes.size(); i++)
-	{
-		localNodes.push_back(transMat * (nodes[i]->getPnt() - center));
-	}
-	localPOI = transMat * (localPOI - center);*/
 
 	for (size_t i = 0; i < nodes.size(); i++)
 	{
-		localNodes.push_back(supTransMat * (nodes[i]->getPnt() - center));
+		supLocalNodes.push_back(supTransMat * (nodes[i]->getPnt() - center));
 	}
-	localPOI = supTransMat * (localPOI - center);
-
-	return localNodes;
 }
+
+
+//std::vector<Eigen::Vector3d> bodyPanel::supTransformPanel(Eigen::Vector3d &localPOI, double Bmach, double alpha, double beta)
+//{
+//	std::vector<Eigen::Vector3d> localNodes;
+//	alpha *= 180 / M_PI;
+//	beta *= 180 / M_PI;
+//	supSetG2LSmatrix(Bmach, alpha, beta);
+//	//Eigen::Matrix3d transMat = supG2LSmatrix(Bmach);
+//
+//	/*for (size_t i = 0; i < nodes.size(); i++)
+//	{
+//		localNodes.push_back(transMat * (nodes[i]->getPnt() - center));
+//	}
+//	localPOI = transMat * (localPOI - center);*/
+//
+//	for (size_t i = 0; i < nodes.size(); i++)
+//	{
+//		localNodes.push_back(supTransMat * (nodes[i]->getPnt() - center));
+//	}
+//	localPOI = supTransMat * (localPOI - center);
+//
+//	return localNodes;
+//}
 
 
  void bodyPanel::supSetG2LSmatrix(const double Bmach, const double a, const double b)
@@ -1306,17 +1337,6 @@ std::vector<Eigen::Vector3d> bodyPanel::supGlobal2LocalScaled(Eigen::Vector3d &l
 	supTransMat.col(2) = col2;
 
 	supTransMat.transposeInPlace();
-
-	/*col1 = (1.0 / sqrt(abs(nRef.dot(machScaleB * nRef)))) * machScaleWind * uRef;
-	col2 = (r * s / B) * machScaleWind * vRef;
-	col3 = B * nRef / sqrt(abs(nRef.dot(machScaleB * nRef)));*/
-
-	/*supTransMat << (1 / sqrt(abs(nRef.dot(nRef)))) * machScaleWind * uRef,
-		r*s / B * machScaleWind * vRef,
-		B*nRef / sqrt(abs(nRef.dot(nRef)));
-	supTransMat.transposeInPlace();*/
-
-	//std::cout << "\n" << supTransMat << std::endl;
 }
 
 
@@ -1468,17 +1488,17 @@ Eigen::Vector3d bodyPanel::supConePanelInter(const Eigen::Vector3d &POI, const d
 }
 
 
-void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &srcPhi, bool DOIflag, const double Mach, Eigen::Vector3d &windDir, const double alpha, const double beta)
+void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &srcPhi, bool DOIflag, const double Mach, Eigen::Vector3d &windDir)
 {
 	if (DOIflag)
 	{
 		// Initialize
 		double x, y, z, x1, y1, x2, y2;
-		/*double m, lam, xm, xmc, ym1, ym2, ym1c, ym2c, s1, s2, sm1, sm2, r1, r2, R1, R2;*/
-		double m, lam, xmc, ym1c, ym2c, s1, s2, sm1, sm2, r1, r2, R1, R2;
+		double m, lam, xm, xmc, ym1, ym2, ym1c, ym2c, s1, s2, sm1, sm2, r1, r2, R1, R2;
+		//double m, lam, xmc, ym1c, ym2c, s1, s2, sm1, sm2, r1, r2, R1, R2;
 		Eigen::Vector2d integralCoeffs; // [Q1, w0]
 		double srcCoeff = 0;
-		Eigen::Vector3d dubCoeffs, dubCoeffMat, dubVertsPhi;
+		Eigen::Vector3d localPOI, dubCoeffs, dubCoeffMat, dubVertsPhi;
 		Eigen::Matrix3d dubVertsMat;
 		bool mFlag, zFlag;
 		zFlag = false;
@@ -1490,19 +1510,16 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 		// if changed, don't forget about big eps
 		double epsGen = 1.0e-8;
 		
-		// Coordinate transformation and scaling
-		Eigen::Vector3d localPOI = POI;
-		supLocalNodes = supGlobal2LocalScaled(localPOI, Bmach, alpha, beta);
-		/*std::vector<Eigen::Vector3d> supLocalNodes = supGlobal2LocalScaled(localPOI, Bmach);*/
+		localPOI = supTransMat * (POI - center);
 		x = localPOI.x();
 		y = localPOI.y();
 		z = localPOI.z();
 
 
-		double xm, ym1, ym2;
+		/*double xm, ym1, ym2;
 		xm = 0;
 		ym1 = 0;
-		ym2 = 0;
+		ym2 = 0;*/
 
 
 		/////////////////////////////////////////// Need to verify
@@ -1720,7 +1737,7 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 
 		// Compute final source coefficient
 		double Q1sum = dubCoeffs[0];
-		srcPhi = srcCoeff - z * Q1sum;
+		srcPhi = (srcCoeff - z * Q1sum) / (2.0 * M_PI);
 
 		// Compute final doublet coefficients
 		if (zFlag)
@@ -1748,13 +1765,26 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 		for (size_t i = 0; i < nodes.size(); i++)
 		{
 			// Check if influencing node is the same as the influenced node
-			if (abs((localPOI - supLocalNodes[i]).norm()) < 2.0*nodes[i]->linGetCPoffset()) // using orig. node should be fine
+			if (abs((POI - nodes[i]->getPnt()).norm()) < 2.0*nodes[i]->linGetCPoffset()) // using orig. node should be fine
 			{
 				Arow[nodes[i]->getIndex()] = -0.5; // WHAT SHOULD THIS BE???
+				//Arow[nodes[i]->getIndex()] = 0.5;
 			}
 			else
 			{
 				Arow[nodes[i]->getIndex()] += dubVertsPhi(i);
+			}
+		}
+	}
+	else
+	{
+		for (size_t i = 0; i < nodes.size(); i++)
+		{
+			// Check if influencing node is the same as the influenced node
+			if (abs((POI - nodes[i]->getPnt()).norm()) < 2.0*nodes[i]->linGetCPoffset()) // using orig. node should be fine
+			{
+				Arow[nodes[i]->getIndex()] = -0.5; // WHAT SHOULD THIS BE???
+				//Arow[nodes[i]->getIndex()] = 0.5;
 			}
 		}
 	}

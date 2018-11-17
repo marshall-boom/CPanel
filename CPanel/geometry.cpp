@@ -416,15 +416,15 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         
-        // Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
-        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
-        {
-            bPanels[i]->setTipFlag();
-        }
-        for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
-        {
-            bPanels[i]->setCluster();
-        }
+        //// Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
+        //for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+        //{
+        //    bPanels[i]->setTipFlag();
+        //}
+        //for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
+        //{
+        //    bPanels[i]->setCluster();
+        //}
         
 
 		// Organize body nodes and get control point data for linear scheme
@@ -940,12 +940,17 @@ void geometry::supSetInfCoeff()
 	Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
 	Eigen::Vector3d ctrlPnt;
 
-	// Flags used for domain of influence checks
+	// Flag used for domain of influence checks
 	bool DOIflag;
 
 	computeWindDir();
 
-	//double Bmach = sqrt(pow(inputMach, 2) - 1);
+	// Compute transformation matrices for each panel
+	double Bmach = sqrt(pow(inputMach, 2) - 1);
+	for (size_t i = 0; i < nBodyPans; i++)
+	{
+		bPanels[i]->supTransformPanel(Bmach, alpha, beta);
+	}
 
 	for (size_t i = 0; i < nBodyNodes; i++)
 	{
@@ -981,24 +986,24 @@ void geometry::supSetInfCoeff()
 				//if (abs(.5359 - bPanels[j]->getNodes()[0]->getPnt().y()) < 0.001)
 				//{
 					DOIflag = bPanels[j]->supDOIcheck(ctrlPnt, inputMach, windDir);
-					bPanels[j]->supPhiInf(ctrlPnt, Arow, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), DOIflag, inputMach, windDir, alpha, beta);
+					bPanels[j]->supPhiInf(ctrlPnt, Arow, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), DOIflag, inputMach, windDir);
 				//}
 				
 			}
 			A.row(i) = Arow;
 		//}
 
-		/*for (int j = 0; j < percentage.size(); j++)
+		for (int j = 0; j < percentage.size(); j++)
 		{
 			if ((100 * i / nBodyNodes) <= percentage(j) && 100 * (i + 1) / nBodyNodes > percentage(j))
 			{
 				std::cout << percentage(j) << "%\t" << std::flush;
 			}
-		}*/
+		}
 	}
 
-	/*std::cout << "\n" << A << std::endl;
-	std::cout << "\n" << B << std::endl;*/
+	//std::cout << "\n" << A << std::endl;
+	//std::cout << "\n" << B << std::endl;
 
 	for (size_t i = 0; i<nBodyPans; i++)
 	{

@@ -133,10 +133,10 @@ public:
 	Eigen::Vector3d linComputeVelocity2(double PG, Eigen::Vector3d &Vinf, Eigen::Vector3d &POI);
 	double linGetTEdubStrength();
 
-	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach, Eigen::Vector3d &windDir, const double alpha, const double beta);
+	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach, Eigen::Vector3d &windDir);
 	bool supDOIcheck(Eigen::Vector3d &POI,const double Mach, Eigen::Vector3d &windDir);
 	//bool supEdgeCheck(edge* myEdge, Eigen::Vector3d &P, const double B);
-	std::vector<Eigen::Vector3d> supGlobal2LocalScaled(Eigen::Vector3d &localPOI, const double Bmach, double alpha, double beta);
+	void supTransformPanel(const double Bmach, double alpha, double beta);
 	Eigen::Matrix3d supG2LSmatrix(const double Bmach);
 	void supSetG2LSmatrix(const double Bmach, const double a, const double b);
 	Eigen::Vector3d supConePanelInter(const Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);

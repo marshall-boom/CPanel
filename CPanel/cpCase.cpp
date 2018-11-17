@@ -254,7 +254,6 @@ bool cpCase::supSolveMatrixEq()
 	// Solve matrix equations and set potential for all panels
 	Eigen::MatrixXd* A = geom->getA();
 	Eigen::MatrixXd* B = geom->getB();
-	//Eigen::VectorXd RHS = (*B)*sigmas; ////////// Flipped sign for supersonic case???
 	Eigen::VectorXd RHS = -(*B)*sigmas;
 	Eigen::VectorXd doubletStrengths;
 	doubletStrengths.resize(nodes.size());
