@@ -137,6 +137,7 @@ public:
 	Eigen::Vector3d linGetOrigDubStrengths();
 
 	Eigen::Matrix3d supVertsMatrix(std::vector<Eigen::Vector3d> &supNodes);
+	Eigen::Vector3d supGetDubDiffs();
 
 };
 

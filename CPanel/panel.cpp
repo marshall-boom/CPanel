@@ -56,7 +56,9 @@ void panel::setGeom()
         
         double theta = acos(a.dot(b)/(a.norm()*b.norm()));
         area = 0.5*a.norm()*b.norm()*sin(theta);
-        normal = a.cross(b);
+
+        /*normal = a.cross(b);*/
+		normal = b.cross(a);
         normal.normalize();
         
         // If normals weren't included in input, set bezNormal to calculated normal
@@ -636,6 +638,20 @@ void panel::linComputeVelocity(double PG,Eigen::Vector3d &Vinf)
 //
 //	doubletStrength = mu_0;
 //	//doubletStrength = linDubConsts[0];
+//}
+
+//
+//Eigen::Vector3d panel::supGetDubDiffs()
+//{
+//	Eigen::Vector3d vertDubDiffs;	// [mu1 mu2 mu3]
+//
+//	for (nodes_index_type i = 0; i < nodes.size(); i++)
+//	{
+//		//vertDubStrengths[i] = nodes[i]->linGetMu();
+//		vertDubDiffs[i] = nodes[i]->linGetMu();
+//	}
+//
+//	return vertDubDiffs;
 //}
 
 

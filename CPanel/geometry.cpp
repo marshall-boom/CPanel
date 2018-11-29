@@ -154,10 +154,23 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         // Temporarily Store Connectivity
-        for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i=0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
-        {
-            fid >> connectivity(i,0) >> connectivity(i,1) >> connectivity(i,2);
-        }
+		if (inputMach > 1.0)
+		{
+			// For supersonic scheme, need to go around panel CCW -> switch 1 and 2 below relative to original
+			for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i = 0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
+			{
+				fid >> connectivity(i, 0) >> connectivity(i, 2) >> connectivity(i, 1);
+			}
+		}
+		else
+		{
+			for (Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index i = 0; i<static_cast<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>::Index>(nTris); i++)
+			{
+				fid >> connectivity(i, 0) >> connectivity(i, 1) >> connectivity(i, 2);
+			}
+		}
+
+		//std::cout << "\n" << connectivity << std::endl;
 
         connectivity = connectivity.array()-1; //Adjust for 0 based indexing
 
@@ -949,7 +962,7 @@ void geometry::supSetInfCoeff()
 	double Bmach = sqrt(pow(inputMach, 2) - 1);
 	for (size_t i = 0; i < nBodyPans; i++)
 	{
-		bPanels[i]->supTransformPanel(Bmach, alpha, beta);
+		bPanels[i]->supTransformPanel(Bmach, alpha, beta, inputMach);
 	}
 
 	for (size_t i = 0; i < nBodyNodes; i++)
@@ -957,41 +970,13 @@ void geometry::supSetInfCoeff()
 		// Control point in original Ref CSYS
 		ctrlPnt = nodes[i]->calcCP();
 
-		//////////////////////// Ellipse Tests
-		//// Test Case 1
-		//if (abs(2.0 - ctrlPnt.x()) <0.001)
-
-		//// Test Case 2
-		//if (abs(0.5359 + ctrlPnt.y()) < 0.001)
-
-		//// Test Case 3
-		//if (abs(0.5359 - ctrlPnt.y()) < 0.001)
-
-		//// Test Case 4
-		//if (abs(-2.0 - ctrlPnt.x()) < 0.001)
-
-		//// Test Case 5
-		//if (abs(2.0 - ctrlPnt.x()) < 0.001)
-
-		///////////////////////// Diamond Tests
-		//// Test Case 1
-		//if ((abs(0.2679 - ctrlPnt.z()) < 0.001) && (ctrlPnt.x() == 1) && (ctrlPnt.y() == 0))
-
-		//// Test Case 2
-		//if ((abs(0.2679 + ctrlPnt.z()) < 0.001) && (ctrlPnt.x() == 1) && (ctrlPnt.y() == 0))
-		//{
-			Arow = A.row(i);
-			for (size_t j = 0; j < nBodyPans; j++)
-			{
-				//if (abs(.5359 - bPanels[j]->getNodes()[0]->getPnt().y()) < 0.001)
-				//{
-					DOIflag = bPanels[j]->supDOIcheck(ctrlPnt, inputMach, windDir);
-					bPanels[j]->supPhiInf(ctrlPnt, Arow, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), DOIflag, inputMach, windDir);
-				//}
-				
-			}
-			A.row(i) = Arow;
-		//}
+		Arow = A.row(i);
+		for (size_t j = 0; j < nBodyPans; j++)
+		{
+			DOIflag = bPanels[j]->supDOIcheck(ctrlPnt, inputMach, windDir);
+			bPanels[j]->supPhiInf(ctrlPnt, Arow, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), DOIflag, inputMach, windDir);
+		}
+		A.row(i) = Arow;
 
 		for (int j = 0; j < percentage.size(); j++)
 		{
@@ -1002,8 +987,8 @@ void geometry::supSetInfCoeff()
 		}
 	}
 
-	//std::cout << "\n" << A << std::endl;
-	//std::cout << "\n" << B << std::endl;
+	/*std::cout << "\n" << A << std::endl;
+	std::cout << "\n" << B << std::endl;*/
 
 	for (size_t i = 0; i<nBodyPans; i++)
 	{

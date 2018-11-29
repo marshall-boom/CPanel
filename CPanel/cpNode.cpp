@@ -155,7 +155,9 @@ void cpNode::setLinCPoffset()
 	}
 
 	edgeLenAvg = edgeLenSum / getEdges().size();
+	//linCPoffset = 0.005 * edgeLenAvg;
 	linCPoffset = 0.000001 * edgeLenAvg;
+	//linCPoffset = 0.001 * edgeLenAvg;
 	//linCPoffset = 0.001;
 }
 
@@ -187,7 +189,8 @@ void cpNode::supSetPotential(Eigen::Vector3d Vinf)
 {
 	linPrevPotential = linPotential;
 
-	linPotential = Vinf.dot(calcCP()) - linDoubletStrength;
+	linPotential = Vinf.dot(calcCP()) - linDoubletStrength;	// 99% SURE THIS IS THE ONE
+	//linPotential = Vinf.dot(calcCP()) + linDoubletStrength;
 	//linPotential = -linDoubletStrength; // Katz 11.74, 13.157 -- phi_i = 0
 	//linPotential = linDoubletStrength; // Katz 11.74, 13.157 -- phi_i = 0
 }

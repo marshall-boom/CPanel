@@ -72,6 +72,7 @@ class bodyPanel : public panel
 
 	Eigen::Matrix3d supTransMat;
 	std::vector<Eigen::Vector3d> supLocalNodes;
+	double supAreaCorrect;
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
@@ -136,9 +137,9 @@ public:
 	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach, Eigen::Vector3d &windDir);
 	bool supDOIcheck(Eigen::Vector3d &POI,const double Mach, Eigen::Vector3d &windDir);
 	//bool supEdgeCheck(edge* myEdge, Eigen::Vector3d &P, const double B);
-	void supTransformPanel(const double Bmach, double alpha, double beta);
-	Eigen::Matrix3d supG2LSmatrix(const double Bmach);
-	void supSetG2LSmatrix(const double Bmach, const double a, const double b);
+	void supTransformPanel(const double Bmach, double alpha, double beta, const double M);
+	//Eigen::Matrix3d supG2LSmatrix(const double Bmach);
+	void supSetG2LSmatrix(const double Bmach, const double a, const double b, const double M);
 	Eigen::Vector3d supConePanelInter(const Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
 	Eigen::Matrix3d supGetLocalSys(Eigen::Vector3d &windDir);
 
@@ -146,7 +147,10 @@ public:
 	Eigen::Vector2d supEdgeInfSub(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
 	Eigen::Vector2d supEdgeInfSup(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
 
+	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
+
 	void supComputeVelocity(Eigen::Vector3d &Vinf);
+	void supComputeCp();
 
 	//std::vector<bool> getEdgeFlags() { return edgeFlags; }
     
