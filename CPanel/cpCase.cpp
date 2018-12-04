@@ -34,7 +34,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     std::string check = "\u2713";
 
 	setSourceStrengths();
-	if (geom->getInMach() > 1.0) // linear doublet scheme flag
+	if (geom->getInMach() > 1.0) // linear doublet subsonic
 	{
 		converged = linSolveMatrixEq();
 	}
@@ -53,9 +53,13 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
 
-	if (geom->getInMach() > 1.0 || getMach() > 1.0)
+	if (geom->getInMach() > 1.0)
 	{
 		linCompVelocity();
+	}
+	else if (getMach() > 1.0)
+	{
+		supCompVelocity();
 	}
 	else
 	{
@@ -318,8 +322,6 @@ void cpCase::linCompVelocity()
 	CM.setZero();
 	Eigen::Vector3d moment;
 	Fbody = Eigen::Vector3d::Zero();
-	Eigen::Vector3d Vel;
-	Vel.setZero();
 
 	/*for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
@@ -348,16 +350,34 @@ void cpCase::linCompVelocity()
 	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
 		p = (*bPanels)[i];
-		if (getMach() > 1.0)
-		{
-			p->supComputeVelocity(Vinf);
-			p->supComputeCp();
-		}
-		else
-		{
-			p->linComputeVelocity(PG, Vinf);
-			p->computeCp(Vmag);
-		}
+		p->linComputeVelocity(PG, Vinf);
+		p->computeCp(Vmag);
+
+		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+		moment = p->computeMoments(params->cg);
+		CM(0) += moment(0) / (params->Sref*params->bref);
+		CM(1) += moment(1) / (params->Sref*params->cref);
+		CM(2) += moment(2) / (params->Sref*params->bref);
+	}
+
+	Fwind = bodyToWind(Fbody);
+}
+
+void cpCase::supCompVelocity()
+{
+	//  Velocity Survey with known doublet and source strengths
+	CM.setZero();
+	Eigen::Vector3d moment;
+	Fbody = Eigen::Vector3d::Zero();
+	Eigen::Vector3d pertVel;
+
+	// Calc local vel. at each panel by taking partial deriv. of doublet strength
+	bodyPanel* p;
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		p = (*bPanels)[i];
+		pertVel = p->supComputeVelocity(Vinf, getMach(), false); // returns perturbation velocity for use in computing Cp
+		p->supComputeCp(Vinf, getMach(), pertVel);
 
 		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
 		moment = p->computeMoments(params->cg);

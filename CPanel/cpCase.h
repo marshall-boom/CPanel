@@ -96,6 +96,7 @@ protected:
     void writeBodyStreamlines(boost::filesystem::path path);
     
 	void linCompVelocity();
+	void supCompVelocity();
     
     
     struct meshDat {

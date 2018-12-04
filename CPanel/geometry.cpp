@@ -170,8 +170,6 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 			}
 		}
 
-		//std::cout << "\n" << connectivity << std::endl;
-
         connectivity = connectivity.array()-1; //Adjust for 0 based indexing
 
         // Scan Surface IDs and collect Unique IDs
@@ -978,6 +976,7 @@ void geometry::supSetInfCoeff()
 		}
 		A.row(i) = Arow;
 
+		// Completion percentage
 		for (int j = 0; j < percentage.size(); j++)
 		{
 			if ((100 * i / nBodyNodes) <= percentage(j) && 100 * (i + 1) / nBodyNodes > percentage(j))
@@ -1008,10 +1007,17 @@ void geometry::computeWindDir()
 {
 	double aalpha, bbeta;
 
-	aalpha = alpha * M_PI / 180;
-	bbeta = beta * M_PI / 180;
+	if (alpha == 0 && beta == 0)
+	{
+		windDir << 1, 0, 0;
+	}
+	else
+	{
+		aalpha = alpha * M_PI / 180;
+		bbeta = beta * M_PI / 180;
 
-	windDir << cos(aalpha)*cos(bbeta), -sin(bbeta), sin(aalpha)*cos(bbeta);
+		windDir << cos(aalpha)*cos(bbeta), -sin(bbeta), sin(aalpha)*cos(bbeta);
+	}
 }
 
 

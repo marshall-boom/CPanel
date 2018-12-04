@@ -140,6 +140,7 @@ public:
 	void supTransformPanel(const double Bmach, double alpha, double beta, const double M);
 	//Eigen::Matrix3d supG2LSmatrix(const double Bmach);
 	void supSetG2LSmatrix(const double Bmach, const double a, const double b, const double M);
+	void supSetG2LSmatrixPilot(const double Bmach, const double a, const double b, const double M);
 	Eigen::Vector3d supConePanelInter(const Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
 	Eigen::Matrix3d supGetLocalSys(Eigen::Vector3d &windDir);
 
@@ -149,8 +150,9 @@ public:
 
 	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
 
-	void supComputeVelocity(Eigen::Vector3d &Vinf);
-	void supComputeCp();
+	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
+	Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
+	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel);
 
 	//std::vector<bool> getEdgeFlags() { return edgeFlags; }
     
