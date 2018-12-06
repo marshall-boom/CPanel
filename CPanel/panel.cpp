@@ -594,7 +594,6 @@ Eigen::Matrix3d panel::supVertsMatrix(std::vector<Eigen::Vector3d> &supPnts)
 
 	for (size_t i = 0; i < supPnts.size(); i++)
 	{
-		//vertLoc = global2local(nodes[i]->getPnt(), translate);
 		vertsMat(i, 0) = 1.0;
 		vertsMat(i, 1) = supPnts[i].x();
 		vertsMat(i, 2) = supPnts[i].y();

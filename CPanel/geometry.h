@@ -326,6 +326,7 @@ public:
 	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);
 
 	void computeWindDir();
+	Eigen::Vector3d getWindDir() { return windDir; }
 
 };
 

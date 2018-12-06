@@ -97,6 +97,7 @@ protected:
     
 	void linCompVelocity();
 	void supCompVelocity();
+	void supCompVelocity2();
     
     
     struct meshDat {

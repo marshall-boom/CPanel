@@ -1044,6 +1044,7 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 	pertVelOrig = (supTransMat.transpose()).inverse() * panPertVel;
 	//pertVelOrig.x() -= abs(sourceStrength)/2;
 	//pertVelOrig -= 2*(sourceStrength * normal);
+	//pertVelOrig.x() -= abs(sourceStrength)/2;
 
 	if (velCorrection)
 	{
@@ -1056,10 +1057,16 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 
 	velocity = Vinf + pertVel;
 
-	std::cout << velocity.x() << "\t" << velocity.y() << std::endl;
+	//std::cout << velocity.x() << "\t" << velocity.y() << std::endl;
 
 	return pertVel;
 }
+
+
+//void bodyPanel::supTransformPertVel()
+//{
+//	supPertVel = (supTransMat.transpose()).inverse() * supPertVel;
+//}
 
 
 Eigen::Vector3d bodyPanel::supVelCorrection(Eigen::Vector3d pertVel, const double mach)
@@ -1079,6 +1086,13 @@ Eigen::Vector3d bodyPanel::supVelCorrection(Eigen::Vector3d pertVel, const doubl
 	}
 
 	return pertVelCorrected;
+}
+
+
+void bodyPanel::supComputeCp(Eigen::Vector3d Vinf)
+{
+	Cp = (-2 * supPertVel.x() / Vinf.norm()) - ((pow(supPertVel.y(), 2) + pow(supPertVel.z(), 2)) / pow(Vinf.norm(), 2));
+	//Cp = -2 * supPertVel.x() / Vinf.norm();
 }
 
 
@@ -2018,6 +2032,344 @@ Eigen::Vector2d bodyPanel::supEdgeInfSup(const double R1, const double R2, const
 	integralCoeffs[1] = w0;
 
 	return integralCoeffs;
+}
+
+
+Eigen::Vector3d bodyPanel::supComputePertVelocity(const Eigen::Vector3d &POI, bool DOIflag)
+{
+	Eigen::Vector3d pertVel = Eigen::Vector3d::Zero();
+
+	if (DOIflag)
+	{
+		// Initialize
+		double x, y, z, x1, y1, x2, y2;
+		double m, lam, xm, xmc, ym1, ym2, ym1c, ym2c, s1, s2, sm1, sm2, r1, r2, R1, R2;
+		Eigen::Vector2d integralCoeffs; // [Q1, w0]
+		Eigen::Vector3d localPOI;
+		bool mFlag, zFlag;
+		zFlag = false;
+
+		integralCoeffs.setZero();
+
+		// if changed, don't forget about big eps
+		double epsGen = 1.0e-10;
+
+		double Q1, w0, w0_m;
+		Q1 = 0;
+		w0 = 0;
+		w0_m = 0;
+		double mu_0, mu_x, mu_y;
+		mu_0 = linDubCoeffs[0];
+		mu_x = linDubCoeffs[1];
+		mu_y = linDubCoeffs[2];
+
+		localPOI = supTransMat * (POI - center);
+		x = localPOI.x();
+		y = localPOI.y();
+		z = localPOI.z();
+
+		if (abs((POI - center).norm()) < 2.0*linGetCPoffset()) // itselfFlag
+		{
+			pertVel.x() = -mu_x / 2.0;
+			pertVel.y() = -mu_y / 2.0;
+			//pertVel.z() += 0;
+		}
+		else
+		{
+			// Always true: panel transformation projects panel onto freestream direction plane
+			Eigen::Vector3d localWindDir(1, 0, 0);
+
+			// Iterate through panel edges
+			for (nodes_index_type i = 0; i < nodes.size(); i++)
+			{
+				integralCoeffs.setZero();
+				mFlag = false;
+				Eigen::Vector3d p1;
+				Eigen::Vector3d p2;
+				double eps1;
+				double eps2;
+				if (i != nodes.size() - 1)
+				{
+					p1 = supLocalNodes[i];
+					p2 = supLocalNodes[i + 1];
+
+					/*eps1 = 2.0*nodes[i]->linGetCPoffset();
+					eps2 = 2.0*nodes[i + 1]->linGetCPoffset();*/
+				}
+				else
+				{
+					p1 = supLocalNodes[i];
+					p2 = supLocalNodes[0];
+
+					/*eps1 = 2.0*nodes[i]->linGetCPoffset();
+					eps2 = 2.0*nodes[0]->linGetCPoffset();*/
+				}
+
+				eps1 = 1.0e-8;
+				eps2 = 1.0e-8;
+
+				x1 = p1.x();
+				y1 = p1.y();
+				x2 = p2.x();
+				y2 = p2.y();
+
+				// Compute inf. coeff. geometric values
+				m = (y2 - y1) / (x2 - x1);
+				s1 = y - y1;
+				s2 = y - y2;
+				r1 = sqrt(pow(s1, 2) + pow(z, 2));
+				r2 = sqrt(pow(s2, 2) + pow(z, 2));
+
+				////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//supOutputGeom(POI, true);
+
+				if (abs(m) < epsGen) // Edge parallel to freestream
+				{
+					mFlag = true;
+					m = 0;
+					xmc = -s1;
+					ym1c = -(x - x1);
+					ym2c = -(x - x2);
+					sm1 = x - x1;
+					sm2 = x - x2;
+
+					xm = xmc;
+				}
+				else if (abs(m) > 1.0 / epsGen) // Edge perinducular to freestream
+				{
+					lam = 0;
+					xm = (x - x1) - (y - y1)*lam;
+					sm1 = xm + s1 * lam;
+					sm2 = xm + s2 * lam;
+					ym1 = s1 - sm1 * lam;
+					ym2 = s2 - sm2 * lam;
+				}
+				else
+				{
+					lam = 1 / m;
+					xm = (x - x1) - (y - y1) / m;
+					sm1 = xm + s1 / m;
+					sm2 = xm + s2 / m;
+					ym1 = s1 - sm1 / m;
+					ym2 = s2 - sm2 / m;
+					xmc = m * xm;
+					ym1c = m * ym1;
+					ym2c = m * ym2;
+				}
+
+				R1 = 0;
+				R2 = 0;
+				if ((localPOI - p1).dot(localWindDir) >= 0)
+				{
+					R1 = sqrt(pow(sm1, 2) - pow(r1, 2));
+					if (isnan(R1))
+					{
+						R1 = 0;
+					}
+				}
+				if ((localPOI - p2).dot(localWindDir) >= 0)
+				{
+					R2 = sqrt(pow(sm2, 2) - pow(r2, 2));
+					if (isnan(R2))
+					{
+						R2 = 0;
+					}
+				}
+
+				// Check that edge intersects Mach cone and upstream of POI
+				if (R1 > abs(eps1) || R2 > abs(eps2))
+				{
+					//////////////////////////////////////////////////////////
+					//supOutputGeom(POI, true);
+					//////////////////////////////////////////////////////////
+
+					if (abs(z) > 1e-10)
+					{
+						if (abs(m) < 1) // subsonic edge
+						{
+							integralCoeffs = supEdgeInfSub(R1, R2, ym1c, ym2c, xmc, m, z, eps1, eps2, mFlag);
+						}
+						else if (abs(m) > 1) // supersonic edge
+						{
+							integralCoeffs = supEdgeInfSup(R1, R2, ym1, ym2, xm, lam, z, eps1, eps2);
+						}
+						else if (abs(1 - abs(m)) < epsGen) // sonic edge
+						{
+							integralCoeffs = supEdgeInfSon(ym1, ym2, xmc, ym1c, ym2c, R1, R2, lam, z);
+						}
+					}
+					else // z = 0
+					{
+						zFlag = true;
+						if (abs(1 - abs(m)) < epsGen) // sonic edge
+						{
+
+						}
+						else if (abs(m) < 1) // subsonic edge
+						{
+
+						}
+						else if (abs(m) > 1) // supersonic edge
+						{
+
+						}
+					}
+
+					if (isnan(integralCoeffs[0]) || isnan(integralCoeffs[1]))
+					{
+						double stuff = 0;
+					}
+				}
+				else if (abs(m) > 1)
+				{
+					double wedgeCheck = pow(xm, 2) + (pow(z, 2) / pow(m, 2)) - pow(z, 2);
+					if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (abs(ym1) > epsGen && abs(ym2) > epsGen) && (wedgeCheck >= 0))
+					{
+						////////////////////////////////////////////////////////////////////////////////////////////////////////
+						//supOutputGeom(POI, true);
+
+						double Q11, w01, Q12, w02;
+
+						double s1, t1;
+						s1 = 1.0;
+						t1 = 1.0;
+						if (signbit(z * ym1))
+						{
+							s1 = -1.0;
+						}
+						if (signbit(ym1))
+						{
+							t1 = -1.0;
+						}
+
+						Q11 = s1 * M_PI / 2.0;
+						w01 = t1 * M_PI / (2.0 * sqrt(1.0 - pow(lam, 2)));
+
+						double s2, t2;
+						s2 = 1.0;
+						t2 = 1.0;
+						if (signbit(z * ym2))
+						{
+							s2 = -1.0;
+						}
+						if (signbit(ym2))
+						{
+							t2 = -1.0;
+						}
+						Q12 = s2 * M_PI / 2.0;
+						w02 = t2 * M_PI / (2.0 * sqrt(1.0 - pow(lam, 2)));
+
+						integralCoeffs[0] = Q12 - Q11;
+						integralCoeffs[1] = w02 - w01;
+						/*integralCoeffs[0] = Q1;
+						integralCoeffs[1] = w0;*/
+
+						if (isnan(integralCoeffs[0]) || isnan(integralCoeffs[1]))
+						{
+							double stuff = 0;
+						}
+					}
+				}
+				if (isnan(integralCoeffs[0]) || isnan(integralCoeffs[1]))
+				{
+					double stuff = 0;
+				}
+
+				Q1 += integralCoeffs[0];
+				w0 += integralCoeffs[1];
+
+				if (!mFlag)
+				{
+					w0_m += integralCoeffs[1] / m;
+				}
+
+			}
+
+			/*double Q1, w0, w0_m;
+			Q1 = integralCoeffs[0];
+			w0 = integralCoeffs[1];*/
+
+			mu_x = linDubCoeffs[1];
+			mu_y = linDubCoeffs[2];
+
+			///////////////////////////////////////////////////////////////////////////////////////////////
+			//supOutputGeom(POI, true);
+
+			pertVel.x() = -(mu_x * Q1) / (2.0 * M_PI);
+			pertVel.y() = -(mu_y * Q1) / (2.0 * M_PI);
+			
+			//pertVel.z() = (mu_x*w0 + mu_y*w0_m) / (2.0 * M_PI);
+		}
+	}
+	else if (abs((POI - center).norm()) < 2.0*linGetCPoffset()) // itselfFlag
+	{
+		double mu_0, mu_x, mu_y;
+		mu_0 = linDubCoeffs[0];
+		mu_x = linDubCoeffs[1];
+		mu_y = linDubCoeffs[2];
+
+		pertVel.x() = -mu_x / 2.0;
+		pertVel.y() = -mu_y / 2.0;
+		//pertVel.z() += 0;
+	}
+
+	return pertVel;
+}
+
+
+void bodyPanel::supSetPertVel(Eigen::Vector3d pertVel)
+{
+	//supPertVel = pertVel;
+	supPertVel = (supTransMat.transpose()).inverse() * pertVel;
+}
+
+
+void bodyPanel::supSetMu()
+{
+	Eigen::Vector3d vertDubStrengths;
+	Eigen::Matrix3d vertsMat = supVertsMatrix(supLocalNodes);
+	vertDubStrengths = linGetDubStrengths();
+
+	linDubCoeffs = vertsMat.inverse() * vertDubStrengths;
+	// [mu_0 mu_x mu_y]
+}
+
+
+void bodyPanel::linSetMu()
+{
+	Eigen::Vector3d vertDubStrengths;
+	Eigen::Matrix3d vertsMat = linVertsMatrix(true);
+	vertDubStrengths = linGetDubStrengths();
+
+	linDubCoeffs = vertsMat.inverse() * vertDubStrengths;
+	// [mu_0 mu_x mu_y]
+	std::cout << linDubCoeffs.y() << std::endl;
+}
+
+
+void bodyPanel::linSetCPoffset()
+{
+	double edgeLenSum = 0;
+	double edgeLenAvg;
+
+	for (edges_index_type i = 0; i < getEdges().size(); i++)
+	{
+		edgeLenSum += getEdges()[i]->length();
+	}
+
+	edgeLenAvg = edgeLenSum / getEdges().size();
+	linCPoffset = 0.001 * edgeLenAvg;
+}
+
+
+Eigen::Vector3d bodyPanel::calcCP()
+{
+	Eigen::Vector3d ctrlPnt;
+	linSetCPoffset();
+	//ctrlPnt = center - linCPoffset * normal;
+	ctrlPnt = center - linCPoffset * normal;
+
+	return ctrlPnt;
 }
 
 

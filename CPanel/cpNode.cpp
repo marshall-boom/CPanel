@@ -190,7 +190,8 @@ void cpNode::supSetPotential(Eigen::Vector3d Vinf)
 {
 	linPrevPotential = linPotential;
 
-	linPotential = -linDoubletStrength;
+	//linPotential = linDoubletStrength / 2;
+	linPotential = linDoubletStrength;
 	//linPotential = -linDoubletStrength;
 	//linPotential = Vinf.dot(calcCP()) - linDoubletStrength;	// 99% SURE THIS IS THE ONE
 }

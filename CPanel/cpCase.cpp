@@ -59,7 +59,8 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
 	}
 	else if (getMach() > 1.0)
 	{
-		supCompVelocity();
+		//supCompVelocity();
+		supCompVelocity2();
 	}
 	else
 	{
@@ -241,6 +242,13 @@ bool cpCase::linSolveMatrixEq()
 		(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
 		(nodes)[i]->linSetPotential(Vinf);
 	}
+
+	//// Compute panel based linear doublet equations (mu(x,y) = mu_0 + mu_x*x + mu_y*y)
+	//for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	//{
+	//	(*bPanels)[i]->linSetMu();
+	//}
+
 	/////////////////// wake currently not accounted for -11/08/2018
 	for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
 	{
@@ -275,11 +283,19 @@ bool cpCase::supSolveMatrixEq()
 		converged = false;
 	}
 
+	// Set node based doublet strengths
 	for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
 	{
 		(nodes)[i]->linSetMu(doubletStrengths(static_cast<Eigen::VectorXd::Index>(i)));
 		(nodes)[i]->supSetPotential(Vinf);
 	}
+
+	// Compute panel based linear doublet equations (mu(x,y) = mu_0 + mu_x*x + mu_y*y)
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		(*bPanels)[i]->supSetMu();
+	}
+
 	/////////////////// wake currently not accounted for -- 11/08/2018
 	for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
 	{
@@ -363,6 +379,77 @@ void cpCase::linCompVelocity()
 	Fwind = bodyToWind(Fbody);
 }
 
+
+void cpCase::supCompVelocity2()
+{	
+	// Compute induced velocties at panel centers using panel based linear doublet equations
+	size_t nBodyPans = bPanels->size();
+	size_t nWakePans = wPanels->size();
+	size_t nPans = nBodyPans + nWakePans;
+
+	Eigen::Vector3d ctrlPnt;
+	bool DOIflag;
+
+	Eigen::Vector3d pertVel;
+
+	Eigen::Matrix<size_t, 9, 1> percentage;
+	percentage << 10, 20, 30, 40, 50, 60, 70, 80, 90;
+
+	// Panels in local scaled system. Transformed previously and stored.
+
+	// Compute induced velocities of all panels on a single panel
+	// Move onto next panel and repeat
+	for (size_t i = 0; i < nBodyPans; i++)
+	{
+		// Just below center of panel i
+		ctrlPnt = (*bPanels)[i]->calcCP();
+		pertVel.setZero();
+
+		for (size_t j = 0; j < nBodyPans; j++)
+		{
+			DOIflag = (*bPanels)[j]->supDOIcheck(ctrlPnt, getMach(), geom->getWindDir());
+			pertVel += (*bPanels)[j]->supComputePertVelocity(ctrlPnt, DOIflag);
+		}
+
+		std::cout << pertVel.x() << "\t" << pertVel.y() << std::endl;
+		
+		// Transfrom to reference CSYS and assign to panel
+		(*bPanels)[i]->supSetPertVel(pertVel);
+
+		//// Completion percentage
+		//for (int j = 0; j < percentage.size(); j++)
+		//{
+		//	if ((100 * (nBodyPans + j) / nPans) <= percentage(i) && 100 * (nBodyPans + j + 1) / nPans > percentage(i))
+		//	{
+		//		std::cout << percentage(i) << "%\t" << std::flush;
+		//	}
+		//}
+	}
+
+
+	//  Velocity Survey with known doublet and source strengths
+	CM.setZero();
+	Eigen::Vector3d moment;
+	Fbody = Eigen::Vector3d::Zero();
+
+	bodyPanel* p;
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		p = (*bPanels)[i];
+		// compute total velocity here
+		p->supComputeCp(Vinf);
+
+		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+		moment = p->computeMoments(params->cg);
+		CM(0) += moment(0) / (params->Sref*params->bref);
+		CM(1) += moment(1) / (params->Sref*params->cref);
+		CM(2) += moment(2) / (params->Sref*params->bref);
+	}
+
+	Fwind = bodyToWind(Fbody);
+}
+
+
 void cpCase::supCompVelocity()
 {
 	//  Velocity Survey with known doublet and source strengths
@@ -378,6 +465,8 @@ void cpCase::supCompVelocity()
 		p = (*bPanels)[i];
 		pertVel = p->supComputeVelocity(Vinf, getMach(), false); // returns perturbation velocity for use in computing Cp
 		p->supComputeCp(Vinf, getMach(), pertVel);
+
+		std::cout << pertVel.x() << std::endl;
 
 		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
 		moment = p->computeMoments(params->cg);

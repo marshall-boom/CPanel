@@ -73,6 +73,10 @@ class bodyPanel : public panel
 	Eigen::Matrix3d supTransMat;
 	std::vector<Eigen::Vector3d> supLocalNodes;
 	double supAreaCorrect;
+
+	Eigen::Vector3d linDubCoeffs;
+	double linCPoffset;
+	Eigen::Vector3d supPertVel = Eigen::Vector3d::Zero();
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
@@ -153,6 +157,16 @@ public:
 	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
 	Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
 	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel);
+	void supComputeCp(Eigen::Vector3d Vinf);
+
+	Eigen::Vector3d supComputePertVelocity(const Eigen::Vector3d &POI, bool DOIflag);
+	void supSetMu();
+	void linSetMu();
+	void linSetCPoffset();
+	Eigen::Vector3d calcCP();
+	Eigen::Vector3d supGetPertVel() { return supPertVel; }
+	double linGetCPoffset() { return linCPoffset; }
+	void supSetPertVel(Eigen::Vector3d pertVel);
 
 	//std::vector<bool> getEdgeFlags() { return edgeFlags; }
     

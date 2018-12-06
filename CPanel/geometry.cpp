@@ -821,8 +821,8 @@ void geometry::linSetInfCoeff()
 	{
 		ctrlPnt = nodes[i]->calcCP();
 		/////////////////////////////////////////// Do I need to use static cast here?? Probably
-		if (abs(4.0 - ctrlPnt.x()) < 0.001)
-		{
+		/*if (abs(4.0 - ctrlPnt.x()) < 0.001)
+		{*/
 			Arow = A.row(i);
 			for (size_t j = 0; j < nBodyPans; j++)
 			{
@@ -838,7 +838,7 @@ void geometry::linSetInfCoeff()
 					std::cout << percentage(j) << "%\t" << std::flush;
 				}
 			}
-		}
+		//}
 	}
 
 	//std::cout << "\n" << A << std::endl;
