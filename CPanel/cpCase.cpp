@@ -59,8 +59,8 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
 	}
 	else if (getMach() > 1.0)
 	{
-		//supCompVelocity();
-		supCompVelocity2();
+		supCompVelocity();
+		//supCompVelocity2();
 	}
 	else
 	{
@@ -243,11 +243,11 @@ bool cpCase::linSolveMatrixEq()
 		(nodes)[i]->linSetPotential(Vinf);
 	}
 
-	//// Compute panel based linear doublet equations (mu(x,y) = mu_0 + mu_x*x + mu_y*y)
-	//for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
-	//{
-	//	(*bPanels)[i]->linSetMu();
-	//}
+	// Compute panel based linear doublet equations (mu(x,y) = mu_0 + mu_x*x + mu_y*y)
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		(*bPanels)[i]->linSetMu();
+	}
 
 	/////////////////// wake currently not accounted for -11/08/2018
 	for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
@@ -266,8 +266,8 @@ bool cpCase::supSolveMatrixEq()
 	// Solve matrix equations and set potential for all panels
 	Eigen::MatrixXd* A = geom->getA();
 	Eigen::MatrixXd* B = geom->getB();
-	//Eigen::VectorXd RHS = -(*B)*sigmas; // 99% SURE THIS ONE IS RIGHT
-	Eigen::VectorXd RHS = (*B)*sigmas;
+	Eigen::VectorXd RHS = -(*B)*sigmas; // 99% SURE THIS ONE IS RIGHT
+	//Eigen::VectorXd RHS = (*B)*sigmas;
 	Eigen::VectorXd doubletStrengths;
 	doubletStrengths.resize(nodes.size());
 
@@ -366,7 +366,8 @@ void cpCase::linCompVelocity()
 	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
 		p = (*bPanels)[i];
-		p->linComputeVelocity(PG, Vinf);
+		//p->linComputeVelocity(PG, Vinf);
+		p->linComputeVelocity2(PG, Vinf);
 		p->computeCp(Vmag);
 
 		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
@@ -454,19 +455,20 @@ void cpCase::supCompVelocity()
 {
 	//  Velocity Survey with known doublet and source strengths
 	CM.setZero();
-	Eigen::Vector3d moment;
+	Eigen::Vector3d moment, pertVel;
 	Fbody = Eigen::Vector3d::Zero();
-	Eigen::Vector3d pertVel;
+	Eigen::Matrix3d ref2wind = supRef2WindMat(alpha, beta);
 
 	// Calc local vel. at each panel by taking partial deriv. of doublet strength
 	bodyPanel* p;
 	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
 		p = (*bPanels)[i];
-		pertVel = p->supComputeVelocity(Vinf, getMach(), false); // returns perturbation velocity for use in computing Cp
+		//pertVel = p->supComputeVelocity(Vinf, getMach(), ref2wind, false); // returns perturbation velocity for use in computing Cp
+		pertVel = p->supComputeVelocity2(Vinf, getMach(), ref2wind, false);
 		p->supComputeCp(Vinf, getMach(), pertVel);
 
-		std::cout << pertVel.x() << std::endl;
+		//std::cout << pertVel.x() << std::endl;
 
 		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
 		moment = p->computeMoments(params->cg);
@@ -476,6 +478,20 @@ void cpCase::supCompVelocity()
 	}
 
 	Fwind = bodyToWind(Fbody);
+}
+
+
+Eigen::Matrix3d cpCase::supRef2WindMat(double a, double b)
+{
+	Eigen::Matrix3d ref2wind;
+	a *= M_PI / 180;
+	b *= M_PI / 180;
+
+	ref2wind << cos(a)*cos(b), -sin(b), sin(a)*cos(b),
+		cos(a)*sin(b), cos(b), sin(a)*sin(b),
+		-sin(a), 0, cos(a);
+
+	return ref2wind;
 }
 
 

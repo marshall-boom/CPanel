@@ -71,6 +71,7 @@ class bodyPanel : public panel
 	//std::vector<bool> edgeFlags;
 
 	Eigen::Matrix3d supTransMat;
+	Eigen::Matrix3d supTransMatVel;
 	std::vector<Eigen::Vector3d> supLocalNodes;
 	double supAreaCorrect;
 
@@ -154,7 +155,7 @@ public:
 
 	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
 
-	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
+	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, Eigen::Matrix3d &ref2wind, bool velCorrection);
 	Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
 	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel);
 	void supComputeCp(Eigen::Vector3d Vinf);
@@ -167,6 +168,8 @@ public:
 	Eigen::Vector3d supGetPertVel() { return supPertVel; }
 	double linGetCPoffset() { return linCPoffset; }
 	void supSetPertVel(Eigen::Vector3d pertVel);
+	Eigen::Vector3d supComputeVelocity2(Eigen::Vector3d Vinf, const double mach, Eigen::Matrix3d &ref2wind, bool velCorrection);
+	void linComputeVelocity2(double PG, Eigen::Vector3d &Vinf);
 
 	//std::vector<bool> getEdgeFlags() { return edgeFlags; }
     

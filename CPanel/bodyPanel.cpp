@@ -96,8 +96,8 @@ void bodyPanel::setTipFlag()
 
 void bodyPanel::setSigma(Eigen::Vector3d Vinf, double Vnorm)
 {
-    //sourceStrength = (-Vinf.dot(normal)+Vnorm); // CS: Vnorm is eminating from the panel
-	sourceStrength = (Vinf.dot(normal) + Vnorm);
+    sourceStrength = (-Vinf.dot(normal)+Vnorm); // CS: Vnorm is eminating from the panel
+	//sourceStrength = (Vinf.dot(normal) + Vnorm);
 	//sourceStrength = (-Vinf.dot(normal) + Vnorm) / supAreaCorrect;
 	//sourceStrength = (-Vinf.dot(normal) + Vnorm) * supAreaCorrect;
 }
@@ -1019,11 +1019,69 @@ void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
 	panVel[2] = 0;
 
 	velocity = local2global(panVel, false);
+
+	//// Only works with perturbation velocity, in global CSYS
+	//double stuff2 = velocity.dot(normal);
+	//std::cout << stuff2 << std::endl;
+
 	velocity(0) /= PG;
 }
 
 
-Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection)
+void bodyPanel::linComputeVelocity2(double PG, Eigen::Vector3d &Vinf)
+{
+	double massFluxAvgDotNorm, denom, Bmach2;
+	Eigen::Vector3d vertsPhiAvg, coeffsPhiAvg, gradPhiAvg, gradDubs;
+	Eigen::Vector3d vAvg, vDiff, pertVel, velLower, myPanPertVel, myPertVel;
+	Eigen::Matrix3d vertsMat, B;
+	vertsMat = linVertsMatrix(true);
+
+	// vertex based average potential
+	vertsPhiAvg = linGetDubStrengths();
+
+	// linear panel equation average potential
+	coeffsPhiAvg = vertsMat.inverse() * vertsPhiAvg;
+
+	// gradient of average potential
+	gradPhiAvg << coeffsPhiAvg[1], coeffsPhiAvg[2], 0;
+
+	// gradient of 'raw' doublet strength coeffs
+	gradDubs << linDubCoeffs[1], linDubCoeffs[2], 0;
+
+	Bmach2 = 1; // this is switched to the full expression to get 1 relative to before
+	B << Bmach2, 0, 0, 0, 1, 0, 0, 0, 1;
+	denom = normal.dot(B * normal);
+	massFluxAvgDotNorm = -Vinf.dot(normal);
+
+	vAvg = local2global(gradPhiAvg,false) + ((massFluxAvgDotNorm / denom) * normal);
+	vDiff = local2global(gradDubs,false) + ((sourceStrength / denom) * normal);
+
+	pertVel = vAvg + vDiff / 2; // upper velocity (i.e. perturbation velocity)
+	velLower = vAvg - vDiff / 2; // should be 0!
+
+	pertVel = local2global(pertVel, false);
+	velLower = local2global(velLower, false);
+	myPertVel = local2global(gradDubs,false);
+
+	std::cout << "-----------------------------------------" << std::endl;
+	std::cout << "Mine\n" << myPertVel.x() << "\t" << myPertVel.y() << "\t" << myPertVel.z() << std::endl;
+	std::cout << "Upper\n" << pertVel.x() << "\t" << pertVel.y() << "\t" << pertVel.z() << std::endl;
+	std::cout << "Lower\n" << velLower.x() << "\t" << velLower.y() << "\t" << velLower.z() << std::endl;
+
+	double stuff1 = pertVel.dot(normal); // should equal 0
+	std::cout << "Check1: " << stuff1 << " (Should = 0)" << std::endl;
+
+	double stuff2 = myPertVel.dot(normal); // should equal 0
+	std::cout << "Check2: " << stuff2 << " (Should = 0)" << std::endl;
+
+
+	velocity = Vinf + myPertVel;
+
+	velocity(0) /= PG;
+}
+
+
+Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double mach, Eigen::Matrix3d &ref2wind, bool velCorrection)
 {
 	double mu_x, mu_y;
 	Eigen::Vector3d vertDubStrengths, linDubConsts, panPertVel, pertVelOrig, pertVel;
@@ -1032,8 +1090,8 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 
 	linDubConsts = vertsMat.inverse() * vertDubStrengths;
 	//mu_0 = linDubConsts[0];
-	mu_x = -linDubConsts[1];
-	mu_y = -linDubConsts[2];
+	mu_x = linDubConsts[1];
+	mu_y = linDubConsts[2];
 
 	panPertVel[0] = mu_x;
 	panPertVel[1] = mu_y;
@@ -1041,10 +1099,17 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 
 	//panPertVel += 2*abs(sourceStrength) * -normal;
 
-	pertVelOrig = (supTransMat.transpose()).inverse() * panPertVel;
+	pertVelOrig = supTransMat.transpose() * panPertVel;
+	//pertVelOrig = supTransMat.inverse() * panPertVel;
+	//pertVelOrig = (supTransMat.transpose()).inverse() * panPertVel;
+	//pertVelOrig = (supTransMat * ref2wind).transpose() * panPertVel;
+
 	//pertVelOrig.x() -= abs(sourceStrength)/2;
 	//pertVelOrig -= 2*(sourceStrength * normal);
 	//pertVelOrig.x() -= abs(sourceStrength)/2;
+
+	//double stuff2 = pertVelOrig.dot(normal); // should equal 0
+	//std::cout << stuff2 << std::endl;
 
 	if (velCorrection)
 	{
@@ -1063,10 +1128,85 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 }
 
 
-//void bodyPanel::supTransformPertVel()
-//{
-//	supPertVel = (supTransMat.transpose()).inverse() * supPertVel;
-//}
+Eigen::Vector3d bodyPanel::supComputeVelocity2(Eigen::Vector3d Vinf, const double mach, Eigen::Matrix3d &ref2wind, bool velCorrection)
+{
+	double s, beta2, massFluxAvgDotNorm, denom;
+	Eigen::Vector3d vertsPhiAvg, coeffsPhiAvg, gradPhiAvg, gradDubs;
+	Eigen::Vector3d vAvgTan, vAvgNorm, vDiffTan, vDiffNorm, vAvg, vDiff;
+	Eigen::Vector3d pertVel, velLower, myPanPertVel, myPertVel;
+	Eigen::Matrix3d vertsMat, B;
+	vertsMat = supVertsMatrix(supLocalNodes);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	/*Eigen::Vector3d POI;
+	supOutputGeom(POI, false);*/
+
+	// vertex based average potential
+	vertsPhiAvg = linGetDubStrengths();
+
+	// linear panel equation average potential
+	coeffsPhiAvg = vertsMat.inverse() * vertsPhiAvg;
+
+	// gradient of average potential
+	gradPhiAvg << coeffsPhiAvg[1], coeffsPhiAvg[2], 0;
+
+	// gradient of 'raw' doublet strength coeffs
+	gradDubs << linDubCoeffs[1], linDubCoeffs[2], 0;
+
+	s = -1; // -1 for supersonic, +1 for subsonic
+	beta2 = s * (1 - pow(mach, 2));
+	B << s*beta2, 0, 0, 0, 1, 0, 0, 0, 1;
+	denom = normal.dot(B * normal); // normal dotted with conormal
+	//massFluxAvgDotNorm = -Vinf.dot(normal); // average mass flux dotted with normal
+
+	// Tangent and Normal components of vAvg and vDiff
+	vAvgTan = supTransMat.transpose() * gradPhiAvg;
+	vAvgNorm = (0.5*sourceStrength / denom) * normal; // numerator same as 0.5*sourceStrength
+
+	vDiffTan = supTransMat.transpose() * gradDubs;
+	vDiffNorm = (sourceStrength / denom) * normal;
+
+
+	/*if (normal.x() > 0)
+	{
+		vDiffTan.z() *= -1;
+		vAvgTan.z() *= -1;
+	}*/
+
+
+	vAvg = vAvgTan + vAvgNorm;
+	vDiff = vDiffTan + vDiffNorm;
+	/*vAvg = (supTransMat.transpose() * gradPhiAvg) + ((massFluxAvgDotNorm / denom) * normal);
+	vDiff = (supTransMat.transpose() * gradDubs) + ((sourceStrength / denom) * normal);*/
+
+	pertVel = vAvg + vDiff / 2; // upper velocity (i.e. perturbation velocity)
+	velLower = vAvg - vDiff / 2; // should be 0!
+
+	myPertVel = supTransMat.transpose() * gradDubs;
+	if (normal.x() > 0)
+	{
+		myPertVel.z() *= -1;
+	}
+
+	/*std::cout << "-----------------------------------------" << std::endl;
+	std::cout << "Mine\n" << myPertVel.x() << "\t" << myPertVel.y() << "\t" << myPertVel.z() << std::endl;
+	std::cout << "Upper\n" << pertVel.x() << "\t" << pertVel.y() << "\t" << pertVel.z() << std::endl;
+	std::cout << "Lower\n" << velLower.x() << "\t" << velLower.y() << "\t" << velLower.z() << std::endl;*/
+
+	/*std::cout << "\nOrig\n" << supTransMat << std::endl;
+	std::cout << "\nTrans\n" << supTransMat.transpose() << std::endl;*/
+
+	//// Not sure if this is applicable for supersonic flow
+	//double stuff2 = pertVel.dot(normal); // should equal 0
+	//std::cout << "Check: " << stuff2 << " (Should = 0)" << std::endl;
+
+	velocity = Vinf + pertVel;
+	//velocity = Vinf + myPertVel;
+
+	/*std::cout << "\nTotal Velocity: " << velocity.x() << "\t" << velocity.y() << "\t" << velocity.z() << std::endl;*/
+
+	return pertVel;
+}
 
 
 Eigen::Vector3d bodyPanel::supVelCorrection(Eigen::Vector3d pertVel, const double mach)
@@ -1091,8 +1231,8 @@ Eigen::Vector3d bodyPanel::supVelCorrection(Eigen::Vector3d pertVel, const doubl
 
 void bodyPanel::supComputeCp(Eigen::Vector3d Vinf)
 {
-	Cp = (-2 * supPertVel.x() / Vinf.norm()) - ((pow(supPertVel.y(), 2) + pow(supPertVel.z(), 2)) / pow(Vinf.norm(), 2));
-	//Cp = -2 * supPertVel.x() / Vinf.norm();
+	//Cp = (-2 * supPertVel.x() / Vinf.norm()) - ((pow(supPertVel.y(), 2) + pow(supPertVel.z(), 2)) / pow(Vinf.norm(), 2));
+	Cp = -2 * supPertVel.x() / Vinf.norm();
 }
 
 
@@ -1100,8 +1240,8 @@ void bodyPanel::supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vec
 {
 	double beta2 = 1 - pow(mach,2);
 
-	Cp = (-2 * pertVel.x() / Vinf.norm()) - ((pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
-	//Cp = -2 * pertVel.x() / Vinf.norm();
+	//Cp = (-2 * pertVel.x() / Vinf.norm()) - ((pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
+	Cp = -2 * pertVel.x() / Vinf.norm();
 }
 
 
@@ -1278,14 +1418,14 @@ bool bodyPanel::supDOIcheck(Eigen::Vector3d &P, const double Mach, Eigen::Vector
 }
 
 
-void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta, const double M)
+void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta, const double mach)
 {
 	// alpha and beta are input in degrees the transformed to radians
 
-	alpha *= 180 / M_PI;
-	beta *= 180 / M_PI;
-	supSetG2LSmatrix(Bmach, alpha, beta, M);
-	//supSetG2LSmatrixPilot(Bmach, alpha, beta, M);
+	alpha *= M_PI / 180;
+	beta *= M_PI / 180;
+	supSetG2LSmatrix(Bmach, alpha, beta, mach);
+	//supSetG2LSmatrixPilot(Bmach, alpha, beta, mach);
 
 	/*Eigen::Vector3d windDir;
 	windDir << cos(alpha)*cos(beta), -sin(beta), sin(alpha)*cos(beta);
@@ -1295,16 +1435,22 @@ void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta,
 	{
 		supLocalNodes.push_back(supTransMat * (nodes[i]->getPnt() - center));
 	}
+
+	/*std::cout << "\nIn Panel Check" << std::endl;
+	for (size_t i = 0; i < nodes.size(); i++)
+	{
+		std::cout << supLocalNodes[i].z() << std::endl;
+	}*/
 }
 
 
- void bodyPanel::supSetG2LSmatrix(const double Bmach, const double a, const double b, const double M)
+ void bodyPanel::supSetG2LSmatrix(const double Bmach, const double a, const double b, const double mach)
 {
 	// alpha and beta are input in radians
-	double B = Bmach;
+	//double B = Bmach;
 	Eigen::Vector3d cRef, nRef, nWind, scaleV, nWindScaled, vRef, uRef, col0, col1, col2;
 	Eigen::Matrix3d ref2wind, machScaleB, machScaleC, machScaleWind;
-	double s, r;
+	double beta, s, r;
 	//Eigen::Matrix3d transMat;
 
 	if (a != 0 || b != 0)
@@ -1325,18 +1471,22 @@ void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta,
 
 	// Matrices to remove B (i.e. Mach) from integration
 	s = -1.0;
-	machScaleB << s * pow(B, 2), 0, 0,
+	beta = sqrt(s * (1 - pow(mach, 2)));
+	machScaleB << s * pow(beta, 2), 0, 0,
 		0, 1, 0,
 		0, 0, 1;
 	machScaleC << 1, 0, 0,
-		0, s*pow(B, 2), 0,
-		0, 0, s*pow(B, 2);
+		0, s*pow(beta, 2), 0,
+		0, 0, s*pow(beta, 2);
 
 	// Combined wind and Mach scaling matrix
 	machScaleWind = ref2wind.transpose() * machScaleC * ref2wind;
 
 	// Panel normal in reference CSYS
 	nRef = normal;
+	/*std::cout << "\n" << nRef << std::endl;
+	Eigen::Vector3d POI;
+	supOutputGeom(POI, false);*/
 
 	// Stuff
 	vRef = nRef.cross(cRef) / (nRef.cross(cRef)).norm();
@@ -1348,25 +1498,44 @@ void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta,
 	}
 
 	col0 = (1.0 / sqrt(abs(nRef.dot(machScaleB * nRef)))) * machScaleWind * uRef;
-	col1 = (r * s / B) * machScaleWind * vRef;
-	col2 = B * nRef / sqrt(abs(nRef.dot(machScaleB * nRef)));
-
-	/*col0 = machScaleWind * uRef;
-	col1 = (r * s / B) * machScaleWind * vRef;
-	col2 = B * nRef;*/
+	col1 = (r * s / beta) * machScaleWind * vRef;
+	col2 = (beta * nRef) / sqrt(abs(nRef.dot(machScaleB * nRef)));
 
 	supTransMat.col(0) = col0;
 	supTransMat.col(1) = col1;
 	supTransMat.col(2) = col2;
 
 	supTransMat.transposeInPlace();
+	supAreaCorrect = 1.0 / (beta * sqrt(abs(nRef.dot(machScaleB * nRef))));
 
-	//////////////////////////// Correction term just greater than 1 for 5 deg test case -> small effect on results
+	//////////////////////////// Correction term just greater than 1 for 5 deg test case -> negligible effect on results
 	/*Eigen::Vector3d POI;
 	supOutputGeom(POI, false);*/
-	double nxCo = (ref2wind.row(0)).dot(nRef);
-	//supAreaCorrect = B / sqrt(1 - pow(M, 2)*pow(nxCo, 2));
-	supAreaCorrect = B * sqrt(1 - pow(M, 2)*pow(nxCo, 2));
+	//std::cout << "\n" << supTransMat << std::endl;
+
+
+	// Checking the requirements of transformation matrix given in PANAIR (E.3.11 - E.3.15)
+
+	//// E.3.11: R^2 scaled correctly -- CHECKED
+	//Eigen::Matrix3d LHS, RHS;
+	//LHS << r, 0, 0, 0, s, 0, 0, 0, r*s;
+	//RHS = supTransMat * machScaleWind.inverse() * supTransMat.transpose();
+	//std::cout << "\nLHS\n" << LHS << std::endl;
+	//std::cout << "RHS\n" << RHS << std::endl;
+
+	//// E.3.12: Panel is in the plane zLoc = 0 -- CHECKED (see next higher function)
+
+	//// E.3.13: Upstream direction is the xLox < 0 direction -- CHECKED
+	//Eigen::Vector3d e1(1, 0, 0);
+	//std::cout << "\nUpstream Check\n" << cRef.dot(supTransMat.inverse() * e1) << " > 0";
+
+	//// E.3.14: Superinclined check, not needed
+
+	//// E.3.15: det(A) > 0 && = beta^2 -- CHECKED
+	//if (supTransMat.determinant() < 0)
+	//{
+	//	std::cout << supTransMat.determinant() << std::endl;
+	//}
 }
 
 
@@ -1421,13 +1590,16 @@ void bodyPanel::supTransformPanel(const double Bmach, double alpha, double beta,
 	 //sin(nRef.dot(coNorm))
 
 	 supTransMat = A2 * A1 * ref2wind;
+	 supTransMatVel = ref2wind.transpose() * A1.transpose() * A2.transpose();
+
+	 supAreaCorrect = 1.0 / (Bmach * sqrt(abs(nRef.dot(Bmat * nRef))));
 
 	 /*Eigen::Vector3d POI;
 	 supOutputGeom(POI, false);
 	 std::cout << "\n" << ref2wind << std::endl;
 	 std::cout << "\n" << A1 << std::endl;
-	 std::cout << "\n" << A2 << std::endl;
-	 std::cout << "\n" << supTransMat << std::endl;*/
+	 std::cout << "\n" << A2 << std::endl;*/
+	 //std::cout << "\n" << supTransMat << std::endl;
 
 	 //supTransMat.transposeInPlace();
  }
@@ -1673,7 +1845,8 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 			else if (abs(m) > 1)
 			{
 				double wedgeCheck = pow(xm, 2) + (pow(z, 2) / pow(m, 2)) - pow(z, 2);
-				if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (abs(ym1) > epsGen && abs(ym2) > epsGen) && (wedgeCheck >= 0))
+				//if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (abs(ym1) > epsGen && abs(ym2) > epsGen) && (wedgeCheck >= 0))
+				if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (wedgeCheck >= 0))
 				{
 					////////////////////////////////////////////////////////////////////////////////////////////////////////
 					//supOutputGeom(POI, true);
@@ -1744,10 +1917,8 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 
 		// Compute final source coefficient
 		double Q1sum = dubCoeffs[0];
-		srcPhi = (srcCoeff - z * Q1sum) / (2.0 * M_PI);
-		//srcPhi = ((srcCoeff - z * Q1sum) / supAreaCorrect) / (2.0 * M_PI);
-		//srcPhi = ((srcCoeff - z * Q1sum) / (2.0 * M_PI)) / supAreaCorrect;
-		//srcPhi = ((srcCoeff - z * Q1sum) / (2.0 * M_PI)) * supAreaCorrect;
+		//srcPhi = (srcCoeff - z * Q1sum) / (2.0 * M_PI);
+		srcPhi = ((srcCoeff - z * Q1sum) / (2.0 * M_PI)) * supAreaCorrect;
 
 		// Compute final doublet coefficients
 		if (zFlag)
@@ -2070,8 +2241,12 @@ Eigen::Vector3d bodyPanel::supComputePertVelocity(const Eigen::Vector3d &POI, bo
 
 		if (abs((POI - center).norm()) < 2.0*linGetCPoffset()) // itselfFlag
 		{
-			pertVel.x() = -mu_x / 2.0;
-			pertVel.y() = -mu_y / 2.0;
+			double gradMu_x, gradMu_y;
+			gradMu_x = -linDubCoeffs[1];
+			gradMu_y = -linDubCoeffs[2];
+
+			pertVel.x() = gradMu_x / 2.0;
+			pertVel.y() = gradMu_y / 2.0;
 			//pertVel.z() += 0;
 		}
 		else
@@ -2223,7 +2398,8 @@ Eigen::Vector3d bodyPanel::supComputePertVelocity(const Eigen::Vector3d &POI, bo
 				else if (abs(m) > 1)
 				{
 					double wedgeCheck = pow(xm, 2) + (pow(z, 2) / pow(m, 2)) - pow(z, 2);
-					if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (abs(ym1) > epsGen && abs(ym2) > epsGen) && (wedgeCheck >= 0))
+					//if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (abs(ym1) > epsGen && abs(ym2) > epsGen) && (wedgeCheck >= 0))
+					if ((xm > 0) && (signbit(ym1) != signbit(ym2)) && (wedgeCheck >= 0))
 					{
 						////////////////////////////////////////////////////////////////////////////////////////////////////////
 						//supOutputGeom(POI, true);
@@ -2303,13 +2479,12 @@ Eigen::Vector3d bodyPanel::supComputePertVelocity(const Eigen::Vector3d &POI, bo
 	}
 	else if (abs((POI - center).norm()) < 2.0*linGetCPoffset()) // itselfFlag
 	{
-		double mu_0, mu_x, mu_y;
-		mu_0 = linDubCoeffs[0];
-		mu_x = linDubCoeffs[1];
-		mu_y = linDubCoeffs[2];
+		double gradMu_x, gradMu_y;
+		gradMu_x = -linDubCoeffs[1];
+		gradMu_y = -linDubCoeffs[2];
 
-		pertVel.x() = -mu_x / 2.0;
-		pertVel.y() = -mu_y / 2.0;
+		pertVel.x() = gradMu_x / 2.0;
+		pertVel.y() = gradMu_y / 2.0;
 		//pertVel.z() += 0;
 	}
 
@@ -2328,7 +2503,8 @@ void bodyPanel::supSetMu()
 {
 	Eigen::Vector3d vertDubStrengths;
 	Eigen::Matrix3d vertsMat = supVertsMatrix(supLocalNodes);
-	vertDubStrengths = linGetDubStrengths();
+	//vertDubStrengths = linGetDubStrengths();
+	vertDubStrengths = linGetOrigDubStrengths();
 
 	linDubCoeffs = vertsMat.inverse() * vertDubStrengths;
 	// [mu_0 mu_x mu_y]
@@ -2367,7 +2543,7 @@ Eigen::Vector3d bodyPanel::calcCP()
 	Eigen::Vector3d ctrlPnt;
 	linSetCPoffset();
 	//ctrlPnt = center - linCPoffset * normal;
-	ctrlPnt = center - linCPoffset * normal;
+	ctrlPnt = center + linCPoffset * normal;
 
 	return ctrlPnt;
 }

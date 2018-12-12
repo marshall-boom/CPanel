@@ -98,7 +98,7 @@ protected:
 	void linCompVelocity();
 	void supCompVelocity();
 	void supCompVelocity2();
-    
+	Eigen::Matrix3d supRef2WindMat(double alpha, double beta);
     
     struct meshDat {
         std::vector<Eigen::Vector3d> velocity;

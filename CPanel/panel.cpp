@@ -57,7 +57,7 @@ void panel::setGeom()
         double theta = acos(a.dot(b)/(a.norm()*b.norm()));
         area = 0.5*a.norm()*b.norm()*sin(theta);
 
-        /*normal = a.cross(b);*/
+        //normal = a.cross(b);
 		normal = b.cross(a);
         normal.normalize();
         
@@ -661,6 +661,7 @@ Eigen::Vector3d panel::linGetDubStrengths()
 	for (nodes_index_type i = 0; i < nodes.size(); i++)
 	{
 		//vertDubStrengths[i] = nodes[i]->linGetMu();
+		//vertDubStrengths[i] = nodes[i]->linGetPotential();
 		vertDubStrengths[i] = nodes[i]->linGetPotential();
 	}
 

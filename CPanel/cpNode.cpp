@@ -182,7 +182,9 @@ void cpNode::linSetPotential(Eigen::Vector3d Vinf)
 {
 	linPrevPotential = linPotential;
 
-	linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
+	//linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
+	linPotential = linDoubletStrength/2 + Vinf.dot(calcCP()); // Katz 11.74, 13.157
+	//linPotential = linDoubletStrength / 2;	// use this to get perturbation velcocity out later
 }
 
 
@@ -190,9 +192,10 @@ void cpNode::supSetPotential(Eigen::Vector3d Vinf)
 {
 	linPrevPotential = linPotential;
 
-	//linPotential = linDoubletStrength / 2;
-	linPotential = linDoubletStrength;
+	//linPotential = -linDoubletStrength / 2; // PANAIR: average potential
+	linPotential = linDoubletStrength / 2; // PANAIR: average potential
 	//linPotential = -linDoubletStrength;
+	//linPotential = linDoubletStrength;
 	//linPotential = Vinf.dot(calcCP()) - linDoubletStrength;	// 99% SURE THIS IS THE ONE
 }
 
