@@ -91,14 +91,13 @@ protected:
     void writeVTU(std::string filename);
     void writeFiles();
     void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+	void linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);
     
 	void linCompVelocity();
 	void supCompVelocity();
-	void supCompVelocity2();
-	Eigen::Matrix3d supRef2WindMat(double alpha, double beta);
     
     struct meshDat {
         std::vector<Eigen::Vector3d> velocity;

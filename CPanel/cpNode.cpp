@@ -188,21 +188,9 @@ void cpNode::linSetPotential(Eigen::Vector3d Vinf)
 }
 
 
-void cpNode::supSetPotential(Eigen::Vector3d Vinf)
+void cpNode::supSetPotential()
 {
 	linPrevPotential = linPotential;
 
-	//linPotential = -linDoubletStrength / 2; // PANAIR: average potential
 	linPotential = linDoubletStrength / 2; // PANAIR: average potential
-	//linPotential = -linDoubletStrength;
-	//linPotential = linDoubletStrength;
-	//linPotential = Vinf.dot(calcCP()) - linDoubletStrength;	// 99% SURE THIS IS THE ONE
 }
-
-// not used
-
-//void cpNode::linSetVelocity(Eigen::Vector3d Vel)
-//{
-//	linVelocity = Vel;
-//}
-

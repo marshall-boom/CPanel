@@ -89,7 +89,7 @@ public:
     
     Eigen::Vector3d edgeStrength( edge* curEdge, int edgeNum);
 
-	void linSetMu();
+	//void linSetMu();
     
 };
 

@@ -238,7 +238,6 @@ class geometry
 	double inputMach;	//ss
 	double alpha;
 	double beta;
-	Eigen::Vector3d windDir;
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -325,8 +324,8 @@ public:
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
 	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);
 
-	void computeWindDir();
-	Eigen::Vector3d getWindDir() { return windDir; }
+	Eigen::Vector3d geometry::supComputeWindDir();
+	//Eigen::Vector3d getWindDir() { return windDir; }
 
 };
 

@@ -427,15 +427,26 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         
-        //// Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
-        //for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
-        //{
-        //    bPanels[i]->setTipFlag();
-        //}
-        //for (bodyPanels_index_type i=0; i<bPanels.size(); i++)
-        //{
-        //    bPanels[i]->setCluster();
-        //}
+		// Only need tip patch identification for subsonic, constant doublet scheme
+		if (inMach < 1.0 && inputMach < 1.0)
+		{
+			// Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
+			for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
+			{
+				bPanels[i]->setTipFlag();
+			}
+			for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
+			{
+				bPanels[i]->setCluster();
+			}
+		}
+
+
+		// For supersonic scheme, flip panel normal due to change in ordering of panel vertices
+		for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
+		{
+			bPanels[i]->supFlipNormal();
+		}
         
 
 		// Organize body nodes and get control point data for linear scheme
@@ -521,7 +532,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 			{
 				supSetInfCoeff();
 			}
-			else
+			else // original subsonic constant doublet scheme
 			{
 				setInfCoeff();
 			}
@@ -949,30 +960,27 @@ void geometry::supSetInfCoeff()
 	B.setZero();
 
 	Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
-	Eigen::Vector3d ctrlPnt;
+	Eigen::Vector3d ctrlPnt, windDir;
+	bool DODflag; // Domain of Dependence flag: true if panel is inside or intersecting Mach cone of control point, false otherwise
+	windDir = supComputeWindDir(); // Used in DoD checking
 
-	// Flag used for domain of influence checks
-	bool DOIflag;
-
-	computeWindDir();
-
-	// Compute transformation matrices for each panel
-	double Bmach = sqrt(pow(inputMach, 2) - 1);
+	// Compute transformation matrices, and perform the transformation, for each panel
 	for (size_t i = 0; i < nBodyPans; i++)
 	{
-		bPanels[i]->supTransformPanel(Bmach, alpha, beta, inputMach);
+		bPanels[i]->supTransformPanel(alpha, beta, inputMach);
 	}
 
+	// Build A and B matrices
 	for (size_t i = 0; i < nBodyNodes; i++)
 	{
-		// Control point in original Ref CSYS
+		// Control point in original Ref CSYS. Transformed to panel local CSYS in supPhiInf()
 		ctrlPnt = nodes[i]->calcCP();
 
 		Arow = A.row(i);
 		for (size_t j = 0; j < nBodyPans; j++)
 		{
-			DOIflag = bPanels[j]->supDOIcheck(ctrlPnt, inputMach, windDir);
-			bPanels[j]->supPhiInf(ctrlPnt, Arow, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), DOIflag, inputMach, windDir);
+			DODflag = bPanels[j]->supDODcheck(ctrlPnt, inputMach, windDir);
+			bPanels[j]->supPhiInf(ctrlPnt, Arow, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)), DODflag, inputMach);
 		}
 		A.row(i) = Arow;
 
@@ -985,9 +993,6 @@ void geometry::supSetInfCoeff()
 			}
 		}
 	}
-
-	/*std::cout << "\n" << A << std::endl;
-	std::cout << "\n" << B << std::endl;*/
 
 	for (size_t i = 0; i<nBodyPans; i++)
 	{
@@ -1003,8 +1008,9 @@ void geometry::supSetInfCoeff()
 }
 
 
-void geometry::computeWindDir()
+Eigen::Vector3d geometry::supComputeWindDir()
 {
+	Eigen::Vector3d windDir;
 	double aalpha, bbeta;
 
 	if (alpha == 0 && beta == 0)
@@ -1018,6 +1024,8 @@ void geometry::computeWindDir()
 
 		windDir << cos(aalpha)*cos(bbeta), -sin(bbeta), sin(aalpha)*cos(bbeta);
 	}
+
+	return windDir;
 }
 
 

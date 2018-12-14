@@ -68,16 +68,11 @@ class bodyPanel : public panel
     Eigen::Matrix3d velocityGradientQuadSource(Eigen::Vector3d POI);
     Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
 
-	//std::vector<bool> edgeFlags;
-
+	double panelMach;
+	Eigen::Vector3d linDubCoeffs;
 	Eigen::Matrix3d supTransMat;
-	Eigen::Matrix3d supTransMatVel;
 	std::vector<Eigen::Vector3d> supLocalNodes;
 	double supAreaCorrect;
-
-	Eigen::Vector3d linDubCoeffs;
-	double linCPoffset;
-	Eigen::Vector3d supPertVel = Eigen::Vector3d::Zero();
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
@@ -133,21 +128,15 @@ public:
     
     Eigen::Vector3d partStretching(particle* part);
 
-	// ss
+	// lin & ss
 	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
 	void linComputeVelocity(double PG, Eigen::Vector3d &Vinf);
-	Eigen::Vector3d linComputeVelocity2(double PG, Eigen::Vector3d &Vinf, Eigen::Vector3d &POI);
-	double linGetTEdubStrength();
 
-	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach, Eigen::Vector3d &windDir);
-	bool supDOIcheck(Eigen::Vector3d &POI,const double Mach, Eigen::Vector3d &windDir);
-	//bool supEdgeCheck(edge* myEdge, Eigen::Vector3d &P, const double B);
-	void supTransformPanel(const double Bmach, double alpha, double beta, const double M);
-	//Eigen::Matrix3d supG2LSmatrix(const double Bmach);
-	void supSetG2LSmatrix(const double Bmach, const double a, const double b, const double M);
-	void supSetG2LSmatrixPilot(const double Bmach, const double a, const double b, const double M);
-	Eigen::Vector3d supConePanelInter(const Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
-	Eigen::Matrix3d supGetLocalSys(Eigen::Vector3d &windDir);
+	void supFlipNormal();
+	void supTransformPanel(double alpha, double beta, const double mach);
+	void supSetG2LSmatrix(const double a, const double b, const double mach);
+	bool supDODcheck(Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
+	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach);
 
 	Eigen::Vector2d supEdgeInfSon(const double ym1, const double ym2, const double xmc, const double ym1c, const double ym2c, const double R1, const double R2, const double lam, const double z);
 	Eigen::Vector2d supEdgeInfSub(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
@@ -155,24 +144,13 @@ public:
 
 	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
 
-	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, Eigen::Matrix3d &ref2wind, bool velCorrection);
-	Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
+	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
 	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel);
-	void supComputeCp(Eigen::Vector3d Vinf);
+	Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
 
-	Eigen::Vector3d supComputePertVelocity(const Eigen::Vector3d &POI, bool DOIflag);
 	void supSetMu();
 	void linSetMu();
-	void linSetCPoffset();
-	Eigen::Vector3d calcCP();
-	Eigen::Vector3d supGetPertVel() { return supPertVel; }
-	double linGetCPoffset() { return linCPoffset; }
-	void supSetPertVel(Eigen::Vector3d pertVel);
-	Eigen::Vector3d supComputeVelocity2(Eigen::Vector3d Vinf, const double mach, Eigen::Matrix3d &ref2wind, bool velCorrection);
-	void linComputeVelocity2(double PG, Eigen::Vector3d &Vinf);
-
-	//std::vector<bool> getEdgeFlags() { return edgeFlags; }
-    
+	double getPanelMach() { return panelMach; }
 };
 
 #endif /* defined(__CPanel__bodyPanel__) */

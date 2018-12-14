@@ -57,8 +57,8 @@ void panel::setGeom()
         double theta = acos(a.dot(b)/(a.norm()*b.norm()));
         area = 0.5*a.norm()*b.norm()*sin(theta);
 
-        //normal = a.cross(b);
-		normal = b.cross(a);
+        normal = a.cross(b);
+		//normal = b.cross(a);
         normal.normalize();
         
         // If normals weren't included in input, set bezNormal to calculated normal
@@ -621,37 +621,6 @@ void panel::linComputeVelocity(double PG,Eigen::Vector3d &Vinf)
 	velocity = local2global(panVel, false);
 	velocity(0) /= PG;
 }
-
-
-//void panel::linGetConstDubStrength()
-//{
-//	double mu_0; //mu_x, mu_y;
-//	Eigen::Vector3d vertDubStrengths, linDubConsts;
-//	Eigen::Matrix3d vertsMat = linVertsMatrix(true);
-//	vertDubStrengths = linGetDubStrengths();
-//
-//	linDubConsts = vertsMat.inverse() * vertDubStrengths;
-//	mu_0 = linDubConsts(0);
-//	/*mu_x = linDubConsts(1);
-//	mu_y = linDubConsts(2);*/
-//
-//	doubletStrength = mu_0;
-//	//doubletStrength = linDubConsts[0];
-//}
-
-//
-//Eigen::Vector3d panel::supGetDubDiffs()
-//{
-//	Eigen::Vector3d vertDubDiffs;	// [mu1 mu2 mu3]
-//
-//	for (nodes_index_type i = 0; i < nodes.size(); i++)
-//	{
-//		//vertDubStrengths[i] = nodes[i]->linGetMu();
-//		vertDubDiffs[i] = nodes[i]->linGetMu();
-//	}
-//
-//	return vertDubDiffs;
-//}
 
 
 Eigen::Vector3d panel::linGetDubStrengths()
