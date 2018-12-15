@@ -322,11 +322,9 @@ public:
 
 	double getInMach() { return inMach; }
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
-	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);
-
 	Eigen::Vector3d geometry::supComputeWindDir();
-	//Eigen::Vector3d getWindDir() { return windDir; }
 
+	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);
 };
 
 

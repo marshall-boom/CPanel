@@ -50,6 +50,11 @@ class bodyPanel : public panel
     bool streamFlag; // Surface Streamline crosses panel.
     Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
     double Cp = 0;
+
+	// Supersonic Cp's
+	double Cp1 = 0;		// 1st order Cp
+	double Cp2s = 0;	// 2nd order Cp with slender body assumption
+	double Cp2 = 0;		// 2nd order Cp, full
     
     int index; // Index in panel vector contained in geometry class.  Used for interpolating strength for wake panel influences.
     
@@ -138,7 +143,7 @@ public:
 	bool supDODcheck(Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
 	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach);
 
-	Eigen::Vector2d supEdgeInfSon(const double ym1, const double ym2, const double xmc, const double ym1c, const double ym2c, const double R1, const double R2, const double lam, const double z);
+	Eigen::Vector2d supEdgeInfSon(const double ym1, const double ym2, const double xm, const double R1, const double R2, const double lam, const double z, const double eps1, const double eps2);
 	Eigen::Vector2d supEdgeInfSub(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
 	Eigen::Vector2d supEdgeInfSup(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
 
@@ -146,7 +151,10 @@ public:
 
 	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
 	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel);
-	Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
+	double supGetCp1() { return Cp1; }
+	double supGetCp2s() { return Cp2s; }
+	double supGetCp2() { return Cp2; }
+	//Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
 
 	void supSetMu();
 	void linSetMu();

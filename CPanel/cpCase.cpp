@@ -624,7 +624,7 @@ void cpCase::linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixX
 {
 	std::vector<cellDataArray> cellData;
 	std::vector<pntDataArray> pntData;
-	cellDataArray sigma("Source Strengths"), V("Velocity"), Mach("Mach"), Cp("Cp"), bN("bezNormals"), x("xPosition"), y("yPosition"), z("zPostition");
+	cellDataArray sigma("Source Strengths"), V("Velocity"), Mach("Mach"), Cp1("Cp1"), Cp2s("Cp2s"), Cp2("Cp2"), bN("bezNormals"), x("xPosition"), y("yPosition"), z("zPostition");
 	pntDataArray mu("Doublet Strengths"), pot("Velocity Potential");
 	Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(), 3);
 	mu.data.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()), 1);
@@ -632,7 +632,9 @@ void cpCase::linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixX
 	pot.data.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()), 1);
 	V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 3);
 	Mach.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
-	Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	Cp1.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	Cp2s.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	Cp2.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
 	bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 3);
 	x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
 	y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
@@ -651,7 +653,9 @@ void cpCase::linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixX
 		sigma.data(ii, 0) = (*bPanels)[i]->getSigma();
 		V.data.row(ii) = (*bPanels)[i]->getGlobalV();
 		Mach.data(ii, 0) = (*bPanels)[i]->getPanelMach();
-		Cp.data(ii, 0) = (*bPanels)[i]->getCp();
+		Cp1.data(ii, 0) = (*bPanels)[i]->supGetCp1();
+		Cp2s.data(ii, 0) = (*bPanels)[i]->supGetCp2s();
+		Cp2.data(ii, 0) = (*bPanels)[i]->supGetCp2();
 		con.row(ii) = (*bPanels)[i]->getVerts();
 		bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
 		x.data(ii, 0) = (*bPanels)[i]->getCenter().x();
@@ -664,7 +668,9 @@ void cpCase::linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixX
 	pntData.push_back(pot);
 	cellData.push_back(V);
 	cellData.push_back(Mach);
-	cellData.push_back(Cp);
+	cellData.push_back(Cp1);
+	cellData.push_back(Cp2s);
+	cellData.push_back(Cp2);
 	cellData.push_back(bN);
 	cellData.push_back(x);
 	cellData.push_back(y);

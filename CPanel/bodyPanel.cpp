@@ -1081,11 +1081,14 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 
 void bodyPanel::supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel)
 {
-	// Linearized Cp
-	Cp = -2 * pertVel.x() / Vinf.norm();
+	// 1st Order Cp (Linearized)
+	Cp1 = -2 * pertVel.x() / Vinf.norm();
 
-	// Slender body Cp
-	//Cp = (-2 * pertVel.x() / Vinf.norm()) - ((pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
+	// 2nd Order Cp (Slender Body Assumption)
+	Cp2s = (-2 * pertVel.x() / Vinf.norm()) - ((pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
+
+	// 2nd Order Cp (no Slender Body Assumption)
+	Cp2 = (-2 * pertVel.x() / Vinf.norm()) - (((1-pow(mach,2))*pow(pertVel.x(),2) + pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
 }
 
 
@@ -1276,7 +1279,7 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 
 		double epsGenStrong, epsGenWeak;
 		epsGenStrong = 1.0e-10;
-		epsGenWeak = 1.0e-5;
+		epsGenWeak = 1.0e-6;
 
 		// Transform control point
 		localPOI = supTransMat * (POI - center);
@@ -1381,12 +1384,13 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 			{
 				if (abs(z) > 1e-10)
 				{
-					//if (abs(1 - abs(m)) < epsGenWeak) // sonic edge (parallel to Mach cone)
-					//{
-					//	integralCoeffs = supEdgeInfSon(ym1, ym2, xmc, ym1c, ym2c, R1, R2, lam, z);
-					//}
-					//else if (abs(m) < 1) // subsonic edge (edge slope is less than that of the Mach cone)
-					if (abs(m) < 1) // subsonic edge (edge slope is less than that of the Mach cone)
+					if (abs(1 - abs(m)) < epsGenWeak) // sonic edge (parallel to Mach cone)
+					{
+						//supOutputGeom(POI, true);
+						integralCoeffs = supEdgeInfSon(ym1, ym2, xm, R1, R2, lam, z, eps1, eps2);
+					}
+					else if (abs(m) < 1) // subsonic edge (edge slope is less than that of the Mach cone)
+					//if (abs(m) < 1) // subsonic edge (edge slope is less than that of the Mach cone)
 					{
 						integralCoeffs = supEdgeInfSub(R1, R2, ym1c, ym2c, xmc, m, z, eps1, eps2, mFlag);
 					}
@@ -1524,11 +1528,55 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 }
 
 
-Eigen::Vector2d bodyPanel::supEdgeInfSon(const double ym1, const double ym2, const double xmc, const double ym1c, const double ym2c, const double R1, const double R2, const double lam, const double z)
+Eigen::Vector2d bodyPanel::supEdgeInfSon(const double ym1, const double ym2, const double xm, const double R1, const double R2, const double lam, const double z, const double eps1, const double eps2)
 {
 	Eigen::Vector2d integralCoeffs;
+	double Q1, w0, ym1Neg, ym2Neg, zr;
+	ym1Neg = -ym1;
+	ym2Neg = -ym2;
 
+	zr = (ym1Neg*R2 - ym2Neg * R1) / (ym1Neg*ym2Neg + (1 - pow(lam, 2))*R1*R2);
+	w0 = zr * (1 - ((1 - pow(lam, 2)*pow(zr, 2)) / 3) + ((pow(1 - pow(lam, 2), 2)*pow(zr, 4)) / 5) - ((pow(1 - pow(lam, 2), 3)*pow(zr, 6)) / 7));
 
+	if (R1 > eps1 && R2 > eps2) // Both edge points are inside the Mach cone
+	{
+		Q1 = atan2(z * xm * (ym1Neg*R2 - ym2Neg * R1), pow(z, 2)*ym2Neg*ym1Neg + pow(xm, 2)*R1*R2);
+	}
+	else // One edge point is inside Mach cone
+	{
+		double Q11, Q12;
+		if (R1 > eps1)
+		{
+			Q11 = atan2(z*ym1, xm*R1);
+		}
+		else
+		{
+			double s1 = 1.0;
+			if (signbit(z * ym1))
+			{
+				s1 = -1.0;
+			}
+
+			Q11 = s1 * M_PI / 2;
+		}
+		if (R2 > eps2)
+		{
+			Q12 = atan2(z*ym2, xm*R2);
+		}
+		else
+		{
+			double s2 = 1.0;
+			if (signbit(z * ym2))
+			{
+				s2 = -1.0;
+			}
+			Q12 = s2 * M_PI / 2;
+		}
+		Q1 = Q12 - Q11;
+	}
+
+	integralCoeffs[0] = Q1;
+	integralCoeffs[1] = w0;
 
 	return integralCoeffs;
 }

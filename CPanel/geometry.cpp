@@ -442,12 +442,17 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 		}
 
 
-		// For supersonic scheme, flip panel normal due to change in ordering of panel vertices
-		for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
+		if (inputMach > 1.0)
 		{
-			bPanels[i]->supFlipNormal();
+			for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
+			{
+				// For supersonic scheme, flip panel normal due to change in ordering of panel vertices
+				bPanels[i]->supFlipNormal();
+
+				// Check for superinclined panels. Ask if user wants to continue
+			}
 		}
-        
+
 
 		// Organize body nodes and get control point data for linear scheme
 		// Done for wake handling... wake handling is postponed for the timw being 10/18/2018
@@ -494,11 +499,6 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				nodes[i]->setIndex(static_cast<int>(i));
 			}
 		}
-
-
-		// Flag superinclined panels ///////////////////////////////////////////////////////////
-
-		// Going to do later, just make sure there are no superinclined panels for the time being
 
 
         // Calculate influence coefficient matrices
