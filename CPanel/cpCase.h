@@ -92,6 +92,7 @@ protected:
     void writeFiles();
     void writeBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
 	void linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
+	void supWriteBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeWakeData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat);
     void writeSpanwiseData(boost::filesystem::path path);
     void writeBodyStreamlines(boost::filesystem::path path);

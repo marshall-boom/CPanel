@@ -1089,6 +1089,8 @@ void bodyPanel::supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vec
 
 	// 2nd Order Cp (no Slender Body Assumption)
 	Cp2 = (-2 * pertVel.x() / Vinf.norm()) - (((1-pow(mach,2))*pow(pertVel.x(),2) + pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
+
+	Cp = Cp2;
 }
 
 
@@ -1757,6 +1759,23 @@ void bodyPanel::linSetMu()
 	linDubCoeffs = vertsMat.inverse() * vertDubStrengths;
 	// [mu_0 mu_x mu_y]
 	std::cout << linDubCoeffs.y() << std::endl;
+}
+
+
+bool bodyPanel::supSuperinclinedCheck(const double B, Eigen::Matrix3d &body2wind)
+{
+	bool isSupInclined = false;
+	Eigen::Vector3d nWind, ncWind;
+
+	nWind = body2wind * normal;
+	ncWind = nWind;
+	ncWind(0) *= -pow(B, 2);
+	if (nWind.dot(ncWind) <= 0)
+	{
+		isSupInclined = true;
+	}
+
+	return isSupInclined;
 }
 
 

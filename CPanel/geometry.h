@@ -235,9 +235,12 @@ class geometry
     double dt;
     double inputV;
 
-	double inputMach;	//ss
+	// lin & ss
+	bool subHOMFlag;
+	double inputMach;
 	double alpha;
 	double beta;
+	Eigen::Matrix3d body2wind;
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -277,6 +280,7 @@ public:
         nTris=0;
 
 		// Jake: How are these handled if there are multiple input Mach numbers
+		subHOMFlag = p->subHOMFlag;
 		inputMach = p->machs(0);
 		alpha = p->alphas(0);
 		beta = p->betas(0);
@@ -315,13 +319,8 @@ public:
 
     void moveGeom( std::vector<double> bodyKin );
 
-	// Currently used to control whether code runs through const. or lin. dub. scheme
-	// Will eventually add to input file
-	// -Jake
-	double inMach = 0.1;
-
-	double getInMach() { return inMach; }
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
+	void geometry::setBodyToWind(double a, double b);
 	Eigen::Vector3d geometry::supComputeWindDir();
 
 	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);

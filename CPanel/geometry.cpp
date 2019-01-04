@@ -135,6 +135,22 @@ void geometry::readTri(std::string tri_file, bool normFlag)
     fid.open(tri_file);
     if (fid.is_open())
     {
+		// Check if Mach number is in the transonic regime and ask for user input
+		if (0.7 < inputMach && inputMach < 1.2)
+		{
+			std::string in;
+			std::cout << "WARNING: Input Mach number could result in transonic flow phenomena which will not be modeled properly!" << std::endl;
+			std::cout << "\tWould you like to proceed anyway?" << std::endl;
+			std::cout << "\t\t< Y > - Yes, proceed any." << std::endl;
+			std::cout << "\t\t< N > - No, exit program." << std::endl;
+			std::cin >> in;
+			std::cout << std::endl;
+			if (in == "N" || in == "n")
+			{
+				exit(EXIT_FAILURE);
+			}
+		}
+
         std::cout << "Reading Geometry..." << std::endl;
         fid >> nNodes >> nTris;
         Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> connectivity(nTris,3);
@@ -428,7 +444,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
         
 		// Only need tip patch identification for subsonic, constant doublet scheme
-		if (inMach < 1.0 && inputMach < 1.0)
+		if (!subHOMFlag && inputMach < 1.0)
 		{
 			// Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
 			for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
@@ -444,21 +460,48 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
 		if (inputMach > 1.0)
 		{
+			// For supersonic scheme, flip panel normal due to change in ordering of panel vertices
+
 			for (bodyPanels_index_type i = 0; i<bPanels.size(); i++)
 			{
-				// For supersonic scheme, flip panel normal due to change in ordering of panel vertices
 				bPanels[i]->supFlipNormal();
+			}
 
-				// Check for superinclined panels. Ask if user wants to continue
+			// Check for superinclined panels. Ask if user wants to continue if one is found
+
+			std::cout << "Checking for superinclined panels..." << std::endl;
+			bool isSupInclined = false;
+			Eigen::Vector3d nWind;
+			double B = sqrt(pow(inputMach, 2) - 1);
+			setBodyToWind(alpha, beta);
+			
+			bodyPanels_index_type i = 0;
+			while (i < bPanels.size() && !isSupInclined)
+			{
+				isSupInclined = bPanels[i]->supSuperinclinedCheck(B, body2wind); // returns true if sup-inclined panel is found
+				i += 1;
+			}
+			if (isSupInclined)
+			{
+				std::string in;
+				std::cout << "\nSuperinclined panel(s) found, input geometry must be modified or results will be in error." << std::endl;
+				std::cout << "\tWould you like to proceed anyway?" << std::endl;
+				std::cout << "\t\t< Y > - Yes, proceed any." << std::endl;
+				std::cout << "\t\t< N > - No, exit program." << std::endl;
+				std::cin >> in;
+				std::cout << std::endl;
+				if (in == "N" || in == "n")
+				{
+					exit(EXIT_FAILURE);
+				}
 			}
 		}
 
 
-		// Organize body nodes and get control point data for linear scheme
-		// Done for wake handling... wake handling is postponed for the timw being 10/18/2018
-
-		if (inMach > 1.0 || inputMach > 1.0)
+		if (subHOMFlag || inputMach > 1.0)
 		{
+			// Get control point data for linear schemes
+
 			for (nodes_index_type i = 0; i < nodes.size(); i++)
 			{
 				if (nodes[i]->getBodyPans().size() > 0)
@@ -472,6 +515,8 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 					wakeNodes.push_back(nodes[i]);
 				}
 			}
+
+			// Organize body nodes for wake handling... wake handling is postponed for the time being 10/18/2018
 
 			nodes_index_type j = 0;
 			nodes_index_type k = bodyNodes.size();
@@ -501,6 +546,27 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 		}
 
 
+		//// Need to generate upper and lower trailing edge nodes
+		//cpNode* nSup;
+		//size_t k = nNodes;
+		//for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
+		//{
+		//	if (bPanels[i]->isTEpanel() && bPanels[i]->getNormal().z() < 0)
+		//	{
+		//		for (nodes_index_type j = 0; j < nodes.size(); j++)
+		//		{
+		//			if (bPanels[i]->getNodes()[j]->isTE())
+		//			{
+		//				k += 1;
+		//				nSup = new cpNode(nodes[j]->getPnt(), k);
+		//				nodes.push_back(nSup);
+		//				bPanels[i]->getNodes()[j] = nSup;
+		//			}
+		//		}
+		//	}
+		//}
+
+
         // Calculate influence coefficient matrices
 
         bool read = false;
@@ -524,7 +590,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         if (!read)
         {
             std::cout << "Building Influence Coefficient Matrix..." << std::endl;
-			if (inMach > 1.0) // linear doublet subsonic scheme
+			if (subHOMFlag) // linear doublet subsonic scheme
 			{
 				linSetInfCoeff();
 			}
@@ -967,6 +1033,7 @@ void geometry::supSetInfCoeff()
 	// Compute transformation matrices, and perform the transformation, for each panel
 	for (size_t i = 0; i < nBodyPans; i++)
 	{
+		// A lot of this only needs to be computed once. Could put outside loop and input into function to increase efficiency
 		bPanels[i]->supTransformPanel(alpha, beta, inputMach);
 	}
 
@@ -1027,6 +1094,29 @@ Eigen::Vector3d geometry::supComputeWindDir()
 
 	return windDir;
 }
+
+
+void geometry::setBodyToWind(double a, double b)
+{
+	a *= M_PI / 180;
+	b *= M_PI / 180;
+
+	body2wind << cos(a)*cos(b), -sin(b), sin(a)*cos(b),
+		cos(a)*sin(b), cos(b), sin(a)*sin(b),
+		-sin(a), 0, cos(a);
+}
+
+
+//Eigen::Vector3d geometry::bodyToWind(double vecIn, double a, double b)
+//{
+//	Eigen::Vector3d vecOut;
+//
+//	
+//
+//	vecOut = body2wind * vecIn;
+//
+//	return vecOut;
+//}
 
 
 Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)

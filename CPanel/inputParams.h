@@ -46,6 +46,7 @@ struct inputParams
     Eigen::Vector3d cg;
     Eigen::VectorXd velocities,alphas,betas,machs;
 
+	bool subHOMFlag = false;
     bool surfStreamFlag = false;
     bool stabDerivFlag = false;
     bool writeCoeffFlag = false;

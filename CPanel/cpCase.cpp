@@ -34,7 +34,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     std::string check = "\u2713";
 
 	setSourceStrengths();
-	if (geom->getInMach() > 1.0) // linear doublet subsonic
+	if (params->subHOMFlag) // linear doublet subsonic
 	{
 		converged = linSolveMatrixEq();
 	}
@@ -53,7 +53,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
         std::cout << std::setw(17) << std::left << check << std::flush;
     }
 
-	if (geom->getInMach() > 1.0)
+	if (params->subHOMFlag)
 	{
 		linCompVelocity();
 	}
@@ -242,11 +242,11 @@ bool cpCase::linSolveMatrixEq()
 		(nodes)[i]->linSetPotential(Vinf);
 	}
 
-	// Compute panel based linear doublet equations (mu(x,y) = mu_0 + mu_x*x + mu_y*y)
-	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
-	{
-		(*bPanels)[i]->linSetMu();
-	}
+	//// Compute panel based linear doublet equations (mu(x,y) = mu_0 + mu_x*x + mu_y*y)
+	//for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	//{
+	//	(*bPanels)[i]->linSetMu();
+	//}
 
 	///////////////////// wake currently not accounted for -11/08/2018
 	//for (wakePanels_index_type i = 0; i < wPanels->size(); i++)
@@ -542,9 +542,13 @@ void cpCase::writeFiles()
     }
     Eigen::MatrixXd nodeMat = geom->getNodePnts();
 
-	if (geom->getInMach() > 1.0 || getMach() > 1.0)
+	if (params->subHOMFlag)
 	{
 		linWriteBodyData(subdir, nodeMat);
+	}
+	else if (getMach() > 1.0)
+	{
+		supWriteBodyData(subdir, nodeMat);
 	}
 	else
 	{
@@ -621,6 +625,63 @@ void cpCase::writeBodyData(boost::filesystem::path path,const Eigen::MatrixXd &n
 }
 
 void cpCase::linWriteBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat)
+{
+	std::vector<cellDataArray> cellData;
+	std::vector<pntDataArray> pntData;
+	cellDataArray sigma("Source Strengths"), V("Velocity"), Cp("Cp"), bN("bezNormals"), x("xPosition"), y("yPosition"), z("zPostition");
+	pntDataArray mu("Doublet Strengths"), pot("Velocity Potential");
+	Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> con(bPanels->size(), 3);
+	mu.data.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()), 1);
+	sigma.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	pot.data.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()), 1);
+	V.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 3);
+	Cp.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	bN.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 3);
+	x.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	y.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+	z.data.resize(static_cast<Eigen::MatrixXd::Index>(bPanels->size()), 1);
+
+	for (nodes_index_type i = 0; i < nodes.size(); i++)
+	{
+		Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+		mu.data(ii, 0) = nodes[i]->linGetMu();
+		pot.data(ii, 0) = nodes[i]->linGetPotential();
+	}
+
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
+		sigma.data(ii, 0) = (*bPanels)[i]->getSigma();
+		V.data.row(ii) = (*bPanels)[i]->getGlobalV();
+		Cp.data(ii, 0) = (*bPanels)[i]->getCp();
+		con.row(ii) = (*bPanels)[i]->getVerts();
+		bN.data.row(ii) = (*bPanels)[i]->getBezNormal();
+		x.data(ii, 0) = (*bPanels)[i]->getCenter().x();
+		y.data(ii, 0) = (*bPanels)[i]->getCenter().y();
+		z.data(ii, 0) = (*bPanels)[i]->getCenter().z();
+	}
+
+	pntData.push_back(mu);
+	cellData.push_back(sigma);
+	pntData.push_back(pot);
+	cellData.push_back(V);
+	cellData.push_back(Cp);
+	cellData.push_back(bN);
+	cellData.push_back(x);
+	cellData.push_back(y);
+	cellData.push_back(z);
+
+	piece body;
+	body.pnts = nodeMat;
+	body.connectivity = con;
+	body.cellData = cellData;
+	body.pntData = pntData;
+
+	std::string fname = path.string() + "/surfaceData.vtu";
+	VTUfile bodyFile(fname, body);
+}
+
+void cpCase::supWriteBodyData(boost::filesystem::path path, const Eigen::MatrixXd &nodeMat)
 {
 	std::vector<cellDataArray> cellData;
 	std::vector<pntDataArray> pntData;

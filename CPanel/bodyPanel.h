@@ -138,6 +138,7 @@ public:
 	void linComputeVelocity(double PG, Eigen::Vector3d &Vinf);
 
 	void supFlipNormal();
+	bool bodyPanel::supSuperinclinedCheck(const double B, Eigen::Matrix3d &body2wind);
 	void supTransformPanel(double alpha, double beta, const double mach);
 	void supSetG2LSmatrix(const double a, const double b, const double mach);
 	bool supDODcheck(Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
