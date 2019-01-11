@@ -1065,9 +1065,11 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 	vAvg = vAvgTan + vAvgNorm;
 	vDiff = vDiffTan + vDiffNorm;
 
-	pertVel = vAvg + vDiff / 2; // upper velocity (i.e. perturbation velocity)
 	velLower = vAvg - vDiff / 2; // should be 0!
 
+	// Compute perturbation velocity
+	pertVel = vAvg + vDiff / 2; // upper velocity (i.e. perturbation velocity)
+	
 	// Compute total velocity
 	velocity = Vinf + pertVel;
 
@@ -1090,7 +1092,7 @@ void bodyPanel::supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vec
 	// 2nd Order Cp (no Slender Body Assumption)
 	Cp2 = (-2 * pertVel.x() / Vinf.norm()) - (((1-pow(mach,2))*pow(pertVel.x(),2) + pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
 
-	Cp = Cp2;
+	Cp = Cp2s;
 }
 
 

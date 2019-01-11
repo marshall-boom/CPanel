@@ -136,7 +136,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
     if (fid.is_open())
     {
 		// Check if Mach number is in the transonic regime and ask for user input
-		if (0.7 < inputMach && inputMach < 1.2)
+		if (0.6 < inputMach && inputMach < 1.3)
 		{
 			std::string in;
 			std::cout << "WARNING: Input Mach number could result in transonic flow phenomena which will not be modeled properly!" << std::endl;
@@ -469,7 +469,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 
 			// Check for superinclined panels. Ask if user wants to continue if one is found
 
-			std::cout << "Checking for superinclined panels..." << std::endl;
+			std::cout << "Checking for superinclined panels...";
 			bool isSupInclined = false;
 			Eigen::Vector3d nWind;
 			double B = sqrt(pow(inputMach, 2) - 1);
@@ -484,7 +484,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 			if (isSupInclined)
 			{
 				std::string in;
-				std::cout << "\nSuperinclined panel(s) found, input geometry must be modified or results will be in error." << std::endl;
+				std::cout << "\n\nSuperinclined panel(s) found, input geometry must be modified or results will be in error." << std::endl;
 				std::cout << "\tWould you like to proceed anyway?" << std::endl;
 				std::cout << "\t\t< Y > - Yes, proceed any." << std::endl;
 				std::cout << "\t\t< N > - No, exit program." << std::endl;
@@ -494,6 +494,10 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				{
 					exit(EXIT_FAILURE);
 				}
+			}
+			else
+			{
+				std::cout << " None found" << std::endl;
 			}
 		}
 

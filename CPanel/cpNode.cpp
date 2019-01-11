@@ -156,7 +156,6 @@ void cpNode::setLinCPoffset()
 	}
 
 	edgeLenAvg = edgeLenSum / getEdges().size();
-	//linCPoffset = k * edgeLenAvg;
 
 	// Control point convergence study
 	//k = 1;
@@ -164,6 +163,7 @@ void cpNode::setLinCPoffset()
 	//k = 0.01;
 	//k = 0.001;
 	//k = 0.0001;
+
 	k = 0.00001;
 
 	linCPoffset = k * edgeLenAvg;

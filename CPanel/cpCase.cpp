@@ -138,6 +138,7 @@ void cpCase::run(bool printFlag, bool surfStreamFlag, bool stabDerivFlag)
     }
 }
 
+
 Eigen::Vector3d cpCase::windToBody(double V, double aalpha, double bbeta)
 {
     aalpha *= M_PI/180;
@@ -228,8 +229,8 @@ bool cpCase::linSolveMatrixEq()
     res.compute((*A));
     doubletStrengths = res.solve(RHS);
 
-	std::cout << "\n" << "sources" << "\n" << sigmas << std::endl;
-	std::cout << "\n" << "doublets" << "\n" << doubletStrengths << std::endl;
+	/*std::cout << "\n" << "sources" << "\n" << sigmas << std::endl;
+	std::cout << "\n" << "doublets" << "\n" << doubletStrengths << std::endl;*/
 
     if (res.error() > pow(10,-10))
     {
@@ -391,7 +392,7 @@ void cpCase::supCompVelocity()
 	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
 		p = (*bPanels)[i];
-		pertVel = p->supComputeVelocity(Vinf, getMach(), false);
+		pertVel = bodyToWind(p->supComputeVelocity(Vinf, getMach(), false));
 		p->supComputeCp(Vinf, getMach(), pertVel);
 
 		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
