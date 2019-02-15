@@ -275,7 +275,39 @@ bool cpCase::supSolveMatrixEq()
 	res.compute((*A));
 	doubletStrengths = res.solve(RHS);
 
-	/*std::cout << "\n" << "sources" << "\n" << sigmas << std::endl;
+	//for (nodes_index_type i = 0; i < geom->getBodyNodes().size(); i++)
+	//{
+	//	std::vector<bodyPanel*> nodeBodyPans;
+	//	nodeBodyPans = (nodes)[i]->getBodyPans();
+	//	size_t countU = 0;
+	//	size_t countL = 0;
+	//	for (bodyPanels_index_type j = 0; j < nodeBodyPans.size(); j++)
+	//	{
+	//		if (nodeBodyPans[j]->getNormal().z() <= 0)
+	//		{
+	//			countL += 1;
+	//		}
+	//		else
+	//		{
+	//			countU += 1;
+	//		}
+	//	}
+	//	if (countL > 3)
+	//	{
+	//		if (countL - countU >= 2)
+	//		{
+	//			doubletStrengths[i] = 0;
+	//		}
+	//	}
+	//	//else if (countL > countU)
+	//	//{
+	//	//	doubletStrengths(i) = 0;
+	//	//}
+	//}
+
+	/*std::cout << "\n" << "RHS" << "\n" << RHS << std::endl;
+
+	std::cout << "\n" << "sources" << "\n" << sigmas << std::endl;
 	std::cout << "\n" << "doublets" << "\n" << doubletStrengths << std::endl;*/
 
 	if (res.error() > pow(10, -10))
@@ -368,6 +400,7 @@ void cpCase::linCompVelocity()
 	{
 		p = (*bPanels)[i];
 		p->linComputeVelocity(PG, Vinf);
+		//p->linComputeVelocity2(PG, Vinf);
 		p->computeCp(Vmag);
 
 		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
@@ -381,21 +414,86 @@ void cpCase::linCompVelocity()
 }
 
 
+
+//------------------------Includes temperary fix to problem of shared nodes on supersonic trailing edges------------------------//
+
 void cpCase::supCompVelocity()
 {
 	//  Velocity Survey with known doublet and source strengths
 	CM.setZero();
-	Eigen::Vector3d moment, pertVel;
+	Eigen::Vector3d moment, pertVelBody, pertVelWind;
 	Fbody = Eigen::Vector3d::Zero();
 
 	bodyPanel* p;
+
+	// Compute Cps
 	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
 	{
 		p = (*bPanels)[i];
-		pertVel = bodyToWind(p->supComputeVelocity(Vinf, getMach(), false));
-		p->supComputeCp(Vinf, getMach(), pertVel);
+		pertVelBody = p->supComputeVelocity(Vinf, getMach(), false);
+		pertVelWind = bodyToWind(pertVelBody);
+		p->supComputeCp(Vinf, getMach(), pertVelWind, pertVelBody);
+	}
 
-		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+	// Fix trailing edge panel Cp2s and Cp
+	bool foundPanNeighbor;
+	std::vector<bodyPanel*> TEpanNeighbors;
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		p = (*bPanels)[i];
+
+		bool checkPanel = false;
+		bool isTipPan = false;
+		nodes_index_type j = 0;
+		while (j < p->getNodes().size() && !checkPanel)
+		{
+			if (p->getNodes()[j]->isTE())
+			{
+				checkPanel = true;
+			}
+			else if (p->getNodes()[j]->supGetTipFlag())
+			{
+				isTipPan = true;
+			}
+			j += 1;
+		}
+
+		if (checkPanel)
+		{
+			foundPanNeighbor = false;
+			TEpanNeighbors = p->getRelatedPanels();
+			bodyPanels_index_type j = 0;
+
+			while (j < TEpanNeighbors.size() && !foundPanNeighbor)
+			{
+				size_t count = 0;
+				for (nodes_index_type k = 0; k < TEpanNeighbors[j]->getNodes().size(); k++)
+				{
+					if (TEpanNeighbors[j]->getNodes()[k]->isTE())
+					{
+						count += 1;
+					}
+				}
+
+				if (count == 0 && p->getNormal().x() >= 0)
+				{
+					foundPanNeighbor = true;
+					p->supFixCp2s(TEpanNeighbors[j]->supGetCp2s());
+					p->supFixCp(TEpanNeighbors[j]->getCp());
+
+					p->supFixMach(TEpanNeighbors[j]->getPanelMach());
+				}
+				j += 1;
+			}
+		}
+	}
+
+	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+	{
+		p = (*bPanels)[i];
+
+		//Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+		Fbody += -p->getCp()*p->getArea()*p->getNormal() / params->Sref;
 		moment = p->computeMoments(params->cg);
 		CM(0) += moment(0) / (params->Sref*params->bref);
 		CM(1) += moment(1) / (params->Sref*params->cref);
@@ -404,6 +502,40 @@ void cpCase::supCompVelocity()
 
 	Fwind = bodyToWind(Fbody);
 }
+
+//------------------------Includes temperary fix to problem of shared nodes on supersonic trailing edges------------------------//
+
+
+
+
+//void cpCase::supCompVelocity()
+//{
+//	//  Velocity Survey with known doublet and source strengths
+//	CM.setZero();
+//	Eigen::Vector3d moment, pertVelBody, pertVelWind;
+//	Fbody = Eigen::Vector3d::Zero();
+//
+//	bodyPanel* p;
+//	for (bodyPanels_index_type i = 0; i < bPanels->size(); i++)
+//	{
+//		p = (*bPanels)[i];
+//		pertVelBody = p->supComputeVelocity(Vinf, getMach(), false);
+//		pertVelWind = bodyToWind(pertVelBody);
+//		p->supComputeCp(Vinf, getMach(), pertVelWind, pertVelBody);
+//
+//		//pertVel = bodyToWind(p->supComputeVelocity(Vinf, getMach(), false));
+//		//p->supComputeCp(Vinf, getMach(), pertVel);
+//
+//		Fbody += -p->getCp()*p->getArea()*p->getBezNormal() / params->Sref;
+//		//Fbody += -p->getCp()*p->getArea()*p->getNormal() / params->Sref;
+//		moment = p->computeMoments(params->cg);
+//		CM(0) += moment(0) / (params->Sref*params->bref);
+//		CM(1) += moment(1) / (params->Sref*params->cref);
+//		CM(2) += moment(2) / (params->Sref*params->bref);
+//	}
+//
+//	Fwind = bodyToWind(Fbody);
+//}
 
 
 void cpCase::trefftzPlaneAnalysis()

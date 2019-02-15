@@ -97,9 +97,6 @@ void bodyPanel::setTipFlag()
 void bodyPanel::setSigma(Eigen::Vector3d Vinf, double Vnorm)
 {
     sourceStrength = (-Vinf.dot(normal)+Vnorm); // CS: Vnorm is eminating from the panel
-	//sourceStrength = (Vinf.dot(normal) + Vnorm);
-	//sourceStrength = (-Vinf.dot(normal) + Vnorm) / supAreaCorrect;
-	//sourceStrength = (-Vinf.dot(normal) + Vnorm) * supAreaCorrect;
 }
 
 void bodyPanel::setMu(double dubStrength)
@@ -194,52 +191,116 @@ void bodyPanel::panelPhiInf(const Eigen::Vector3d &POI, double &phiSrc,double &p
 
 void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
 {
-	Eigen::Vector3d pjk = POI - center;
-	bool itselfFlag = false;
-	if (pjk.norm() < pow(10, -10))
-	{
-		itselfFlag = true;
-	}
-	Eigen::Matrix3d local = getLocalSys();
-	double PN = pjk.dot(local.row(2));
+	double a, m, d, e1, e2, h1, h2, r1, r2, nuXi, nuEta;
+	double Q, J;
+
+	Eigen::Vector3d pjk, POIloc;
+	pjk = POI - center;
+	POIloc = global2local(POI, true);
+
+	double x, y, z, x1, y1, x2, y2;
+	x = POIloc.x();
+	y = POIloc.y();
+	z = POIloc.z();
+
 	if (pjk.norm() / longSide > 5)
 	{
 		phi = pntSrcPhi(pjk.norm());
 	}
 	else
 	{
-		double Al;
-		double phiV = 0;
-		Eigen::Vector3d a, b, s;
 		for (nodes_index_type i = 0; i<nodes.size(); i++)
 		{
 			Eigen::Vector3d p1;
 			Eigen::Vector3d p2;
 			if (i != nodes.size() - 1)
 			{
-				p1 = nodes[i]->getPnt();
-				p2 = nodes[i + 1]->getPnt();
+				p1 = linLocalNodes[i];
+				p2 = linLocalNodes[i + 1];
 			}
 			else
 			{
-				p1 = nodes[i]->getPnt();
-				p2 = nodes[0]->getPnt();
+				p1 = linLocalNodes[i];
+				p2 = linLocalNodes[0];
 			}
-			a = POI - p1;
-			b = POI - p2;
-			s = p2 - p1;
-			Al = local.row(2).dot(s.cross(a));
-			if (!itselfFlag)
-			{
-				// Note: last parameter was not used
-				//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
-				phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
-			}
-			phi += srcSidePhi(PN, Al, phiV, a, b, s);
+
+			x1 = p1.x();
+			y1 = p1.y();
+			x2 = p2.x();
+			y2 = p2.y();
+
+			d = (p2 - p1).norm();
+			nuEta = (x2 - x1) / d;
+			nuXi = (y2 - y1) / d;
+			a = (x - x1)*nuXi - (y - y1)*nuEta;
+			m = (y2 - y1) / (x2 - x1);
+			e1 = pow(x - x1,2) + pow(z,2);
+			e2 = pow(x - x2,2) + pow(z,2);
+			h1 = (x - x1) * (y - y1);
+			h2 = (x - x2) * (y - y2);
+			r1 = (POIloc - p1).norm();
+			r2 = (POIloc - p2).norm();
+
+			Q = log((r1 + r2 + d) / (r1 + r2 - d));
+			J = atan((m*e1 - h1) / (z*r1)) - atan((m*e2 - h2) / (z*r2));
+
+			phi += a * Q - abs(z)*J;
+
 		}
 		phi /= (4 * M_PI);
 	}
 }
+
+//void bodyPanel::srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi)
+//{
+//	supOutputGeom(POI, true);
+//
+//	Eigen::Vector3d pjk = POI - center;
+//	bool itselfFlag = false;
+//	if (pjk.norm() < pow(10, -10))
+//	{
+//		itselfFlag = true;
+//	}
+//	Eigen::Matrix3d local = getLocalSys();
+//	double PN = pjk.dot(local.row(2));
+//	if (pjk.norm() / longSide > 5)
+//	{
+//		phi = pntSrcPhi(pjk.norm());
+//	}
+//	else
+//	{
+//		double Al;
+//		double phiV = 0;
+//		Eigen::Vector3d a, b, s;
+//		for (nodes_index_type i = 0; i<nodes.size(); i++)
+//		{
+//			Eigen::Vector3d p1;
+//			Eigen::Vector3d p2;
+//			if (i != nodes.size() - 1)
+//			{
+//				p1 = nodes[i]->getPnt();
+//				p2 = nodes[i + 1]->getPnt();
+//			}
+//			else
+//			{
+//				p1 = nodes[i]->getPnt();
+//				p2 = nodes[0]->getPnt();
+//			}
+//			a = POI - p1;
+//			b = POI - p2;
+//			s = p2 - p1;
+//			Al = local.row(2).dot(s.cross(a));
+//			if (!itselfFlag)
+//			{
+//				// Note: last parameter was not used
+//				//                phiV = vortexPhi(PN,Al,a,b,s,local.row(0),local.row(1),local.row(2));
+//				phiV = vortexPhi(PN, Al, a, b, s, local.row(0), local.row(1));
+//			}
+//			phi += srcSidePhi(PN, Al, phiV, a, b, s);
+//		}
+//		phi /= (4 * M_PI);
+//	}
+//}
 
 void bodyPanel::panelVInf(const Eigen::Vector3d &POI, Eigen::Vector3d &vSrc,Eigen::Vector3d &vDub)
 {
@@ -1010,7 +1071,6 @@ void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
 	vertDubStrengths = linGetDubStrengths();
 
 	linDubConsts = vertsMat.inverse() * vertDubStrengths;
-	//mu_0 = linDubConsts[0];
 	mu_x = linDubConsts[1];
 	mu_y = linDubConsts[2];
 
@@ -1019,12 +1079,54 @@ void bodyPanel::linComputeVelocity(double PG, Eigen::Vector3d &Vinf)
 	panVel[2] = 0;
 
 	velocity = local2global(panVel, false);
-
-	//// Only works with perturbation velocity, in global CSYS
-	//double stuff2 = velocity.dot(normal);
-	//std::cout << stuff2 << std::endl;
-
 	velocity(0) /= PG;
+}
+
+
+Eigen::Vector3d bodyPanel::linComputeVelocity2(const double PG, Eigen::Vector3d Vinf)
+{
+	double s, beta2, denom, a;
+	Eigen::Vector3d vertsPhiAvg, coeffsPhiAvg, gradPhiAvg, gradDubs;
+	Eigen::Vector3d vAvgTan, vAvgNorm, vDiffTan, vDiffNorm, vAvg, vDiff;
+	Eigen::Vector3d pertVel, velLower, myPanPertVel, myPertVel;
+	Eigen::Matrix3d vertsMat;
+
+	vertsMat = linVertsMatrix(true);
+	//vertsMat = supVertsMatrix(supLocalNodes);
+
+	// vertex based average potential
+	vertsPhiAvg = linGetDubStrengths();
+
+	// linear panel equation average potential
+	coeffsPhiAvg = vertsMat.inverse() * vertsPhiAvg;
+
+	// gradient of average potential
+	gradPhiAvg << coeffsPhiAvg[1], coeffsPhiAvg[2], 0;
+
+	// gradient of 'raw' doublet strength coeffs
+	gradDubs << linDubCoeffs[1], linDubCoeffs[2], 0;
+
+	// Tangent and Normal components of vAvg and vDiff
+	vAvgTan = supTransMat.transpose() * gradPhiAvg;
+	vAvgNorm = (0.5*sourceStrength / denom) * normal;
+
+	vDiffTan = supTransMat.transpose() * gradDubs;
+	vDiffNorm = (sourceStrength / denom) * normal;
+
+	// Final average velocity and velocity difference
+	vAvg = vAvgTan + vAvgNorm;
+	vDiff = vDiffTan + vDiffNorm;
+
+	velLower = vAvg - vDiff / 2; // should be 0!
+
+								 // Compute perturbation velocity
+	pertVel = vAvg + vDiff / 2; // upper velocity (i.e. perturbation velocity)
+
+								// Compute total velocity
+	velocity = Vinf + pertVel;
+
+	// Return perturbation velocity for use in Cp calcs
+	return pertVel;
 }
 
 
@@ -1035,6 +1137,7 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 	Eigen::Vector3d vAvgTan, vAvgNorm, vDiffTan, vDiffNorm, vAvg, vDiff;
 	Eigen::Vector3d pertVel, velLower, myPanPertVel, myPertVel;
 	Eigen::Matrix3d vertsMat, B;
+
 	vertsMat = supVertsMatrix(supLocalNodes);
 
 	// vertex based average potential
@@ -1081,19 +1184,36 @@ Eigen::Vector3d bodyPanel::supComputeVelocity(Eigen::Vector3d Vinf, const double
 }
 
 
-void bodyPanel::supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel)
+void bodyPanel::supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVelWind, Eigen::Vector3d pertVelBody)
 {
 	// 1st Order Cp (Linearized)
-	Cp1 = -2 * pertVel.x() / Vinf.norm();
+	Cp1 = -2 * pertVelWind.x() / Vinf.norm();
 
 	// 2nd Order Cp (Slender Body Assumption)
-	Cp2s = (-2 * pertVel.x() / Vinf.norm()) - ((pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
+	Cp2s = (-2 * pertVelWind.x() / Vinf.norm()) - ((pow(pertVelWind.y(), 2) + pow(pertVelWind.z(), 2)) / pow(Vinf.norm(), 2));
 
 	// 2nd Order Cp (no Slender Body Assumption)
-	Cp2 = (-2 * pertVel.x() / Vinf.norm()) - (((1-pow(mach,2))*pow(pertVel.x(),2) + pow(pertVel.y(), 2) + pow(pertVel.z(), 2)) / pow(Vinf.norm(), 2));
+	Cp2 = (-2 * pertVelWind.x() / Vinf.norm()) - (((1-pow(mach,2))*pow(pertVelWind.x(),2) + pow(pertVelWind.y(), 2) + pow(pertVelWind.z(), 2)) / pow(Vinf.norm(), 2));
 
-	Cp = Cp2s;
+	// Slender approximation in body axes for force calcs
+	Cp = (-2 * pertVelBody.x() / Vinf.norm()) - ((pow(pertVelBody.y(), 2) + pow(pertVelBody.z(), 2)) / pow(Vinf.norm(), 2));
 }
+
+void bodyPanel::supFixCp(const double CpIn)
+{
+	Cp = CpIn;
+}
+
+void bodyPanel::supFixCp2s(const double CpIn)
+{
+	Cp2s = CpIn;
+}
+
+void bodyPanel::supFixMach(const double machIn)
+{
+	panelMach = machIn;
+}
+
 
 
 void bodyPanel::supFlipNormal()
@@ -1184,11 +1304,19 @@ void bodyPanel::supTransformPanel(double alpha, double beta, const double mach)
 	alpha *= M_PI / 180;
 	beta *= M_PI / 180;
 	supSetG2LSmatrix(alpha, beta, mach);
-	//supSetG2LSmatrixPilot(Bmach, alpha, beta, mach);
 
 	for (size_t i = 0; i < nodes.size(); i++)
 	{
 		supLocalNodes.push_back(supTransMat * (nodes[i]->getPnt() - center));
+	}
+}
+
+
+void bodyPanel::linTransformPanel()
+{
+	for (size_t i = 0; i < nodes.size(); i++)
+	{
+		linLocalNodes.push_back(global2local(nodes[i]->getPnt(), true));
 	}
 }
 
@@ -1258,9 +1386,10 @@ void bodyPanel::supTransformPanel(double alpha, double beta, const double mach)
 }
 
 
-void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &srcPhi, bool DODflag, const double Mach)
+ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &srcPhi, bool DODflag, const double Mach)
 {
-	if (DODflag)
+	//if (DODflag)
+	if (DODflag && !supInclinedFlag) // maybe make different supinclined panel func to make this more efficient
 	{
 		// Panel transformation projects original panel onto x-y plane w/ origin at panel center
 		// Thus panel z-coords are zero, and freestream direction is [1 0 0]
@@ -1386,7 +1515,7 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 			// Check that the edge is either inside or intersects the Mach cone
 			if (R1 > abs(eps1) || R2 > abs(eps2))
 			{
-				if (abs(z) > 1e-10)
+				if (abs(z) > epsGenStrong)
 				{
 					if (abs(1 - abs(m)) < epsGenWeak) // sonic edge (parallel to Mach cone)
 					{
@@ -1405,19 +1534,22 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 				}
 				else // z = 0
 				{
+					//--------------------------------------------------------------------------------------//
+					// Need to be tested more thoroughly
 					zFlag = true;
 					if (abs(1 - abs(m)) < epsGenWeak) // sonic edge
 					{
-
+						double stuff = 0;
 					}
 					else if (abs(m) < 1) // subsonic edge
 					{
-
+						integralCoeffs = supEdgeInfSubInPlane(R1, R2, ym1c, ym2c, xmc, m, z, eps1, eps2, mFlag);
 					}
 					else if (abs(m) > 1) // supersonic edge
 					{
-
+						integralCoeffs = supEdgeInfSupInPlane(R1, R2, ym1, ym2, xm, lam, z, eps1, eps2);
 					}
+					//--------------------------------------------------------------------------------------//
 				}
 			} // Edge either intersects Mach cone with no edge points inside (i.e. inside Mach wedge), or is completely outside. Former case can only occur with supersonic edge
 			else if (abs(m) > 1)
@@ -1478,18 +1610,24 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 			srcCoeff += xm * integralCoeffs[1];
 		}
 
-		// Compute final source coefficient
-		Q1sum = dubCoeffs[0];
-		srcPhi = ((srcCoeff - z * Q1sum) / (2.0 * M_PI)) * supAreaCorrect;
-
-		// Compute final doublet coefficients
+		double srcNum;
 		if (zFlag)
 		{
-			z = 0;
+			dubCoeffs[1] = 0;
+			dubCoeffs[2] = 0;
+			srcNum = srcCoeff;
 		}
+		else
+		{
+			dubCoeffs[1] = -z * dubCoeffs[1];
+			dubCoeffs[2] = -z * dubCoeffs[2];
+			Q1sum = dubCoeffs[0];
+			srcNum = srcCoeff - z * Q1sum;
+		}
+
+		srcPhi = (srcNum / (2.0 * M_PI)) * supAreaCorrect;
+
 		dubCoeffs[0] = -dubCoeffs[0];
-		dubCoeffs[1] = -z * dubCoeffs[1];
-		dubCoeffs[2] = -z * dubCoeffs[2];
 		dubCoeffs = dubCoeffs / (2.0 * M_PI);
 
 		// Build matrix of doublet coefficients
@@ -1514,6 +1652,13 @@ void bodyPanel::supPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, E
 			}
 			else
 			{
+				//--------------------------------------------------------------------------------------//
+				// This is for subsonic LE, flat bottom cases
+				/*if (normal.z() >= 0)
+				{
+					Arow[nodes[i]->getIndex()] += dubVertsPhi(i);
+				}*/
+				//--------------------------------------------------------------------------------------//
 				Arow[nodes[i]->getIndex()] += dubVertsPhi(i);
 			}
 		}
@@ -1741,6 +1886,147 @@ Eigen::Vector2d bodyPanel::supEdgeInfSup(const double R1, const double R2, const
 }
 
 
+Eigen::Vector2d bodyPanel::supEdgeInfSubInPlane(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag)
+{
+	Eigen::Vector2d integralCoeffs;
+	double Q1, w0, ym1cNeg, ym2cNeg;
+	ym1cNeg = -ym1c;
+	ym2cNeg = -ym2c;
+
+	if (R1 > eps1 && R2 > eps2) // Both edge points are inside the Mach cone
+	{
+		Q1 = 0;
+
+		if (mFlag) // edge parallel to freestream
+		{
+			//w0 = log((ym2cNeg + R2) / (ym1cNeg + R1));
+			w0 = 0;
+		}
+		else
+		{
+			w0 = (m / sqrt(1 - pow(m, 2))) * log((ym2cNeg + R2 * sqrt(1 - pow(m, 2))) / (ym1cNeg + R1 * sqrt(1 - pow(m, 2))));
+		}
+	}
+	else // One edge point is inside Mach cone
+	{
+		double Q11, Q12, w01, w02, s;
+		s = 1.0;
+		if (signbit(z*xmc))
+		{
+			s = -1.0;
+		}
+
+		Q11 = 0;
+		Q12 = 0;
+		w01 = 0;
+		w02 = 0;
+		if (mFlag) // edge parallel to freestream
+		{
+			if (R1 > eps1)
+			{
+				Q11 = s * M_PI / 2;
+				//w01 = (1.0 / (2 * sqrt(1 - pow(m, 2)))) * log((-ym1c + R1 * sqrt(1 - pow(m, 2))) / (-ym1c - R1 * sqrt(1 - pow(m, 2))));
+				w01 = 0;
+			}
+			if (R2 > eps2)
+			{
+				Q12 = s * M_PI / 2;
+				//w02 = (1.0 / (2 * sqrt(1 - pow(m, 2)))) * log((-ym2c + R2 * sqrt(1 - pow(m, 2))) / (-ym2c - R2 * sqrt(1 - pow(m, 2))));
+				w02 = 0;
+			}
+		}
+		else
+		{
+			if (R1 > eps1)
+			{
+				Q11 = s * M_PI / 2;
+				//w01 = (m / (2 * sqrt(1 - pow(m, 2)))) * log((-ym1c + R1 * sqrt(1 - pow(m, 2))) / (-ym1c - R1 * sqrt(1 - pow(m, 2))));
+				w01 = 0;
+			}
+			if (R2 > eps2)
+			{
+				Q12 = s * M_PI / 2;
+				//w02 = (m / (2 * sqrt(1 - pow(m, 2)))) * log((-ym2c + R2 * sqrt(1 - pow(m, 2))) / (-ym2c - R2 * sqrt(1 - pow(m, 2))));
+				w02 = 0;
+			}
+		}
+
+		Q1 = Q12 - Q11;
+		w0 = w02 - w01;
+
+		if (isnan(Q1) || isnan(w0))
+		{
+			double stuff = 0;
+		}
+	}
+
+	integralCoeffs[0] = Q1;
+	integralCoeffs[1] = w0;
+
+	return integralCoeffs;
+}
+
+
+Eigen::Vector2d bodyPanel::supEdgeInfSupInPlane(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2)
+{
+	Eigen::Vector2d integralCoeffs;
+	double Q1, w0, ym1Neg, ym2Neg;
+	ym1Neg = -ym1;
+	ym2Neg = -ym2;
+
+	Q1 = 0;
+
+	if (R1 > eps1 && R2 > eps2) // Both edge points are inside the Mach cone
+	{
+		w0 = (1 / sqrt(1 - pow(lam, 2))) * atan2(sqrt(1 - pow(lam, 2)) * (ym1Neg*R2 - ym2Neg * R1), ym1Neg*ym2Neg + (1 - pow(lam, 2))*R1*R2);
+	}
+	else // One edge point is inside Mach cone
+	{
+		double w01, w02;
+		if (R1 > eps1)
+		{
+			w01 = (1 / sqrt(1 - pow(lam, 2))) * atan2(ym1, R1*sqrt(1 - pow(lam, 2)));
+		}
+		else
+		{
+			double t1 = 1.0;
+			if (signbit(ym1))
+			{
+				t1 = -1.0;
+			}
+
+			w01 = t1 * M_PI / (2 * sqrt(1 - pow(lam, 2)));
+		}
+		if (R2 > eps2)
+		{
+			w02 = (1 / sqrt(1 - pow(lam, 2))) * atan2(ym2, R2*sqrt(1 - pow(lam, 2)));
+		}
+		else
+		{
+			double t2 = 1.0;
+			if (signbit(ym2))
+			{
+				t2 = -1.0;
+			}
+
+			w02 = t2 * M_PI / (2 * sqrt(1 - pow(lam, 2)));
+		}
+
+		w0 = w02 - w01;
+	}
+
+	if (isnan(Q1) || isnan(w0))
+	{
+		double stuff = 0;
+	}
+
+	integralCoeffs[0] = Q1;
+	integralCoeffs[1] = w0;
+
+	return integralCoeffs;
+}
+
+
 void bodyPanel::supSetMu()
 {
 	Eigen::Vector3d vertDubStrengths;
@@ -1766,7 +2052,7 @@ void bodyPanel::linSetMu()
 
 bool bodyPanel::supSuperinclinedCheck(const double B, Eigen::Matrix3d &body2wind)
 {
-	bool isSupInclined = false;
+	//bool isSupInclined = false;
 	Eigen::Vector3d nWind, ncWind;
 
 	nWind = body2wind * normal;
@@ -1774,10 +2060,11 @@ bool bodyPanel::supSuperinclinedCheck(const double B, Eigen::Matrix3d &body2wind
 	ncWind(0) *= -pow(B, 2);
 	if (nWind.dot(ncWind) <= 0)
 	{
-		isSupInclined = true;
+		//isSupInclined = true;
+		supInclinedFlag = true;
 	}
 
-	return isSupInclined;
+	return supInclinedFlag;
 }
 
 

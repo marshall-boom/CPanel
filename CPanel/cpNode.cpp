@@ -148,7 +148,6 @@ void cpNode::setLinCPoffset()
 {
 	double edgeLenSum, edgeLenAvg, k;
 	edgeLenSum = 0;
-	//k = 0.001;
 
 	for (edges_index_type i = 0; i < getEdges().size(); i++)
 	{
@@ -157,14 +156,7 @@ void cpNode::setLinCPoffset()
 
 	edgeLenAvg = edgeLenSum / getEdges().size();
 
-	// Control point convergence study
-	//k = 1;
-	//k = 0.1;
-	//k = 0.01;
-	//k = 0.001;
-	//k = 0.0001;
-
-	k = 0.00001;
+	k = 0.00001; // determined from offset convergence study
 
 	linCPoffset = k * edgeLenAvg;
 }
@@ -189,9 +181,7 @@ void cpNode::linSetPotential(Eigen::Vector3d Vinf)
 {
 	linPrevPotential = linPotential;
 
-	linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
-	//linPotential = linDoubletStrength/2 + Vinf.dot(calcCP()); // Katz 11.74, 13.157
-	//linPotential = linDoubletStrength / 2;	// use this to get perturbation velcocity out later
+	linPotential = Vinf.dot(getPnt()) - linDoubletStrength; // Katz 11.74, 13.157
 }
 
 

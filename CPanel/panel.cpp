@@ -58,7 +58,6 @@ void panel::setGeom()
         area = 0.5*a.norm()*b.norm()*sin(theta);
 
         normal = a.cross(b);
-		//normal = b.cross(a);
         normal.normalize();
         
         // If normals weren't included in input, set bezNormal to calculated normal
@@ -252,6 +251,7 @@ double panel::dubPhiInf(const Eigen::Vector3d &POI)
     }
 }
 
+
 // Linear doublet influence
 void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow)
 {
@@ -262,6 +262,9 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();					//////// MIGHT NEED TO CHANGE TO getBodyVerts()
 	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
 	POIloc = global2local(POI, true);
+
+
+	//supOutputGeom(POI, true);
 
 	///////// FAR FIELD NOT YET WORKING, EXCLUDED FROM CALCULATION ///////////
 
@@ -358,130 +361,138 @@ void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Ei
 	}
 }
 
-// Linear doublet influence
-Eigen::Matrix3d panel::linDubVInf(const Eigen::Vector3d &POI)
-{
-	// Define and get stuff
-	Eigen::Vector3d pjk = POI - center;
-	Eigen::Matrix3d local = getLocalSys();
-	Eigen::Vector3d POIloc, vertsPhi;
-	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();					//////// MIGHT NEED TO CHANGE TO getBodyVerts()
-	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
-	POIloc = global2local(POI, true);
 
-	Eigen::Matrix3d Jints;
-	Jints.setZero();
+//// Linear doublet influence
+//void panel::linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow)
+//{
+//	// Define and get stuff
+//	Eigen::Vector3d pjk = POI - center;
+//	Eigen::Matrix3d local = getLocalSys();
+//	Eigen::Vector3d POIloc, vertsPhi;
+//	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();					//////// MIGHT NEED TO CHANGE TO getBodyVerts()
+//	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
+//	POIloc = global2local(POI, true);
+//
+//
+//	//supOutputGeom(POI, true);
+//
+//	///////// FAR FIELD NOT YET WORKING, EXCLUDED FROM CALCULATION ///////////
+//
+//	// Check far field condition
+//	//if (pjk.norm() / longSide > 5)
+//	//{
+//	//std::cout << "\tFar Field" << std::endl;
+//	//vertsPhi = linPntDubPhi(PN, pjk.norm(), POIloc);
+//	//std::cout << "Far: " << vertsPhiFar << "\n" << std::endl;
+//	//}
+//	//else
+//	//{
+//
+//	// Define stuff
+//	double Al;
+//	Eigen::Vector3d a, b, s;
+//	Eigen::Vector3d Iints, Imat;
+//	Eigen::VectorXd Hints;
+//	Hints.resize(Eigen::Index(3));
+//	Hints.setZero();
+//	Eigen::Matrix3d vertsMat;
+//	double l1, l2, c1, c2, s1, s2, g, nuXi, nuEta, myAl;
+//
+//	double x, y, z, x1, y1, x2, y2;
+//	x = POIloc.x();
+//	y = POIloc.y();
+//	z = POIloc.z();
+//
+//	// Iterate through panel edges and get H integrals
+//	for (nodes_index_type i = 0; i<nodes.size(); i++)
+//	{
+//		Eigen::Vector3d p1;
+//		Eigen::Vector3d p2;
+//		if (i != nodes.size() - 1)
+//		{
+//			p1 = linLocalNodes[i];
+//			p2 = linLocalNodes[i + 1];
+//		}
+//		else
+//		{
+//			p1 = linLocalNodes[i];
+//			p2 = linLocalNodes[0];
+//		}
+//
+//		x1 = p1.x();
+//		y1 = p1.y();
+//		x2 = p2.x();
+//		y2 = p2.y();
+//
+//		a = POI - p1;
+//		b = POI - p2;
+//		s = p2 - p1;
+//
+//		nuXi = (y2 - y1) / s.norm();
+//		nuEta = (x2 - x1) / s.norm();
+//		myAl = (x - x1)*nuXi - (y - y1)*nuEta;
+//		l1 = (x1 - x)*nuEta + (y1 - y)*nuXi;
+//		l2 = (x2 - x)*nuEta + (y2 - y)*nuXi;
+//		g = sqrt(pow(myAl, 2) + pow(PN, 2));
+//		double m = (y2 - y1) / (x2 - x1);
+//		double mt = -nuXi / nuEta;
+//
+//		
+//		Al = local.row(2).dot(s.cross(a));
+//		/*
+//		nuXi = (p2.y() - p1.y()) / s.norm();
+//		nuEta = (p2.x() - p1.x()) / s.norm();
+//		myAl = (POI.x() - p1.x())*nuXi - (POI.y() - p1.y())*nuEta;
+//		g = sqrt(pow(myAl, 2) + pow(PN, 2));
+//		l1 = (p1.x() - POI.x())*nuEta + (p1.y() - POI.y())*nuXi;
+//		l2 = (p2.x() - POI.x())*nuEta + (p2.y() - POI.y())*nuXi;
+//		double m = (p2.y() - p1.y()) / (p2.x() - p1.x());
+//		double mt = -nuXi / nuEta;*/
+//
+//		s1 = sqrt(pow(l1, 2) + pow(g, 2));
+//		s2 = sqrt(pow(l2, 2) + pow(g, 2));
+//		c1 = pow(g, 2) + abs(PN)*s1;
+//		c2 = pow(g, 2) + abs(PN)*s2;
+//
+//		linPhiHintegrals(Hints, g, myAl, Al, l1, l2, c1, c2, nuEta, nuXi, PN, a, b, s, local.row(0), local.row(1));
+//	}
+//
+//	// Get final H integrals and compute I integrals
+//
+//	Hints[0] = Hints[0] / PN;
+//	Hints[1] = -Hints[1];
+//	Hints[2] = -Hints[2];				// Hints = [H113 H213 H123]
+//	Iints = PN * Hints / (4.0 * M_PI);	// Iints = [I11 I21 I12]
+//
+//										// Build I matrix
+//	Imat[0] = Iints[0];
+//	Imat[1] = POIloc.x()*Iints[0] + Iints[1];
+//	Imat[2] = POIloc.y()*Iints[0] + Iints[2];
+//
+//	// Convert linear doublet equation to vertex based linear doublet equations
+//	vertsMat = linVertsMatrix(true);
+//
+//	// Compute influence of each vertex on the field point
+//	vertsPhi = Imat.transpose() * vertsMat.inverse();
+//
+//	//}
+//
+//	// Fill A matrix
+//	// Need to make this more efficient
+//	for (size_t i = 0; i < nodes.size(); i++)
+//	{
+//		// Check if influencing node is the same as the influenced node
+//		if (abs((POI - nodes[i]->getPnt()).norm()) < 2.0*nodes[i]->linGetCPoffset())
+//		{
+//			Arow[nodes[i]->getIndex()] = -0.5;
+//		}
+//		else
+//		{
+//			Arow[nodes[i]->getIndex()] += vertsPhi(i);
+//		}
+//	}
+//}
 
-	if (pjk.norm() < 0.0000001)
-	{
-		return Jints;
-	}
-	else
-	{
-		///////// FAR FIELD NOT YET WORKING, EXCLUDED FROM CALCULATION ///////////
-
-		// Check far field condition
-		//if (pjk.norm() / longSide > 5)
-		//{
-		//std::cout << "\tFar Field" << std::endl;
-		//vertsPhi = linPntDubPhi(PN, pjk.norm(), POIloc);
-		//std::cout << "Far: " << vertsPhiFar << "\n" << std::endl;
-		//}
-		//else
-		//{
-		// Define stuff
-		double Al;
-		Eigen::Vector3d a, b, s;
-		//Eigen::Vector3d Iints, Imat;
-		Eigen::VectorXd Hints;
-		Hints.resize(Eigen::Index(9));
-		Hints.setZero();
-		Eigen::Matrix3d vertsMat, Jints;
-		Jints.setZero();
-		double l1, l2, c1, c2, g, nuXi, nuEta;
-
-		double F123 = 0;
-
-		double s1, s2, Etest;
-
-		// Iterate through panel edges and get H integrals
-		for (nodes_index_type i = 0; i<nodes.size(); i++)
-		{
-			Eigen::Vector3d p1;
-			Eigen::Vector3d p2;
-			Eigen::Vector3d Eints;
-			if (i != nodes.size() - 1)
-			{
-				p1 = nodes[i]->getPnt();
-				p2 = nodes[i + 1]->getPnt();
-			}
-			else
-			{
-				p1 = nodes[i]->getPnt();
-				p2 = nodes[0]->getPnt();
-			}
-			a = POI - p1;
-			b = POI - p2;
-			s = p2 - p1;
-			Al = local.row(2).dot(s.cross(a));
-
-			nuXi = s.dot(local.row(1)) / s.norm();
-			nuEta = s.dot(local.row(0)) / s.norm();
-			l1 = -a.dot(local.row(1))*nuXi - a.dot(local.row(0))*nuEta;
-			l2 = -b.dot(local.row(1))*nuXi - b.dot(local.row(0))*nuEta;
-			g = sqrt(pow(Al, 2) + pow(PN, 2));
-
-			c1 = a.norm();
-			c2 = b.norm();
-
-			/*s1 = sqrt(pow(l1, 2) + pow(g, 2));
-			s2 = sqrt(pow(l2, 2) + pow(g, 2));
-			c1 = pow(g, 2) + abs(PN)*s1;
-			c2 = pow(g, 2) + abs(PN)*s2;*/
-
-			Eints[0] = 1.0 / c2 - 1.0 / c1;		// E111
-			Etest = -a.dot(local.row(0))/c2 + b.dot(local.row(0))/c1;
-			Eints[1] = (p2[0] - POI[0]) / c2 - (p1[0] - POI[0]) / c1;
-			Eints[2] = (p2[1] - POI[1]) / c2 - (p1[1] - POI[1]) / c1;
-
-			//linPhiHintegrals(Hints, g, Al, l1, l2, c1, c2, nuEta, nuXi, PN, a, b, s, local.row(0), local.row(1));
-			linVelHintegrals(Hints, F123, Eints, g, Al, nuEta, nuXi);
-		}
-
-		// Get final H integrals
-		Hints[0] = Hints[0] / PN;	// H113
-		Hints[1] = -Hints[1];		// H213
-		Hints[2] = -Hints[2];		// H123
-
-		Hints[3] = (1.0 / 3.0 / pow(PN, 2)) * (Hints[0] + Hints[3]);	// H115
-		Hints[4] = (1.0 / 3.0) * -Hints[4];								// H215
-		Hints[5] = (1.0 / 3.0) * -Hints[5];								// H125
-
-		Hints[6] = (1.0 / 3.0) * -Hints[6];						// H225
-		Hints[7] = (1.0 / 3.0) * (-Hints[0] - F123);			// H135
-		Hints[8] = -Hints[7] - pow(PN, 2)*Hints[3] + Hints[0];	// H315
-
-		// Get J integrals
-		Jints = linVelJintegrals(Hints, PN);
-
-		//Iints = PN * Hints / (4.0 * M_PI);	// Iints = [I11 I21 I12]
-
-		//									// Build I matrix
-		//Imat[0] = Iints[0];
-		//Imat[1] = POIloc.x()*Iints[0] + Iints[1];
-		//Imat[2] = POIloc.y()*Iints[0] + Iints[2];
-
-		//// Convert linear doublet equation to vertex based linear doublet equations
-		//vertsMat = linVertsMatrix();
-
-		//// Compute influence of each vertex on the field point
-		//vertsPhi = Imat.transpose() * vertsMat.inverse();
-
-		return Jints;
-
-		//}
-	}
-}
 
 void panel::setPanelVel(Eigen::Vector3d Vel)
 {
@@ -510,9 +521,9 @@ void panel::linPhiHintegrals(Eigen::VectorXd &Hints, const double g, const doubl
 		F111 = log(((sqrt(pow(l1, 2) + pow(g, 2)) - l1) * (sqrt(pow(l2, 2) + pow(g, 2)) + l2)) / pow(g,2));
 	}
 
-	/*num = myAl * (l2*c1 - l1 * c2);
-	denom = c1 * c2 + pow(myAl, 2)*l1*l2;
-	Htan = atan2(num, denom);*/
+	//num = myAl * (l2*c1 - l1 * c2);
+	//denom = c1 * c2 + pow(myAl, 2)*l1*l2;
+	////Htan = atan2(num, denom);
 
 	//Hints[0] += atan2(num, denom);
 
@@ -953,3 +964,152 @@ bool panel::nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &
 
     return isNear;
 }
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////// Funcion for testing against MATLAB
+void panel::supOutputGeom(const Eigen::Vector3d &POI, bool outPOI)
+{
+	std::ofstream fid;
+	std::string	myFile = "D:\\Desktop\\Thesis\\Code\\MATLAB\\Subsonic\\stuff.csv";
+	fid.open(myFile);
+
+	fid << nodes[0]->getPnt().x() << "," << nodes[0]->getPnt().y() << "," << nodes[0]->getPnt().z() << "\n";
+	fid << nodes[1]->getPnt().x() << "," << nodes[1]->getPnt().y() << "," << nodes[1]->getPnt().z() << "\n";
+	fid << nodes[2]->getPnt().x() << "," << nodes[2]->getPnt().y() << "," << nodes[2]->getPnt().z() << "\n";
+	if (outPOI)
+	{
+		fid << POI.x() << "," << POI.y() << "," << POI.z();
+		fid << "\n";
+	}
+	fid.close();
+}
+
+
+
+
+// Linear doublet influence
+//Eigen::Matrix3d panel::linDubVInf(const Eigen::Vector3d &POI)
+//{
+//	// Define and get stuff
+//	Eigen::Vector3d pjk = POI - center;
+//	Eigen::Matrix3d local = getLocalSys();
+//	Eigen::Vector3d POIloc, vertsPhi;
+//	Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts = getVerts();					//////// MIGHT NEED TO CHANGE TO getBodyVerts()
+//	double PN = pjk.dot(local.row(2)); // normal dist from panel to field point
+//	POIloc = global2local(POI, true);
+//
+//	Eigen::Matrix3d Jints;
+//	Jints.setZero();
+//
+//	if (pjk.norm() < 0.0000001)
+//	{
+//		return Jints;
+//	}
+//	else
+//	{
+//		///////// FAR FIELD NOT YET WORKING, EXCLUDED FROM CALCULATION ///////////
+//
+//		// Check far field condition
+//		//if (pjk.norm() / longSide > 5)
+//		//{
+//		//std::cout << "\tFar Field" << std::endl;
+//		//vertsPhi = linPntDubPhi(PN, pjk.norm(), POIloc);
+//		//std::cout << "Far: " << vertsPhiFar << "\n" << std::endl;
+//		//}
+//		//else
+//		//{
+//		// Define stuff
+//		double Al;
+//		Eigen::Vector3d a, b, s;
+//		//Eigen::Vector3d Iints, Imat;
+//		Eigen::VectorXd Hints;
+//		Hints.resize(Eigen::Index(9));
+//		Hints.setZero();
+//		Eigen::Matrix3d vertsMat, Jints;
+//		Jints.setZero();
+//		double l1, l2, c1, c2, g, nuXi, nuEta;
+//
+//		double F123 = 0;
+//
+//		double s1, s2, Etest;
+//
+//		// Iterate through panel edges and get H integrals
+//		for (nodes_index_type i = 0; i<nodes.size(); i++)
+//		{
+//			Eigen::Vector3d p1;
+//			Eigen::Vector3d p2;
+//			Eigen::Vector3d Eints;
+//			if (i != nodes.size() - 1)
+//			{
+//				p1 = nodes[i]->getPnt();
+//				p2 = nodes[i + 1]->getPnt();
+//			}
+//			else
+//			{
+//				p1 = nodes[i]->getPnt();
+//				p2 = nodes[0]->getPnt();
+//			}
+//			a = POI - p1;
+//			b = POI - p2;
+//			s = p2 - p1;
+//			Al = local.row(2).dot(s.cross(a));
+//
+//			nuXi = s.dot(local.row(1)) / s.norm();
+//			nuEta = s.dot(local.row(0)) / s.norm();
+//			l1 = -a.dot(local.row(1))*nuXi - a.dot(local.row(0))*nuEta;
+//			l2 = -b.dot(local.row(1))*nuXi - b.dot(local.row(0))*nuEta;
+//			g = sqrt(pow(Al, 2) + pow(PN, 2));
+//
+//			c1 = a.norm();
+//			c2 = b.norm();
+//
+//			/*s1 = sqrt(pow(l1, 2) + pow(g, 2));
+//			s2 = sqrt(pow(l2, 2) + pow(g, 2));
+//			c1 = pow(g, 2) + abs(PN)*s1;
+//			c2 = pow(g, 2) + abs(PN)*s2;*/
+//
+//			Eints[0] = 1.0 / c2 - 1.0 / c1;		// E111
+//			Etest = -a.dot(local.row(0))/c2 + b.dot(local.row(0))/c1;
+//			Eints[1] = (p2[0] - POI[0]) / c2 - (p1[0] - POI[0]) / c1;
+//			Eints[2] = (p2[1] - POI[1]) / c2 - (p1[1] - POI[1]) / c1;
+//
+//			//linPhiHintegrals(Hints, g, Al, l1, l2, c1, c2, nuEta, nuXi, PN, a, b, s, local.row(0), local.row(1));
+//			linVelHintegrals(Hints, F123, Eints, g, Al, nuEta, nuXi);
+//		}
+//
+//		// Get final H integrals
+//		Hints[0] = Hints[0] / PN;	// H113
+//		Hints[1] = -Hints[1];		// H213
+//		Hints[2] = -Hints[2];		// H123
+//
+//		Hints[3] = (1.0 / 3.0 / pow(PN, 2)) * (Hints[0] + Hints[3]);	// H115
+//		Hints[4] = (1.0 / 3.0) * -Hints[4];								// H215
+//		Hints[5] = (1.0 / 3.0) * -Hints[5];								// H125
+//
+//		Hints[6] = (1.0 / 3.0) * -Hints[6];						// H225
+//		Hints[7] = (1.0 / 3.0) * (-Hints[0] - F123);			// H135
+//		Hints[8] = -Hints[7] - pow(PN, 2)*Hints[3] + Hints[0];	// H315
+//
+//		// Get J integrals
+//		Jints = linVelJintegrals(Hints, PN);
+//
+//		//Iints = PN * Hints / (4.0 * M_PI);	// Iints = [I11 I21 I12]
+//
+//		//									// Build I matrix
+//		//Imat[0] = Iints[0];
+//		//Imat[1] = POIloc.x()*Iints[0] + Iints[1];
+//		//Imat[2] = POIloc.y()*Iints[0] + Iints[2];
+//
+//		//// Convert linear doublet equation to vertex based linear doublet equations
+//		//vertsMat = linVertsMatrix();
+//
+//		//// Compute influence of each vertex on the field point
+//		//vertsPhi = Imat.transpose() * vertsMat.inverse();
+//
+//		return Jints;
+//
+//		//}
+//	}
+//}

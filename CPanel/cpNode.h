@@ -82,7 +82,7 @@ public:
     
     bool isTE() {return TEnode;}
 
-	// lin
+	// HOM
 	void setLinCPnormal();
 	void setLinCPoffset();
 	Eigen::Vector3d calcCP();

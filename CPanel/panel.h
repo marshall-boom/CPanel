@@ -56,6 +56,7 @@ protected:
 	//lin
 	nodes_type bodyNodes;
 	Eigen::Vector3d linVelocity;
+	std::vector<Eigen::Vector3d> linLocalNodes;
 
     double doubletStrength = 0;
     double potential = 0;
@@ -138,6 +139,9 @@ public:
 
 	Eigen::Matrix3d supVertsMatrix(std::vector<Eigen::Vector3d> &supNodes);
 	Eigen::Vector3d supGetDubDiffs();
+
+
+	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
 
 };
 

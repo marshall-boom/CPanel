@@ -159,6 +159,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         std::vector<int> wakeIDs;
         std::vector<int> surfTypes;
 
+
         // Read XYZ Locations of Nodes
         Eigen::Vector3d pnt;
         cpNode* n;
@@ -168,6 +169,31 @@ void geometry::readTri(std::string tri_file, bool normFlag)
             n = new cpNode(pnt,i);
             nodes.push_back(n);
         }
+
+
+		//------------------------------------------------------------------------------------//
+
+		//// Forceing bottom z-coords of flat bottom case to zero
+
+		//// Read XYZ Locations of Nodes
+		//Eigen::Vector3d pnt;
+		//cpNode* n;
+		//for (size_t i = 0; i<nNodes; i++)
+		//{
+		//	fid >> pnt(0) >> pnt(1) >> pnt(2);
+
+		//	if (pnt(2) < 1.0e-6)
+		//	{
+		//		pnt(2) = 0;
+		//	}
+
+		//	n = new cpNode(pnt, i);
+		//	nodes.push_back(n);
+		//}
+
+		//------------------------------------------------------------------------------------//
+
+
 
         // Temporarily Store Connectivity
 		if (inputMach > 1.0)
@@ -443,7 +469,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
         }
 
         
-		// Only need tip patch identification for subsonic, constant doublet scheme
+		// Only need tip patch identification for lower-order scheme
 		if (!subHOMFlag && inputMach < 1.0)
 		{
 			// Check panels for tip patches.  Needed to do 2D CHTLS to avoid nonphysical results near discontinuity at trailing edge.
@@ -467,24 +493,27 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				bPanels[i]->supFlipNormal();
 			}
 
-			// Check for superinclined panels. Ask if user wants to continue if one is found
+			// Check for superinclined panels. Ask if user wants to continue if at least one is found
 
 			std::cout << "Checking for superinclined panels...";
 			bool isSupInclined = false;
 			Eigen::Vector3d nWind;
 			double B = sqrt(pow(inputMach, 2) - 1);
 			setBodyToWind(alpha, beta);
-			
-			bodyPanels_index_type i = 0;
-			while (i < bPanels.size() && !isSupInclined)
+
+			size_t count = 0;
+			for (size_t i = 0; i < bPanels.size(); i++)
 			{
 				isSupInclined = bPanels[i]->supSuperinclinedCheck(B, body2wind); // returns true if sup-inclined panel is found
-				i += 1;
+				if (isSupInclined)
+				{
+					count += 1;
+				}
 			}
-			if (isSupInclined)
+			if (count > 0)
 			{
 				std::string in;
-				std::cout << "\n\nSuperinclined panel(s) found, input geometry must be modified or results will be in error." << std::endl;
+				std::cout << "\n\n" << count << " superinclined panels found, input geometry must be modified or results will be in error." << std::endl;
 				std::cout << "\tWould you like to proceed anyway?" << std::endl;
 				std::cout << "\t\t< Y > - Yes, proceed any." << std::endl;
 				std::cout << "\t\t< N > - No, exit program." << std::endl;
@@ -505,7 +534,7 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 		if (subHOMFlag || inputMach > 1.0)
 		{
 			// Get control point data for linear schemes
-
+			Eigen::Vector3d windDir = supComputeWindDir();
 			for (nodes_index_type i = 0; i < nodes.size(); i++)
 			{
 				if (nodes[i]->getBodyPans().size() > 0)
@@ -520,9 +549,12 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 				}
 			}
 
+
+			//----------------------------------------------------------------------------------------------------//
+
 			// Organize body nodes for wake handling... wake handling is postponed for the time being 10/18/2018
 
-			nodes_index_type j = 0;
+			/*nodes_index_type j = 0;
 			nodes_index_type k = bodyNodes.size();
 			nodes_type tempNodes;
 			tempNodes.resize(static_cast<Eigen::MatrixXd::Index>(nodes.size()));
@@ -546,29 +578,10 @@ void geometry::readTri(std::string tri_file, bool normFlag)
 			for (size_t i = 0; i < nodes.size(); i++)
 			{
 				nodes[i]->setIndex(static_cast<int>(i));
-			}
+			}*/
+
+			//----------------------------------------------------------------------------------------------------//
 		}
-
-
-		//// Need to generate upper and lower trailing edge nodes
-		//cpNode* nSup;
-		//size_t k = nNodes;
-		//for (bodyPanels_index_type i = 0; i < bPanels.size(); i++)
-		//{
-		//	if (bPanels[i]->isTEpanel() && bPanels[i]->getNormal().z() < 0)
-		//	{
-		//		for (nodes_index_type j = 0; j < nodes.size(); j++)
-		//		{
-		//			if (bPanels[i]->getNodes()[j]->isTE())
-		//			{
-		//				k += 1;
-		//				nSup = new cpNode(nodes[j]->getPnt(), k);
-		//				nodes.push_back(nSup);
-		//				bPanels[i]->getNodes()[j] = nSup;
-		//			}
-		//		}
-		//	}
-		//}
 
 
         // Calculate influence coefficient matrices
@@ -898,102 +911,34 @@ void geometry::linSetInfCoeff()
 	Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
 	Eigen::Vector3d ctrlPnt;
 
+	for (size_t i = 0; i < nBodyPans; i++)
+	{
+		bPanels[i]->linTransformPanel();
+	}
+
 	for (size_t i = 0; i < nBodyNodes; i++)
 	{
 		ctrlPnt = nodes[i]->calcCP();
-		/////////////////////////////////////////// Do I need to use static cast here?? Probably
-		/*if (abs(4.0 - ctrlPnt.x()) < 0.001)
-		{*/
-			Arow = A.row(i);
-			for (size_t j = 0; j < nBodyPans; j++)
-			{
-				bPanels[j]->linDubPhiInf(ctrlPnt, Arow);
-				bPanels[j]->srcPanelPhiInf(ctrlPnt, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
-			}
-			A.row(i) = Arow;
+		Arow = A.row(i);
+		for (size_t j = 0; j < nBodyPans; j++)
+		{
+			bPanels[j]->linDubPhiInf(ctrlPnt, Arow);
+			bPanels[j]->srcPanelPhiInf(ctrlPnt, B(static_cast<Eigen::MatrixXd::Index>(i), static_cast<Eigen::MatrixXd::Index>(j)));
+		}
+		A.row(i) = Arow;
 
-			for (int j = 0; j < percentage.size(); j++)
+		for (int j = 0; j < percentage.size(); j++)
+		{
+			if ((100 * i / nBodyNodes) <= percentage(j) && 100 * (i + 1) / nBodyNodes > percentage(j))
 			{
-				if ((100 * i / nBodyNodes) <= percentage(j) && 100 * (i + 1) / nBodyNodes > percentage(j))
-				{
-					std::cout << percentage(j) << "%\t" << std::flush;
-				}
+				std::cout << percentage(j) << "%\t" << std::flush;
 			}
-		//}
+		}
 	}
-
-	//std::cout << "\n" << A << std::endl;
 
 	for (size_t i = 0; i<nBodyPans; i++)
 	{
 		bPanels[i]->setIndex(static_cast<int>(i));
-	}
-
-	std::vector<bodyPanel*> interpPans(4); // [Upper1 Lower1 Upper2 Lower2]  Panels that start the bounding wakelines of the wake panel.  Doublet strength is constant along wakelines (muUpper-muLower) and so the doublet strength used for influence of wake panel is interpolated between wakelines.
-	double interpCoeff;
-	double influence;
-
-	std::vector<Eigen::VectorXi::Index> indices;
-	//Eigen::Vector3d ctrlPnt;
-	for (size_t j = 0; j < nWakePans; j++)
-	{
-		wPanels[j]->interpPanels(interpPans, interpCoeff);
-		indices = interpNodeIndices(interpPans);
-
-		//Eigen::Matrix<size_t, Eigen::Dynamic, 1> verts0, verts1, verts2, verts3;
-		//std::vector<cpNode*> interpNodes;
-
-		for (size_t i = 0; i < nBodyNodes; i++)
-		{
-			/*ctrlPnt = nodes[i]->calcCP();
-			Eigen::MatrixXd::Index ii(static_cast<Eigen::MatrixXd::Index>(i));
-			influence = wPanels[j]->dubPhiInf(ctrlPnt);
-
-			for (size_t k = 0; k < indices.size(); k++)
-			{
-			if (k < 2)
-			{
-			A(ii, indices[(static_cast<Eigen::VectorXi::Index>(k))]) += influence * interpCoeff;
-			}
-			else if (k > 2 && k < 4)
-			{
-			A(ii, indices[(static_cast<Eigen::VectorXi::Index>(k))]) -= influence * interpCoeff;
-			}
-			}*/
-
-			//// My old stuff
-
-			//verts0 = bPanels[indices(0)]->getVerts();
-			//verts1 = bPanels[indices(1)]->getVerts();
-			//verts2 = bPanels[indices(2)]->getVerts();
-			//verts3 = bPanels[indices(3)]->getVerts();
-
-			//for (size_t k = 0; k < verts0.size(); k++)
-			//{
-			//	//std::cout << '\n' << A(ii, verts0(k)) << std::endl;
-			//	A(ii, verts0(k)) += influence * (1 - interpCoeff);
-			//	//std::cout << '\n' << A(ii, verts0(k)) << std::endl;
-			//}
-			//for (size_t k = 0; k < verts1.size(); k++)
-			//{
-			//	A(ii, verts1(k)) += influence * (interpCoeff - 1);
-			//}
-			//for (size_t k = 0; k < verts2.size(); k++)
-			//{
-			//	A(ii, verts2(k)) += influence * interpCoeff;
-			//}
-			//for (size_t k = 0; k < verts3.size(); k++)
-			//{
-			//	A(ii, verts3(k)) -= influence * interpCoeff;
-			//}
-		}
-		for (int i = 0; i < percentage.size(); i++)
-		{
-			if ((100 * (nBodyPans + j) / nPans) <= percentage(i) && 100 * (nBodyPans + j + 1) / nPans > percentage(i))
-			{
-				std::cout << percentage(i) << "%\t" << std::flush;
-			}
-		}
 	}
 
 	std::cout << "Complete" << std::endl;
@@ -1008,12 +953,8 @@ void geometry::linSetInfCoeff()
 void geometry::supSetInfCoeff()
 {
 	// Construct doublet and source influence coefficient matrices for body panels
-	
-	// Assuming no superinclined panels for the time being, the nodes and panels associated with these will be discluded from A matrix
-		// Or do I just need to set the strengths to something
-		// Or should they just not be allowed at all
 
-	// No wakes for the time being, so no 'subsonic' leading or trailing edges
+	// No wakes for the time being, so no 'subsonic' trailing edges allowed
 
 	size_t nBodyPans = bPanels.size();
 	size_t nWakePans = wPanels.size();
@@ -1029,6 +970,7 @@ void geometry::supSetInfCoeff()
 	A.setZero();
 	B.setZero();
 
+	double Bmach = sqrt(pow(inputMach, 2) - 1);
 	Eigen::Matrix<double, 1, Eigen::Dynamic> Arow;
 	Eigen::Vector3d ctrlPnt, windDir;
 	bool DODflag; // Domain of Dependence flag: true if panel is inside or intersecting Mach cone of control point, false otherwise
@@ -1055,7 +997,7 @@ void geometry::supSetInfCoeff()
 		}
 		A.row(i) = Arow;
 
-		// Completion percentage
+		// Completion percentage (not exactly accurate w/ ss scheme, still useful though)
 		for (int j = 0; j < percentage.size(); j++)
 		{
 			if ((100 * i / nBodyNodes) <= percentage(j) && 100 * (i + 1) / nBodyNodes > percentage(j))
@@ -1131,113 +1073,6 @@ Eigen::Vector4i geometry::interpIndices(std::vector<bodyPanel*> interpPans)
         indices(static_cast<Eigen::Vector4i::Index>(i)) = interpPans[i]->getIndex();
     }
     return indices;
-}
-
-
-std::vector<Eigen::VectorXi::Index> geometry::interpNodeIndices(std::vector<bodyPanel*> interpPans)
-{
-	// interpPans organization: [Upper1 Lower1 Upper2 Lower2]
-
-	// indices organziation: [upperNodes lowerNodes TEnodes]
-
-	std::vector<cpNode*> interpPanNodes0, interpPanNodes1, interpPanNodes2, interpPanNodes3;
-	std::vector<Eigen::VectorXi::Index> indices;
-
-	// Get interpPan nodes
-	interpPanNodes0 = interpPans[0]->getNodes();	// Upper1
-	interpPanNodes1 = interpPans[1]->getNodes();	// Lower1
-	interpPanNodes2 = interpPans[2]->getNodes();	// Upper2
-	interpPanNodes3 = interpPans[3]->getNodes();	// Lower2
-
-	// Get indices of internPan nodes
-
-	// skip trailing edge nodes
-	for (size_t i = 0; i < interpPanNodes0.size(); i++)
-	{
-		if (!interpPanNodes0[i]->isTE())
-		{
-			indices.push_back(interpPanNodes0[i]->getIndex());
-		}
-	}
-	for (size_t i = 0; i < interpPanNodes2.size(); i++)
-	{
-		if (!interpPanNodes2[i]->isTE())
-		{
-			indices.push_back(interpPanNodes2[i]->getIndex());
-		}
-	}
-	for (size_t i = 0; i < interpPanNodes1.size(); i++)
-	{
-		if (!interpPanNodes1[i]->isTE())
-		{
-			indices.push_back(interpPanNodes1[i]->getIndex());
-		}
-	}
-	for (size_t i = 0; i < interpPanNodes3.size(); i++)
-	{
-		if (!interpPanNodes3[i]->isTE())
-		{
-			indices.push_back(interpPanNodes3[i]->getIndex());
-		}
-	}
-
-	// only get trailing edge nodes
-	for (size_t i = 0; i < interpPanNodes0.size(); i++)
-	{
-		if (interpPanNodes0[i]->isTE())
-		{
-			indices.push_back(interpPanNodes0[i]->getIndex());
-		}
-	}
-	for (size_t i = 0; i < interpPanNodes2.size(); i++)
-	{
-		if (interpPanNodes2[i]->isTE())
-		{
-			indices.push_back(interpPanNodes2[i]->getIndex());
-		}
-	}
-	for (size_t i = 0; i < interpPanNodes1.size(); i++)
-	{
-		if (interpPanNodes1[i]->isTE())
-		{
-			indices.push_back(interpPanNodes1[i]->getIndex());
-		}
-	}
-	for (size_t i = 0; i < interpPanNodes3.size(); i++)
-	{
-		if (interpPanNodes3[i]->isTE())
-		{
-			indices.push_back(interpPanNodes3[i]->getIndex());
-		}
-	}
-
-
-	// Delete duplicate indices, without changing the order
-	for (size_t i = 0; i < indices.size(); i++)
-	{
-		size_t j = 0;
-		while (j < indices.size())
-		{
-			if (i != j)
-			{
-				if (indices[(static_cast<Eigen::VectorXi::Index>(i))] == indices[(static_cast<Eigen::VectorXi::Index>(j))])
-				{
-					indices.erase(indices.begin() + j);
-				}
-				else
-				{
-					j += 1;
-				}
-			}
-			else
-			{
-				j += 1;
-			}
-		}
-		
-	}
-
-	return indices;
 }
 
 

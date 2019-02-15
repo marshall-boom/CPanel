@@ -197,9 +197,6 @@ class geometry
 	using wakePanels_type = std::vector<wakePanel *>;
 	using wakePanels_index_type = wakePanels_type::size_type;
 
-	using ctrlPnts_type = std::vector<Eigen::Vector3d>;	//ss
-	using ctrlPnts_type_index = ctrlPnts_type::size_type;	//ss
-
     surfaces_type surfaces;
     wakes_type wakes;
     bodyPanels_type bPanels;
@@ -216,7 +213,6 @@ class geometry
     panelOctree pOctree;
     nodes_type nodes;
     edges_type edges;
-//    std::vector<cpNode*> TEnodes;
     size_t nNodes;
     size_t nTris;
 
@@ -279,7 +275,6 @@ public:
         nNodes=0;
         nTris=0;
 
-		// Jake: How are these handled if there are multiple input Mach numbers
 		subHOMFlag = p->subHOMFlag;
 		inputMach = p->machs(0);
 		alpha = p->alphas(0);
@@ -322,8 +317,6 @@ public:
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
 	void geometry::setBodyToWind(double a, double b);
 	Eigen::Vector3d geometry::supComputeWindDir();
-
-	std::vector<Eigen::VectorXi::Index> interpNodeIndices(std::vector<bodyPanel*> interpPans);
 };
 
 

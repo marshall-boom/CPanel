@@ -78,6 +78,7 @@ class bodyPanel : public panel
 	Eigen::Matrix3d supTransMat;
 	std::vector<Eigen::Vector3d> supLocalNodes;
 	double supAreaCorrect;
+	bool supInclinedFlag = false;
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
@@ -137,6 +138,8 @@ public:
 	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
 	void linComputeVelocity(double PG, Eigen::Vector3d &Vinf);
 
+	void linTransformPanel();
+
 	void supFlipNormal();
 	bool bodyPanel::supSuperinclinedCheck(const double B, Eigen::Matrix3d &body2wind);
 	void supTransformPanel(double alpha, double beta, const double mach);
@@ -148,14 +151,27 @@ public:
 	Eigen::Vector2d supEdgeInfSub(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
 	Eigen::Vector2d supEdgeInfSup(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
 
+	Eigen::Vector2d supEdgeInfSubInPlane(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
+	Eigen::Vector2d supEdgeInfSupInPlane(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
+
 	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
 
 	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
-	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVel);
+	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVelWind, Eigen::Vector3d pertVelBody);
 	double supGetCp1() { return Cp1; }
 	double supGetCp2s() { return Cp2s; }
 	double supGetCp2() { return Cp2; }
 	//Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
+
+	//--------------------------------------------------------------------------------------//
+	// Temporary trailing edge fixes
+	void supFixCp(const double CpIn);
+	void supFixCp2s(const double CpIn);
+	void supFixMach(const double machIn);
+	//--------------------------------------------------------------------------------------//
+
+
+	Eigen::Vector3d linComputeVelocity2(const double PG, Eigen::Vector3d Vinf);
 
 	void supSetMu();
 	void linSetMu();
