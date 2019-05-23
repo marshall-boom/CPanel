@@ -197,9 +197,6 @@ class geometry
 	using wakePanels_type = std::vector<wakePanel *>;
 	using wakePanels_index_type = wakePanels_type::size_type;
 
-	using ctrlPnts_type = std::vector<Eigen::Vector3d>;	//ss
-	using ctrlPnts_type_index = ctrlPnts_type::size_type;	//ss
-
     surfaces_type surfaces;
     wakes_type wakes;
     bodyPanels_type bPanels;
@@ -216,7 +213,6 @@ class geometry
     panelOctree pOctree;
     nodes_type nodes;
     edges_type edges;
-//    std::vector<cpNode*> TEnodes;
     size_t nNodes;
     size_t nTris;
 
@@ -235,7 +231,12 @@ class geometry
     double dt;
     double inputV;
 
-	//double inputMach;	//ss
+	// lin & ss
+	bool subHOMFlag;
+	double inputMach;
+	double alpha;
+	double beta;
+	Eigen::Matrix3d body2wind;
 
     void readTri(std::string tri_file, bool normFlag);
     std::vector<edge*> panEdges(const std::vector<cpNode*> &pNodes);
@@ -250,6 +251,8 @@ class geometry
     liftingSurf* getParentSurf(int wakeID);
 
     void setInfCoeff();
+	void linSetInfCoeff();
+	void supSetInfCoeff();
     Eigen::Vector4i interpIndices(std::vector<bodyPanel*> interpPans);
 
     bool infCoeffFileExists();
@@ -271,6 +274,11 @@ public:
         inputV = p->velocities(0);
         nNodes=0;
         nTris=0;
+
+		subHOMFlag = p->subHOMFlag;
+		inputMach = p->machs(0);
+		alpha = p->alphas(0);
+		beta = p->betas(0);
 
         readTri(p->geomFile->file, p->normFlag);
     }
@@ -306,14 +314,9 @@ public:
 
     void moveGeom( std::vector<double> bodyKin );
 
-	// Currently used to control whether code runs through const. or lin. dub. scheme
-	// Will eventually add to input file
-	// -Jake
-	double inMach = 1.5;
-
-	double getInMach() { return inMach; }
 	std::vector<cpNode*> getBodyNodes() { return bodyNodes; }
-
+	void geometry::setBodyToWind(double a, double b);
+	Eigen::Vector3d geometry::supComputeWindDir();
 };
 
 

@@ -146,8 +146,8 @@ void cpNode::setLinCPnormal()
 
 void cpNode::setLinCPoffset()
 {
-	double edgeLenSum = 0;
-	double edgeLenAvg;
+	double edgeLenSum, edgeLenAvg, k;
+	edgeLenSum = 0;
 
 	for (edges_index_type i = 0; i < getEdges().size(); i++)
 	{
@@ -155,7 +155,10 @@ void cpNode::setLinCPoffset()
 	}
 
 	edgeLenAvg = edgeLenSum / getEdges().size();
-	linCPoffset = 0.05 * edgeLenAvg;
+
+	k = 0.00001; // determined from offset convergence study
+
+	linCPoffset = k * edgeLenAvg;
 }
 
 
@@ -178,11 +181,13 @@ void cpNode::linSetPotential(Eigen::Vector3d Vinf)
 {
 	linPrevPotential = linPotential;
 
-	linPotential = Vinf.dot(calcCP()) - linDoubletStrength; // Katz 11.74, 13.157
+	linPotential = Vinf.dot(getPnt()) - linDoubletStrength; // Katz 11.74, 13.157
 }
 
-void cpNode::linSetVelocity(Eigen::Vector3d Vel)
+
+void cpNode::supSetPotential()
 {
-	linVelocity = Vel;
-}
+	linPrevPotential = linPotential;
 
+	linPotential = linDoubletStrength / 2; // PANAIR: average potential
+}

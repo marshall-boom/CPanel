@@ -34,6 +34,9 @@ class bodyPanel : public panel
 	using bodyPanels_type = std::vector<bodyPanel *>;
 	using bodyPanels_index_type = bodyPanels_type::size_type;
 
+	/*using nodes_type = std::vector<cpNode *>;
+	using nodes_index_type = nodes_type::size_type;*/
+
     surface* parentSurf;
     bodyPanels_type neighbors;
     bodyPanels_type cluster;
@@ -47,6 +50,11 @@ class bodyPanel : public panel
     bool streamFlag; // Surface Streamline crosses panel.
     Eigen::Vector3d velocity = Eigen::Vector3d::Zero();
     double Cp = 0;
+
+	// Supersonic Cp's
+	double Cp1 = 0;		// 1st order Cp
+	double Cp2s = 0;	// 2nd order Cp with slender body assumption
+	double Cp2 = 0;		// 2nd order Cp, full
     
     int index; // Index in panel vector contained in geometry class.  Used for interpolating strength for wake panel influences.
     
@@ -64,6 +72,13 @@ class bodyPanel : public panel
     Eigen::Matrix3d velocityGradientPointSource(Eigen::Vector3d POI);
     Eigen::Matrix3d velocityGradientQuadSource(Eigen::Vector3d POI);
     Eigen::Matrix3d velocityGradientTriSource(Eigen::Vector3d POI);
+
+	double panelMach;
+	Eigen::Vector3d linDubCoeffs;
+	Eigen::Matrix3d supTransMat;
+	std::vector<Eigen::Vector3d> supLocalNodes;
+	double supAreaCorrect;
+	bool supInclinedFlag = false;
     
 public:
     bodyPanel(std::vector<cpNode*> nodes, std::vector<edge*> pEdges, Eigen::Vector3d bezNorm,surface* parentSurf, size_t surfID);
@@ -119,11 +134,48 @@ public:
     
     Eigen::Vector3d partStretching(particle* part);
 
-	// ss
+	// lin & ss
 	void srcPanelPhiInf(const Eigen::Vector3d &POI, double &phi);
-
 	void linComputeVelocity(double PG, Eigen::Vector3d &Vinf);
-    
+
+	void linTransformPanel();
+
+	void supFlipNormal();
+	bool bodyPanel::supSuperinclinedCheck(const double B, Eigen::Matrix3d &body2wind);
+	void supTransformPanel(double alpha, double beta, const double mach);
+	void supSetG2LSmatrix(const double a, const double b, const double mach);
+	bool supDODcheck(Eigen::Vector3d &POI, const double Mach, Eigen::Vector3d &windDir);
+	void supPhiInf(const Eigen::Vector3d &P, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow, double &Phi, bool DOIflag, const double mach);
+
+	Eigen::Vector2d supEdgeInfSon(const double ym1, const double ym2, const double xm, const double R1, const double R2, const double lam, const double z, const double eps1, const double eps2);
+	Eigen::Vector2d supEdgeInfSub(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
+	Eigen::Vector2d supEdgeInfSup(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
+
+	Eigen::Vector2d supEdgeInfSubInPlane(const double R1, const double R2, const double ym1c, const double ym2c, const double xmc, const double m, const double z, const double eps1, const double eps2, bool mFlag);
+	Eigen::Vector2d supEdgeInfSupInPlane(const double R1, const double R2, const double ym1, const double ym2, const double xm, const double lam, const double z, const double eps1, const double eps2);
+
+	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
+
+	Eigen::Vector3d supComputeVelocity(Eigen::Vector3d Vinf, const double mach, bool velCorrection);
+	void supComputeCp(Eigen::Vector3d Vinf, const double mach, Eigen::Vector3d pertVelWind, Eigen::Vector3d pertVelBody);
+	double supGetCp1() { return Cp1; }
+	double supGetCp2s() { return Cp2s; }
+	double supGetCp2() { return Cp2; }
+	//Eigen::Vector3d supVelCorrection(Eigen::Vector3d pertVel, const double mach);
+
+	//--------------------------------------------------------------------------------------//
+	// Temporary trailing edge fixes
+	void supFixCp(const double CpIn);
+	void supFixCp2s(const double CpIn);
+	void supFixMach(const double machIn);
+	//--------------------------------------------------------------------------------------//
+
+
+	Eigen::Vector3d linComputeVelocity2(const double PG, Eigen::Vector3d Vinf);
+
+	void supSetMu();
+	void linSetMu();
+	double getPanelMach() { return panelMach; }
 };
 
 #endif /* defined(__CPanel__bodyPanel__) */
