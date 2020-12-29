@@ -55,8 +55,8 @@ protected:
 
 	//lin
 	nodes_type bodyNodes;
-	nodes_type wakeNodes;
 	Eigen::Vector3d linVelocity;
+	std::vector<Eigen::Vector3d> linLocalNodes;
 
     double doubletStrength = 0;
     double potential = 0;
@@ -120,14 +120,28 @@ public:
     bool nearFilamentCheck(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &POI);
 
 	void linDubPhiInf(const Eigen::Vector3d &POI, Eigen::Matrix<double, 1, Eigen::Dynamic> &Arow);
-	void linPhiHintegrals(Eigen::VectorXd &Hints, const double g, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
-	Eigen::Vector3d linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc);
-	Eigen::Matrix3d linVertsMatrix();
+	void linPhiHintegrals(Eigen::VectorXd &Hints, const double g, const double myAl, const double Al, const double l1, const double l2, const double c1, const double c2, const double nuEta, const double nuXi, const double &PN, const Eigen::Vector3d &a, const Eigen::Vector3d &b, const Eigen::Vector3d &s, const Eigen::Vector3d &l, const Eigen::Vector3d &m);
+	//Eigen::Vector3d linPntDubPhi(const double &PN, const double &PJK, const Eigen::Vector3d &POIloc);
+	Eigen::Matrix3d linVertsMatrix(bool translate);
 
 	Eigen::Vector3d linGetDubStrengths();
+	void linGetConstDubStrength();
 	void linComputeVelocity(double PG,Eigen::Vector3d &Vinf);
 
 	Eigen::Vector3d getVel() { return velocity; }
+
+	Eigen::Matrix3d linDubVInf(const Eigen::Vector3d &POI);
+
+	void linVelHintegrals(Eigen::VectorXd &Hints, double F123, Eigen::Vector3d &Eints, const double g, const double Al, const double nuEta, const double nuXi);
+	Eigen::Matrix3d linVelJintegrals(Eigen::VectorXd &Hints, const double &PN);
+	void setPanelVel(Eigen::Vector3d Vel);
+	Eigen::Vector3d linGetOrigDubStrengths();
+
+	Eigen::Matrix3d supVertsMatrix(std::vector<Eigen::Vector3d> &supNodes);
+	Eigen::Vector3d supGetDubDiffs();
+
+
+	void supOutputGeom(const Eigen::Vector3d &POI, bool outPOI);
 
 };
 

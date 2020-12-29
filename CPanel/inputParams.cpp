@@ -131,6 +131,10 @@ bool inputParams::set()
                         fid >> machs(i);
                     }
                 }
+				else if (s1.compare("Subsonic_Higher_Order_Method") == 0)
+				{
+					fid >> subHOMFlag;
+				}
                 else if (s1.compare("Surface_Streamlines") == 0)
                 {
                     fid >> surfStreamFlag;
@@ -244,6 +248,12 @@ void inputParams::print(std::ostream &stream)
     stream << std::setw(nChars) << "Mach # " << "-> ";
     printVec(machs,stream);
     stream << std::endl;
+
+	stream << std::setw(nChars) << "Subsonic HOM " << "-> ";
+	if (subHOMFlag)
+		stream << "ON" << std::endl;
+	else
+		stream << "OFF" << std::endl;
 
     stream << std::setw(nChars) << "Surface Streamlines " << "-> ";
     if (surfStreamFlag)
@@ -384,6 +394,8 @@ void inputParams::writeInputFile()
     }
     fid << std::endl;
     fid << "% Solver Options (0 = OFF, 1 = ON) %" << std::endl;
+	fid << "Subsonic_Higher_Order_Method" << std::endl;
+	fid << subHOMFlag << std::endl;
     fid << "Surface_Streamlines" << std::endl;
     fid << surfStreamFlag << std::endl;
     fid << "Stability_Derivatives" << std::endl;
@@ -401,7 +413,8 @@ void inputParams::writeInputFile()
     for (volMeshRes_index_type i=0; i<volMeshRes.size(); i++) {
         fid << volMeshRes[i] << " ";
     }
-    fid << "/n/n" <<std::flush;
+    //fid << "/n/n" <<std::flush;
+	fid << std::endl;
     fid << "% Vortex Particle Wake Options %" << std::endl;
     fid << "Time_Step" << std::endl;
     fid << timeStep << std::endl;

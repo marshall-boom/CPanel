@@ -99,6 +99,15 @@ void wakePanel::setMu()
     doubletStrength = (1-interpCoeff)*interpPans[0]->getMu() + (interpCoeff-1)*interpPans[1]->getMu() + interpCoeff*interpPans[2]->getMu() - interpCoeff*interpPans[3]->getMu();
 }
 
+//void wakePanel::linSetMu()
+//{
+//	std::vector<bodyPanel*> interpPans(4);
+//	double interpCoeff;
+//	interpPanels(interpPans, interpCoeff);
+//	//doubletStrength = interpPans[0]->linGetTEdubStrength() + (interpPans[2]->linGetTEdubStrength() - interpPans[0]->linGetTEdubStrength()) * interpCoeff;
+//	doubletStrength = (1 - interpCoeff)*interpPans[0]->linGetTEdubStrength() + (interpCoeff - 1)*interpPans[1]->linGetTEdubStrength() + interpCoeff * interpPans[2]->linGetTEdubStrength() - interpCoeff * interpPans[3]->linGetTEdubStrength();
+//}
+
 void wakePanel::setMu(double strength){
     doubletStrength = strength;
 }

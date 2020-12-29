@@ -88,6 +88,8 @@ public:
     wakePanel* getBufferParent(){return bufferParent;};
     
     Eigen::Vector3d edgeStrength( edge* curEdge, int edgeNum);
+
+	//void linSetMu();
     
 };
 
